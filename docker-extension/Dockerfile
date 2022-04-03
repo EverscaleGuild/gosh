@@ -1,9 +1,9 @@
 FROM node:16.14-alpine
 ARG content_signature_local_dir
 
-LABEL org.opencontainers.image.title="GoshDockerExtension" \
-    org.opencontainers.image.description="Gosh Docker Extension description stub." \
-    org.opencontainers.image.vendor="Tonlabs" \
+LABEL org.opencontainers.image.title="Gosh Docker Extension" \
+    org.opencontainers.image.description="Build your decentralized and secure software supply chain with Docker and Git On-chain Source Holder" \
+    org.opencontainers.image.vendor="EverX" \
     com.docker.desktop.extension.api.version="1.0.0-beta.1"
 
 RUN apk --no-cache add curl coreutils docker yarn \
@@ -21,5 +21,7 @@ COPY ./vm/commands/ /command/
 COPY $content_signature_local_dir /command/
 
 RUN cd /command/content-signature/ && npm install && npm -g install typescript && tsc
+
+COPY icon.svg /
 
 CMD [ "sleep", "infinity" ]

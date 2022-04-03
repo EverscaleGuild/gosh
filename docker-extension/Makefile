@@ -1,6 +1,6 @@
-#IMAGE?=teamgosh/docker-extension
-IMAGE?=teamgosh-docker-extension
-TAG?=0.0.1-alpha
+IMAGE?=teamgosh/docker-extension
+#IMAGE?=teamgosh-docker-extension
+TAG?=1.0.0-alpha.1
 LOCAL_TEMP_DIR=./.tmp/
 
 .DEFAULT_GOAL := debug
@@ -9,8 +9,10 @@ build: ## Build service image to be deployed as a desktop extension
 	-rm -rf $(LOCAL_TEMP_DIR)
 	-mkdir $(LOCAL_TEMP_DIR)
 	-cp -r ../content-signature $(LOCAL_TEMP_DIR)
-	docker build \
+	docker buildx build \
+	  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x \
 	  --tag=$(IMAGE):$(TAG) \
+	  --tag=$(IMAGE):latest \
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)" \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
@@ -24,7 +26,19 @@ update: build ## Update the extension
 debug: update ## Debug the extension
 	docker extension dev debug $(IMAGE):$(TAG)
 
-publish: build ## Publish the extension
-	docker pull $(IMAGE):$(TAG) && echo "Failed: image version already published" || docker push $(IMAGE):$(TAG)
+publish: ## Publish the extension
+	-rm -rf $(LOCAL_TEMP_DIR)
+	-mkdir $(LOCAL_TEMP_DIR)
+	-cp -r ../content-signature $(LOCAL_TEMP_DIR)
+	docker buildx build \
+	  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x \
+	  --tag=$(IMAGE):$(TAG) \
+	  --tag=$(IMAGE):latest \
+	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)" \
+	  --push \
+	  .
+	-rm -rf $(LOCAL_TEMP_DIR)
+
+
 
 .PHONY: build install update debug publish
