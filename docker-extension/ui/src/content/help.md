@@ -1,12 +1,13 @@
-# Gosh solution
+# GOSH
+Secure Software Supply Chain achieved through record-setting blockchain tech, distributed programming and decentralized architecture - integrated into the same familiar git, no workflow adjustment required.
 
 ## Motivation
 
-Software Supply Chain is a high-impact area. Yet there is a big problem of secure, trustless, verifiable, and transparent delivery of source code/binaries to the node operators in a blockchain. Currently there is no industrial solution in place.
+Software Supply Chain is a high-impact area. Yet there exists a distinctive lack of secure, trustless, verifiable, and transparent delivery of source code/binaries to developers and users in all software fields. Currently there is no industrial solution available that is not centralized and thus not dependent on the decisions of a few actors.
 
 ## Objective
 
-Mitigate security problem of docker container, source code supply chain and open-source code by providing a **secure** and **convenient** on-chain environment to operate on source code repositories.
+Mitigate security and transparency issues arising from conventional software supply chain by providing a secure and convenient on-chain environment to operate on source code repositories. 
 
 ## Architecture
 
