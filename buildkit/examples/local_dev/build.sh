@@ -36,8 +36,8 @@ case "$1" in
         mkdir -p "$CONTAINER_ID"
         (
             cd "$CONTAINER_ID" || exit
-            docker export "$CONTAINER_ID" | tar -xf - --exclude='./etc/mtab' --exclude='./proc' --exclude='./dev'
-            # docker rm -fv "$CONTAINER_ID"
+            docker export "$CONTAINER_ID" | tar --exclude=etc/mtab --exclude=proc --exclude=dev -xf -
+            docker rm -fv "$CONTAINER_ID"
             find . -type f -exec sha256sum {} + | LC_ALL=C sort | sha256sum > ../"$CONTAINER_ID".sha
         )
         ;;
