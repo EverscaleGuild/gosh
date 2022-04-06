@@ -36,7 +36,6 @@ image:
 	@echo ------------------------------------
 	@echo Build buildkit-gosh \(aka frontend\)
 	@echo ------------------------------------
-	go mod vendor
 	${DOCKER} build -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
 	${DOCKER} push ${IMAGE_REFERENCE}:${VERSION}
 
