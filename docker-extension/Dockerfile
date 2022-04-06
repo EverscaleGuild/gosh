@@ -21,7 +21,7 @@ COPY ./vm/docker-compose.yaml /
 COPY ./vm/commands/ /command/
 COPY $content_signature_local_dir /command/
 
-RUN cd /command/content-signature/ && npm install && npm -g install typescript && tsc
+RUN cd /command/content-signature/ && npm install --production
 
 COPY icon.svg /
 
