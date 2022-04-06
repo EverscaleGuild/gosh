@@ -9,6 +9,12 @@ IMAGE="$DOCKER_REG"/buildctl-gosh-simple
 
 case "$1" in
     build)
+        docker buildx build \
+            --push \
+            -f goshfile.yaml \
+            -t "$IMAGE" .
+        ;;
+    buildctl)
         buildctl --addr=docker-container://buildkitd build \
             --frontend gateway.v0 \
             --local dockerfile=. \
