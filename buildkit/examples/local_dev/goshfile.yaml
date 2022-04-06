@@ -3,10 +3,10 @@
 apiVersion: 1
 image: bash:latest
 steps:
-  - name: print date
+  - name: print hello
     run:
       command: ["/usr/local/bin/bash"]
       args:
         - -c
         - >-
-          (date +'%s %H:%M:%S %Z'; echo "Hi there") | tee /message.txt
+          echo "Hi there" > /message.txt

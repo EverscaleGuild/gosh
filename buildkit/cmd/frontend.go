@@ -112,6 +112,7 @@ func frontendBuild() client.BuildFunc {
 		logf("[docker-gosh frontend/build] start build image %s", config.Image)
 		goshImage := llb.Image(
 			config.Image,
+			llb.IgnoreCache,
 			llb.WithMetaResolver(c),
 			llb.WithCustomName("[docker-gosh frontend/build] init test gosh image"),
 		)
