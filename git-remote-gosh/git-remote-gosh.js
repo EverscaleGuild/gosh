@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { promises: fs } = require('fs')
-const { join: pathJoin, resolve } = require('path')
+const { join: pathJoin } = require('path')
 const readline = require('readline')
 
 const {
@@ -194,7 +194,7 @@ async function doFetch(input) {
     
     const credentials = await userCredentials(context.account)
 
-    await helper.init(context.network, context.repo, GOSH, credentials)
+    await helper.init(context.network, context.repo, context.gosh, credentials)
 
     const rl = readline.createInterface({
         input: process.stdin,

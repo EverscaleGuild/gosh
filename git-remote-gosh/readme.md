@@ -9,7 +9,7 @@ This Git helper used Everscale blockchain as a remote for Git.
 For correct usage of the helper you should use remote in form:
 
 ```
-gosh[::<NETWORK>]://[<USER_ACCOUNT>@]REPO_NAME
+gosh[::<NETWORK>]://[<USER_ACCOUNT>@]GOSH_ROOT/REPO_NAME
 ```
 
 Defaults values are following:
@@ -24,7 +24,7 @@ Defaults values are following:
 For usage with local (Evernode SE)[https://github.com/tonlabs/evernode-se] remote may be as follows:
 
 ```
-gosh::localhost://my-user-name/my-repo
+gosh::localhost://0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/my-user-name/my-repo
 ```
 
 ## User account
@@ -46,7 +46,7 @@ To be able to push to Gosh repositories, you need to have a wallet on the Eversc
 For usage of this wallet (main network as default) the remote may be as follows:
 
 ```
-gosh://my-wallet@my-user-name/my-repo
+gosh://my-wallet@0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/my-user-name/my-repo
 ```
 
 ## Setup helper
@@ -62,7 +62,7 @@ gosh://my-wallet@my-user-name/my-repo
 To set a remote to an existing local repository:
 
 ```sh
-git remote add origin gosh::net.ton.dev://my-wallet@my-user-name/my-repo
+git remote add origin gosh::net.ton.dev://my-wallet@0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/my-user-name/my-repo
 ```
 
 ### For a new Gosh repository
@@ -70,5 +70,5 @@ git remote add origin gosh::net.ton.dev://my-wallet@my-user-name/my-repo
 To clone repositories you should add 
 
 ```sh
-git clone gosh::net.ton.dev://my-wallet@my-user-name/my-repo
+git clone gosh::net.ton.dev://my-wallet@0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/my-user-name/my-repo
 ```

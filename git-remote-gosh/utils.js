@@ -29,33 +29,39 @@ const emoji_shrug = "¯\\_(ツ)_/¯"
 
 const deconstructRemoteUrl = (url) => {
     const MALFORMED_ERR = `The following URL is malformed: ${url}. A URL must be in the two following format: gosh::<network>://<account>@<repository>`
-    // repo url -> gosh::<network>://<account>@<repository>
+    // repo url -> gosh::<network>://<account>@<contract>/<repository>
     //     gosh - protocol scheme (fixed)
     //     network - main (by default), dev, localnode etc
     //     account - ref to credentials (~/.gosh/credentials.json)
+    //     contract - Gosh root contract address
     //     repository - name of the remote repository
     const [head, tail] = url.split('://')
-    if (!tail) {
-        fatal(MALFORMED_ERR)
-    }
+    if (!tail) fatal(MALFORMED_ERR)
+
     let [scheme, network] = head.split('::')
+    if (!scheme) fatal(MALFORMED_ERR)
     if (!network) {
-        network = scheme
-        scheme = 'gosh'
+        if (scheme !== 'gosh') {
+            network = scheme
+            scheme = 'gosh'
+        }
     }
-    let [account, repo] = tail.split('@')
-    if (!repo) {
-        repo = account
+    let [account, path] = tail.split('@')
+    if (!path) {
+        path = account
         account = undefined
     }
-    if (!scheme && !repo) {
+    let [gosh, ...repo] = path.split('/')
+    repo = repo.join('/')
+    if (!(scheme || gosh || repo)) {
         fatal(MALFORMED_ERR)
     }
     return {
         scheme,
-        ...(network && { network }),
+        network,
         account: account || 'default',
         repo,
+        gosh,
     }
 }
 
