@@ -1,0 +1,26 @@
+{
+  "name": "git-remote-gosh",
+  "version": "0.0.0",
+  "description": "Git remote helper for Gosh",
+  "main": "git-remote-gosh.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonlabs/git-remote-gosh.git"
+  },
+  "author": "Tonlabs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/tonlabs/git-remote-gosh/issues"
+  },
+  "homepage": "https://github.com/tonlabs/git-remote-gosh#readme",
+  "dependencies": {
+    "@eversdk/core": "^1.30.2",
+    "@eversdk/lib-node": "^1.30.2"
+  }
+}
