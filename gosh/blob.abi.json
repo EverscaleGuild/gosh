@@ -6,8 +6,17 @@
 		{
 			"name": "constructor",
 			"inputs": [
+				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"blob","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "destroy",
+			"inputs": [
+				{"name":"addr","type":"address"}
 			],
 			"outputs": [
 			]
@@ -61,6 +70,7 @@
 		{"name":"_nameBlob","type":"string"},
 		{"name":"_nameBranch","type":"string"},
 		{"name":"check","type":"bool"},
-		{"name":"_blob","type":"string"}
+		{"name":"_blob","type":"string"},
+		{"name":"_pubkey","type":"uint256"}
 	]
 }

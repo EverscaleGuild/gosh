@@ -24,10 +24,32 @@
 			]
 		},
 		{
+			"name": "destroy",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "destroyAll",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "setBlob",
 			"inputs": [
 				{"name":"code","type":"cell"},
 				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setStatus",
+			"inputs": [
+				{"name":"status","type":"bool"}
 			],
 			"outputs": [
 			]
@@ -92,6 +114,14 @@
 			"outputs": [
 				{"name":"value0","type":"address"}
 			]
+		},
+		{
+			"name": "getStatus",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"bool"}
+			]
 		}
 	],
 	"data": [
@@ -113,6 +143,8 @@
 		{"name":"_blob","type":"address[]"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
-		{"name":"_parent","type":"address"}
+		{"name":"_parent","type":"address"},
+		{"name":"_num","type":"uint128"},
+		{"name":"_isFinish","type":"bool"}
 	]
 }

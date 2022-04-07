@@ -38,6 +38,15 @@
 			]
 		},
 		{
+			"name": "deleteCommit",
+			"inputs": [
+				{"name":"parent","type":"address"},
+				{"name":"nameBranch","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployCommit",
 			"inputs": [
 				{"name":"nameBranch","type":"string"},

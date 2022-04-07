@@ -18,12 +18,26 @@ contract Blob{
     string _nameBranch;
     bool check = false;
     string _blob;
+    uint256 _pubkey;
     
-    constructor(string nameBranch, string blob) public {
+    modifier onlyOwner {
+        bool checkOwn = false;
+        if (msg.sender == _rootCommit) { checkOwn = true; }    
+        if (msg.pubkey() == _pubkey) { checkOwn = true; }
+        require(msg.sender == _rootCommit, 500);
+        _;
+    }
+    
+    constructor(uint256 pubkey, string nameBranch, string blob) public {
         tvm.accept();
+        _pubkey = pubkey;
         _rootCommit = msg.sender;
         _nameBranch = nameBranch;
         _blob = blob;
+    }    
+    
+    function destroy(address addr) public onlyOwner {
+        selfdestruct(addr);
     }
     
     //Setters
