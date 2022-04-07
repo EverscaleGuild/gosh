@@ -19,10 +19,6 @@ GOSH_ADDR=$(cat $GOSH.addr)
 export TONOS_CLI=tonos-cli
 export NETWORK=${2:-localhost}
 
-PAYLOAD=$($TONOS_CLI body --abi $GOSH_ABI deployRepository "{\"name\":\"$1\"}" | sed -n '/Message body:/ s/Message body: // p')
-THREE_EVERS=3000000000
-THIRTY_EVERS=30000000000
-VALUE=$THREE_EVERS
 
 if [ "$NETWORK" == "localhost" ]; then
     WALLET=wallets/localnode/SafeMultisigWallet
@@ -34,9 +30,17 @@ WALLET_ADDR=$(cat $WALLET.addr)
 WALLET_ABI=$WALLET.abi.json
 WALLET_KEYS=$WALLET.keys.json
 
+OWNER_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
+PAYLOAD=$($TONOS_CLI body --abi $GOSH_ABI deployRepository "{\"pubkey\":\"$OWNER_PUBKEY\",\"name\":\"$1\"}" \
+          | sed -n '/Message body:/ s/Message body: // p')
+
+THREE_EVERS=3000000000
+THIRTY_EVERS=30000000000
+VALUE=$THREE_EVERS
+
 CALLED="submitTransaction {\"dest\":\"$GOSH_ADDR\",\"value\":$VALUE,\"bounce\":false,\"allBalance\":false,\"payload\":\"$PAYLOAD\"}"
 $TONOS_CLI -u $NETWORK call $WALLET_ADDR $CALLED --abi $WALLET_ABI --sign $WALLET_KEYS > /dev/null || exit 1
-REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"pubkey\":\"$OWNER_PUBKEY\",\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 ./giver.sh $REPO_ADDR $THIRTY_EVERS
 
 echo ===================== REPO =====================

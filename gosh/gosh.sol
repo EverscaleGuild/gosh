@@ -14,7 +14,7 @@ import "Upgradable.sol";
 import "repository.sol";
 
 /* Root contract of gosh */
-contract Gosh is Upgradable{
+contract Gosh is Upgradable {
     string version = "0.0.1";
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
@@ -26,7 +26,7 @@ contract Gosh is Upgradable{
     TvmCell m_dataSnapshot;
 
     modifier onlyOwner {
-        require(msg.pubkey() == tvm.pubkey(),500);
+        require(msg.pubkey() == tvm.pubkey(), 500);
         _;
     }
 
@@ -34,26 +34,30 @@ contract Gosh is Upgradable{
         tvm.accept();
     }
 
-    function deployRepository(string name) view public {
-        require(msg.value > 2.6 ton, 100);
-        tvm.accept();
+    function _composeRepoStateInit(string name) internal view returns(TvmCell) {
         TvmBuilder b;
         b.store(address(this));
         b.store(name);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_RepositoryCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_RepositoryData);
-        TvmCell s1 = tvm.insertPubkey(_contractflex, msg.pubkey());
+        return tvm.buildStateInit(deployCode, m_RepositoryData);
+    }
+
+    function deployRepository(uint256 pubkey, string name) public view {
+        require(msg.value > 2.6 ton, 100);
+        require(pubkey > 0, 101);
+        tvm.accept();
+
+        TvmCell s1 = _composeRepoStateInit(name);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Repository {stateInit:s1, value: 0.4 ton, wid: 0} (msg.pubkey(), name);
+        new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(pubkey, name);
         Repository(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
         Repository(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         Repository(addr).setSnapshot{value: 0.2 ton}(m_codeSnapshot, m_dataSnapshot);
         Repository(addr).deployNewSnapshot{value:1.5 ton}("master");
     }
 
-    function onCodeUpgrade() internal override {
-    }
+    function onCodeUpgrade() internal override {}
 
     //Setters
 
@@ -84,15 +88,8 @@ contract Gosh is Upgradable{
     //Getters
 
     function getAddrRepository(string name) external view returns(address) {
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(name);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_RepositoryCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_RepositoryData);
-        TvmCell s1 = tvm.insertPubkey(_contractflex, msg.pubkey());
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        return addr;
+        TvmCell s1 = _composeRepoStateInit(name);
+        return address.makeAddrStd(0, tvm.hash(s1));
     }
 
     function getRepositoryCode() external view returns(TvmCell) {
