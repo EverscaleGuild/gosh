@@ -11,7 +11,7 @@
   }
   
   .navbar {
-    padding: 1rem 2rem;
+    padding: 1.25rem 1.5rem 1.25rem;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -29,35 +29,26 @@
         width: 100%;
       }
     }
+  }
 
-    .navbar-brand {
-      position: relative;
-      z-index: 1109;
-      padding-right: 1rem;
-      margin-right: 2rem;
-      padding-top: 0;
-      padding-bottom: 0;
-      cursor: default;
-      white-space: nowrap;
+  .logo {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $white;
+    display: block;
+    padding-right: 0.5rem; 
+    padding-left: 0; 
+    border-radius: .5rem;
+    color: $dark;
+    position: relative;
+    z-index: 99999;
 
-      a {
-        font-size: 1rem;
-        font-weight: 600;
-        color: $white;
-        display: block;
-        padding: 0.45rem; 
-        padding-right: 0.5rem; 
-        padding-left: 0; 
-        border-radius: .5rem;
-
-        svg {
-          vertical-align: middle;
-          margin-right: 5px;
-          transform: translateY(0px);
-          width: 80px;
-          height: auto;
-        }
-      }
+    svg {
+      vertical-align: middle;
+      margin-right: 5px;
+      transform: translateY(0px);
+      width: 28px;
+      height: auto;
     }
   }
 }

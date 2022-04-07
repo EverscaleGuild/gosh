@@ -18,17 +18,22 @@ body {
   color: $dark
 }
 
+table {
+  background-color: $white;;
+}
+
 a {
   color: $main;
+
   @include transition(0.15s);
 
   &:hover {
-    color: lighten($main, 5);
+    color: saturate(darken($main, 9), 20);
     @include transition(0.3s);
   }
 
   &, &:focus, &:active, &:hover {
-    text-decoration: none;
+    text-decoration: none !important;
   }
   &:focus, &:active, &:hover {
     @include transition(0.35s);
@@ -106,6 +111,12 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+
+  h6 {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
 }
 
 .modal-body {
@@ -122,7 +133,7 @@ main {
     flex-wrap: nowrap;
     position: absolute !important;
     top: 1rem;
-    right: 2rem;
+    right: 1.5rem;
 
     & > * {
       margin-left: .5rem;
@@ -194,5 +205,70 @@ main {
         }
       }
     }
+  }
+}
+
+th span {
+  font-weight: 600 !important;
+}
+
+.status-dot {
+  width: .6rem;
+  height: .6rem;
+  border-radius: .3rem;
+  margin: .5rem .5rem;
+  display: block;
+
+  &.success {
+    background: #05d105;
+    box-shadow1:#05d10588 0px 8px 14px 0px;
+  }
+
+  &.warning {
+    background: #ffdb4d;
+    box-shadow1:rgba(255, 204, 0, 0.25) 0px 8px 14px 0px;
+  }
+
+  &.error {
+    background: #fc3f1d;
+    box-shadow1:#fc3f1d80 0px 8px 14px 0px;
+  }
+
+  &.loading {
+    background: #c5c7d8;
+    box-shadow1:#9299bb52 0px 8px 14px 0px;
+    -webkit-animation: blink 1.25s -0.24s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
+            animation: blink 1.25s -0.24s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
+  }
+
+  @-webkit-keyframes blink {
+    0% {
+      opacity: 1; }
+    45% {
+      opacity: 0.3; }
+    80% {
+      opacity: 1; } }
+  @keyframes blink {
+    0% {
+      opacity: 1; }
+    45% {
+      opacity: 0.3; }
+    80% {
+      opacity: 1; } }
+}
+
+.loading {
+  opacity: 0.7;
+}
+
+.modal-overlay {
+  & > div:first-child {
+    background-color: #ffffff;
+  }
+
+  .close-button {
+    position: absolute;
+    right: 22px;
+    top: 18px;
   }
 }

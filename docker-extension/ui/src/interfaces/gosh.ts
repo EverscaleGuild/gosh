@@ -4,22 +4,24 @@ export type address = string;
 
 export type id = string;
 
-export type status = "success" | "warning" | "error" | "loading";
+export type Status = "success" | "warning" | "error" | "loading";
 
 export type DataColumn<T> = {
-  Header: string
-  accessor: keyof T
+  label: string
+  id: keyof T
+  numeric: boolean
+  disablePadding: boolean
   [key: string]: any
 }
 
 export type Image = {
-  validated: status
-  imageHash: number
+  validated: Status
+  imageHash: string
   buildProvider: string
   goshRootAddress: string
 }
 
 export type Container = Image & {
-  containerHash: number
+  containerHash: string
   containerName: string
 }

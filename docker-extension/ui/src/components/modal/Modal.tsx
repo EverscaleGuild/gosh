@@ -1,75 +1,65 @@
-import { FunctionComponent, ReactNode } from "react";
-import { Modal as ModalBootstrap } from "react-bootstrap";
+import { FunctionComponent, ReactNode, forwardRef } from "react";
+
+import Dialog from '@mui/material/Dialog';
+
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Slide from '@mui/material/Slide';
+import { TransitionProps } from '@mui/material/transitions';
 
 import styles from "./Modal.module.scss";
 import classnames from "classnames/bind";
 
-const cn = classnames.bind(styles);
+const cnb = classnames.bind(styles);
 
 interface ModalProps {
   show: boolean,
   onHide: () => void,
-  size?: "sm" | "lg" | "xl" | "fullscreen" | undefined,
   className?: string,
-  header?: ReactNode,
-  body?: ReactNode,
-  footer?: ReactNode,
   [key: string]: any
 }
 
-export const Modal: FunctionComponent<ModalProps> = ({
-  show,
-  onHide,
-  size,
-  className,
-  header,
-  body,
-  footer,
-  ...props
-}) => {
-  return (
-    <ModalBootstrap
-      show={show}
-      onHide={onHide}
-      fullscreen={true}
-      className={className}
-      {...props} >
-      {header && <ModalBootstrap.Header closeButton>
-        <ModalBootstrap.Title>{header}</ModalBootstrap.Title>
-      </ModalBootstrap.Header>}
-      <ModalBootstrap.Body>
-        {body}
-      </ModalBootstrap.Body>
-      {footer && <ModalBootstrap.Footer>
-        {footer}
-      </ModalBootstrap.Footer>}
-    </ModalBootstrap>
-  );
-};
 
-export const Overlay: FunctionComponent<ModalProps> = ({
+export const Overlay: FunctionComponent<ModalProps & {children: ReactNode}> = ({
   show,
   onHide,
-  size,
   className,
-  header,
-  body,
-  footer,
-  ...props
+  children
 }) => {
+  const Transition = forwardRef(function Transition(
+    props: TransitionProps & {
+      children: React.ReactElement;
+    },
+    ref: React.Ref<unknown>,
+  ) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
   return (
-    <Modal
-      show={show}
-      onHide={onHide}
-      fullscreen={true}
-      className={cn("modal-overlay",className)}
-      header={header}
-      body={body}
-      footer={footer}
-      {...props} 
-    />
+<>
+{show && <Dialog
+  fullScreen
+  hideBackdrop
+  keepMounted={false}
+  open={show}
+  onClose={onHide}
+  TransitionComponent={Transition}
+  className={cnb(className)}
+  closeAfterTransition
+>
+
+    <IconButton
+      edge="start"
+      color="inherit"
+      onClick={onHide}
+      aria-label="close"
+      className={cnb("close")}
+    >
+      <CloseIcon />
+    </IconButton>
+    <>{children}</>
+</Dialog>}</>
   );
 };
 
 
-export default Modal;
+export default Overlay;

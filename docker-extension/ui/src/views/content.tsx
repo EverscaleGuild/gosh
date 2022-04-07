@@ -1,9 +1,8 @@
 import { FunctionComponent, useState, useEffect, useRef } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import Container from '@mui/material/Container';
 import { useParams, useLocation } from "react-router-dom";
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-import 'bootstrap/js/dist/collapse.js'
 
 const Content: FunctionComponent<{title?: string, path?: string}> = ({title, path}) => {
   
@@ -31,14 +30,11 @@ const Content: FunctionComponent<{title?: string, path?: string}> = ({title, pat
   if (content === null ) return (<></>);
 
   return (
-    <Container fluid="lg">
-      <Row>
-        <Col lg={{ span: 10, offset: 1 }}>
+    <Container maxWidth={false}>
           <section className="content-wrapper" ref={ref}>
             <ReactMarkdown rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
           </section>
-        </Col>
-      </Row>
+
     </Container>
   );
 };
