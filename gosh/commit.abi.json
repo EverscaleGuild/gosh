@@ -7,6 +7,7 @@
 			"name": "constructor",
 			"inputs": [
 				{"name":"value0","type":"uint256"},
+				{"name":"nameRepo","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
 				{"name":"parent","type":"address"}
@@ -17,22 +18,9 @@
 		{
 			"name": "deployBlob",
 			"inputs": [
+				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBlob","type":"string"},
 				{"name":"fullBlob","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "destroy",
-			"inputs": [
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "destroyAll",
-			"inputs": [
 			],
 			"outputs": [
 			]
@@ -50,6 +38,15 @@
 			"name": "setStatus",
 			"inputs": [
 				{"name":"status","type":"bool"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setWallet",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -134,15 +131,18 @@
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"version","type":"string"},
-		{"name":"pubkey","type":"uint256"},
+		{"name":"_pubkey","type":"uint256"},
 		{"name":"_rootRepo","type":"address"},
 		{"name":"_nameCommit","type":"string"},
 		{"name":"_nameBranch","type":"string"},
 		{"name":"_commit","type":"string"},
+		{"name":"_name","type":"string"},
 		{"name":"check","type":"bool"},
 		{"name":"_blob","type":"address[]"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
+		{"name":"m_WalletCode","type":"cell"},
+		{"name":"m_WalletData","type":"cell"},
 		{"name":"_parent","type":"address"},
 		{"name":"_num","type":"uint128"},
 		{"name":"_isFinish","type":"bool"}

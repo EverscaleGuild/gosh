@@ -30,34 +30,28 @@
 			]
 		},
 		{
-			"name": "deleteBranch",
-			"inputs": [
-				{"name":"name","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deleteCommit",
-			"inputs": [
-				{"name":"parent","type":"address"},
-				{"name":"nameBranch","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "deployCommit",
 			"inputs": [
+				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"nameCommit","type":"string"},
-				{"name":"fullCommit","type":"string"}
+				{"name":"fullCommit","type":"string"},
+				{"name":"parent","type":"address"}
 			],
 			"outputs": [
 			]
 		},
 		{
 			"name": "setCommit",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setWallet",
 			"inputs": [
 				{"name":"code","type":"cell"},
 				{"name":"data","type":"cell"}
@@ -117,6 +111,14 @@
 			]
 		},
 		{
+			"name": "getRepoPubkey",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
 			"name": "getCommitAddr",
 			"inputs": [
 				{"name":"nameBranch","type":"string"},
@@ -144,13 +146,15 @@
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"version","type":"string"},
-		{"name":"pubkey","type":"uint256"},
+		{"name":"_pubkey","type":"uint256"},
 		{"name":"m_CommitCode","type":"cell"},
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_codeSnapshot","type":"cell"},
 		{"name":"m_dataSnapshot","type":"cell"},
+		{"name":"m_WalletCode","type":"cell"},
+		{"name":"m_WalletData","type":"cell"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_name","type":"string"},
 		{"name":"_Branches","type":"optional(cell)"}

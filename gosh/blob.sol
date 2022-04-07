@@ -35,10 +35,12 @@ contract Blob{
         _nameBranch = nameBranch;
         _blob = blob;
     }    
-    
+
+/*    
     function destroy(address addr) public onlyOwner {
         selfdestruct(addr);
     }
+*/
     
     //Setters
     

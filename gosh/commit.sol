@@ -11,6 +11,7 @@ pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
 import "blob.sol";
+import "goshwallet.sol";
 
 abstract contract ARepository {
     function deleteCommit(address parent, string nameBranch) external {}
@@ -19,15 +20,18 @@ abstract contract ARepository {
 /* Root contract of Commit */
 contract Commit {
     string version = "0.0.1";
-    uint256 pubkey;
+    uint256 _pubkey;
     address _rootRepo;
     string static _nameCommit;
     string _nameBranch;
     string _commit;
+    string _name;
     bool check = false;
     address[] _blob;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+    TvmCell m_WalletCode;
+    TvmCell m_WalletData;
     address _parent;
     uint128 _num = 1;
     bool _isFinish = false;
@@ -35,7 +39,7 @@ contract Commit {
     modifier onlyOwner {
         bool checkOwn = false;
         if (msg.sender == _rootRepo) { checkOwn = true; }
-        if (msg.pubkey() == pubkey) { checkOwn = true; }
+        if (msg.pubkey() == _pubkey) { checkOwn = true; }
         require(checkOwn, 500);
         _;
     }
@@ -45,11 +49,11 @@ contract Commit {
         _;
     }
 
-    constructor(uint256 value0, string nameBranch, string commit, address parent) public {
+    constructor(uint256 value0, string nameRepo, string nameBranch, string commit, address parent) public {
         _parent = parent;
         tvm.accept();
-
-        pubkey = value0;
+        _name = nameRepo;
+        _pubkey = value0;
         _rootRepo = msg.sender;
         _nameBranch = nameBranch;
         _commit = commit;
@@ -65,16 +69,31 @@ contract Commit {
         //return tvm.insertPubkey(stateInit, pubkey);
         return stateInit;
     }
+    
+    function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_WalletCode, b.toCell());
+        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_nameRepo: _name, _rootRepoPubkey: _pubkey, _pubkey: pubkey}});
+        return _contractflex;
+    }
 
-    function deployBlob(string nameBlob, string fullBlob) public {
+    function checkAccess(uint256 pubkey, address sender) internal view returns(bool) {
+        TvmCell s1 = _composeWalletStateInit(pubkey);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        return addr == sender;
+    }
+
+    function deployBlob(uint256 pubkey, string nameBlob, string fullBlob) public {
         tvm.accept();
-
+        require(checkAccess(pubkey, msg.sender));
         TvmCell s1 = _composeBlobStateInit(nameBlob);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Blob{stateInit: s1, value: 1 ton, wid: 0}(pubkey, _nameBranch, fullBlob);
         _blob.push(addr);
     }    
-    
+/*    
     function destroy() public onlyOwner {
         tvm.accept();
         _num -= 1;
@@ -94,6 +113,7 @@ contract Commit {
         _blob.pop();
         this.destroyAll();
     }
+*/
 
     //Setters
     function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
@@ -106,6 +126,12 @@ contract Commit {
     function setStatus(bool status) public  onlyOwner {
         tvm.accept();
         _isFinish = status;
+    }
+    
+    function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_WalletCode = code;
+        m_WalletData = data;
     }
 
     //Getters

@@ -22,6 +22,8 @@ contract Gosh is Upgradable {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+    TvmCell m_WalletCode;
+    TvmCell m_WalletData;
     TvmCell m_codeSnapshot;
     TvmCell m_dataSnapshot;
 
@@ -44,7 +46,7 @@ contract Gosh is Upgradable {
     }
 
     function deployRepository(uint256 pubkey, string name) public view {
-        require(msg.value > 2.6 ton, 100);
+        require(msg.value > 3 ton, 100);
         require(pubkey > 0, 101);
         tvm.accept();
 
@@ -52,6 +54,7 @@ contract Gosh is Upgradable {
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(pubkey, name);
         Repository(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
+        Repository(addr).setWallet{value: 0.2 ton}(m_WalletCode, m_WalletData);
         Repository(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         Repository(addr).setSnapshot{value: 0.2 ton}(m_codeSnapshot, m_dataSnapshot);
         Repository(addr).deployNewSnapshot{value:1.5 ton}("master");
@@ -83,6 +86,12 @@ contract Gosh is Upgradable {
         tvm.accept();
         m_codeSnapshot = code;
         m_dataSnapshot = data;
+    }
+    
+    function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_WalletCode = code;
+        m_WalletData = data;
     }
 
     //Getters
