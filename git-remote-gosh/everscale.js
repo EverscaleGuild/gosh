@@ -6,7 +6,7 @@ const { TonClient } = require('@eversdk/core')
 const { libNode } = require("@eversdk/lib-node")
 TonClient.useBinaryLibrary(libNode)
 
-const pathGoshArtifacts = '../gosh/gosh'
+const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
 
 let ES_CLIENT
