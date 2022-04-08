@@ -38,6 +38,15 @@
 			]
 		},
 		{
+			"name": "deleteCommit",
+			"inputs": [
+				{"name":"parent","type":"address"},
+				{"name":"nameBranch","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployCommit",
 			"inputs": [
 				{"name":"nameBranch","type":"string"},
@@ -102,6 +111,16 @@
 		{
 			"name": "getGoshAdress",
 			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "getCommitAddr",
+			"inputs": [
+				{"name":"nameBranch","type":"string"},
+				{"name":"nameCommit","type":"string"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}

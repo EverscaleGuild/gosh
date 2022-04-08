@@ -35,7 +35,7 @@ contract Repository is Upgradable{
     mapping(string => Item) _Branches;
 
     modifier onlyOwner {
-        require(msg.sender == _rootGosh,500);
+        require(msg.sender == _rootGosh, 500);
         _;
     }
 
@@ -47,7 +47,7 @@ contract Repository is Upgradable{
     }
 
     function deployNewSnapshot(string name) public onlyOwner {
-        require(msg.value > 1.4 ton, 100);
+        tvm.accept();
         TvmBuilder b;
         b.store(address(this));
         b.store(name);
@@ -81,23 +81,37 @@ contract Repository is Upgradable{
         _Branches[newname] = Item(newname, _Branches[fromname].value, getSnapshotAddr(newname));
     }
 
-    function deleteBranch(string name) public {
+    function deleteBranch(string name) public view {
         require(msg.value > 0.1 ton, 100);
-        delete _Branches[name];
+        require(_Branches.exists(name), 102);
+        Commit(_Branches[name].value).destroy{value: 0.1 ton, bounce: true, flag: 1}();
+    }
+    
+    function deleteCommit(address parent, string nameBranch) public {
+        require(msg.sender == _Branches[nameBranch].value,101);
+        if (parent == address.makeAddrNone()) { delete _Branches[nameBranch]; return; }
+        _Branches[nameBranch].value = parent;
+        Commit(parent).destroy{value: 0.1 ton, bounce: true, flag: 1}();
+    }
+
+    function _composeCommitStateInit(string _branch, string _commit) internal view returns(TvmCell) {
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(_branch);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_CommitCode, b.toCell());
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
+        // return tvm.insertPubkey(stateInit, msg.pubkey());
+        return stateInit;
     }
 
     function deployCommit(string nameBranch, string nameCommit, string fullCommit) public {
-        require(msg.value > 1.3 ton, 100);
+        tvm.accept();
         require(_Branches.exists(nameBranch));
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(nameBranch);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_CommitCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_CommitData);
-        TvmCell s1 = tvm.insertPubkey(_contractflex, msg.pubkey());
+
+        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit:s1, value: 1 ton, wid: 0} (msg.pubkey(), nameCommit, nameBranch, fullCommit, _Branches[nameBranch].value);
+        new Commit {stateInit: s1, value: 5 ton, wid: 0}(msg.pubkey(), nameBranch, fullCommit, _Branches[nameBranch].value);
         Commit(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
     }
@@ -146,5 +160,11 @@ contract Repository is Upgradable{
 
     function getGoshAdress() external view returns(address) {
         return _rootGosh;
+    }
+
+    function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
+        require(_Branches.exists(nameBranch));
+        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
+        return address.makeAddrStd(0, tvm.hash(s1));
     }
 }
