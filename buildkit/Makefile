@@ -36,7 +36,7 @@ image:
 	@echo ------------------------------------
 	@echo Build buildkit-gosh \(aka frontend\)
 	@echo ------------------------------------
-	${DOCKER} build -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
+	${DOCKER} buildx build -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
 	${DOCKER} push ${IMAGE_REFERENCE}:${VERSION}
 
 # Examples
