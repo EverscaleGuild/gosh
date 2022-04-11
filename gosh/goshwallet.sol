@@ -14,29 +14,38 @@ import "Upgradable.sol";
 import "gosh.sol";
 import "repository.sol";
 import "commit.sol";
+import "tag.sol";
 
 /* Root contract of gosh */
 contract GoshWallet is Upgradable {
     string version = "0.0.1";
-    address constant _rootgosh = address(0xf8b999fd3a21c0880a52ca50724b730534fd4dd5c2279686aa9816c242267796); //Need to update after deploy gosh
-    string static _nameRepo;
+    address _rootgosh;
+    address _goshdao;
     uint256 static _rootRepoPubkey;
-    uint256 static _pubkey;
+    uint256 static _pubkey;   
+    TvmCell m_RepositoryCode;
+    TvmCell m_RepositoryData;
+    TvmCell m_CommitCode;
+    TvmCell m_CommitData;
+    TvmCell m_BlobCode;
+    TvmCell m_BlobData;
 
     modifier onlyOwner {
         require(msg.pubkey() == _pubkey, 500);
         _;
     }
 
-    constructor() public {
+    constructor(address gosh) public {
         tvm.accept();
+        _rootgosh = gosh;
+        _goshdao = msg.sender;
     }
 
-    function deployRepository() public view {
+    function deployRepository(string nameRepo) public view {
         require(msg.value > 3 ton, 100);
         require(msg.pubkey() == _rootRepoPubkey, 121);
         tvm.accept();
-        Gosh(_rootgosh).deployRepository{value: 2.8 ton}(_rootRepoPubkey, _nameRepo);
+        Gosh(_rootgosh).deployRepository{value: 2.8 ton}(_rootRepoPubkey, nameRepo, _goshdao);
     }
     
     function deployCommit(address repo, string nameBranch, string nameCommit, string fullCommit, address parent) public view onlyOwner {
@@ -48,19 +57,42 @@ contract GoshWallet is Upgradable {
         tvm.accept();
         Commit(commit).deployBlob{value: 2.8 ton}(_pubkey, nameBlob, fullBlob);
     }
+    
+    function deployTag(address repo, string nametag, string nameCommit, address commit) public view onlyOwner {
+        tvm.accept();
+        Repository(repo).deployTag{value: 2.8 ton}(_pubkey, nametag, nameCommit, commit);
+    }
 
     function onCodeUpgrade() internal override {}
 
     //Setters
+    
+    function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_RepositoryCode = code;
+        m_RepositoryData = data;
+    }
+
+    function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_CommitCode = code;
+        m_CommitData = data;
+    }
+
+    function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_BlobCode = code;
+        m_BlobData = data;
+    }
 
     //Getters
 
-    function getAddrRootGosh() external pure returns(address) {
+    function getAddrRootGosh() external view returns(address) {
         return _rootgosh;
     }
 
-    function getRepositoryName() external view returns(string) {
-        return _nameRepo;
+    function getAddrDao() external view returns(address) {
+        return _goshdao;
     }
 
     function getRootPubkey() external view returns(uint256) {

@@ -22,6 +22,7 @@ contract Commit {
     string version = "0.0.1";
     uint256 _pubkey;
     address _rootRepo;
+    address _goshdao;
     string static _nameCommit;
     string _nameBranch;
     string _commit;
@@ -33,6 +34,7 @@ contract Commit {
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
     address _parent;
+    address _rootGosh;
     uint128 _num = 1;
     bool _isFinish = false;
 
@@ -49,10 +51,12 @@ contract Commit {
         _;
     }
 
-    constructor(uint256 value0, string nameRepo, string nameBranch, string commit, address parent) public {
+    constructor(address goshdao, address rootGosh, uint256 value0, string nameRepo, string nameBranch, string commit, address parent) public {
         _parent = parent;
         tvm.accept();
         _name = nameRepo;
+        _rootGosh = rootGosh;
+        _goshdao = goshdao;
         _pubkey = value0;
         _rootRepo = msg.sender;
         _nameBranch = nameBranch;
@@ -72,10 +76,11 @@ contract Commit {
     
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
         TvmBuilder b;
-        b.store(address(this));
+        b.store(_goshdao);
+        b.store(_rootGosh);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_WalletCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_nameRepo: _name, _rootRepoPubkey: _pubkey, _pubkey: pubkey}});
+        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_rootRepoPubkey: _pubkey, _pubkey: pubkey}});
         return _contractflex;
     }
 

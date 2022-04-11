@@ -14,7 +14,17 @@
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"name","type":"string"},
+				{"name":"goshdao","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployDao",
+			"inputs": [
+				{"name":"name","type":"string"},
+				{"name":"root_pubkey","type":"uint256"}
 			],
 			"outputs": [
 			]
@@ -57,6 +67,24 @@
 		},
 		{
 			"name": "setWallet",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setDao",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTag",
 			"inputs": [
 				{"name":"code","type":"cell"},
 				{"name":"data","type":"cell"}
@@ -124,6 +152,10 @@
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_codeSnapshot","type":"cell"},
-		{"name":"m_dataSnapshot","type":"cell"}
+		{"name":"m_dataSnapshot","type":"cell"},
+		{"name":"m_codeDao","type":"cell"},
+		{"name":"m_dataDao","type":"cell"},
+		{"name":"m_codeTag","type":"cell"},
+		{"name":"m_dataTag","type":"cell"}
 	]
 }

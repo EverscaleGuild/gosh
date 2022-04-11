@@ -12,6 +12,7 @@ pragma AbiHeader pubkey;
 
 import "Upgradable.sol";
 import "repository.sol";
+import "goshdao.sol";
 
 /* Root contract of gosh */
 contract Gosh is Upgradable {
@@ -26,6 +27,10 @@ contract Gosh is Upgradable {
     TvmCell m_WalletData;
     TvmCell m_codeSnapshot;
     TvmCell m_dataSnapshot;
+    TvmCell m_codeDao;
+    TvmCell m_dataDao;
+    TvmCell m_codeTag;
+    TvmCell m_dataTag;
 
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 500);
@@ -45,19 +50,40 @@ contract Gosh is Upgradable {
         return tvm.buildStateInit(deployCode, m_RepositoryData);
     }
 
-    function deployRepository(uint256 pubkey, string name) public view {
+    function deployRepository(uint256 pubkey, string name, address goshdao) public view {
         require(msg.value > 3 ton, 100);
         require(pubkey > 0, 101);
         tvm.accept();
-
         TvmCell s1 = _composeRepoStateInit(name);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(pubkey, name);
+        new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(pubkey, name, goshdao);
         Repository(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
         Repository(addr).setWallet{value: 0.2 ton}(m_WalletCode, m_WalletData);
         Repository(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
+        Repository(addr).setTag{value: 0.2 ton}(m_codeTag, m_dataTag);
         Repository(addr).setSnapshot{value: 0.2 ton}(m_codeSnapshot, m_dataSnapshot);
         Repository(addr).deployNewSnapshot{value:1.5 ton}("master");
+    }
+    
+    function _composeDaoStateInit(string name) internal view returns(TvmCell) {
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(name);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_codeDao, b.toCell());
+        return tvm.buildStateInit(deployCode, m_dataDao);
+    }
+    
+    function deployDao(string name, uint256 root_pubkey) public view {
+        require(msg.value > 3 ton, 100);
+        require(root_pubkey > 0, 101);
+        tvm.accept();
+        TvmCell s1 = _composeDaoStateInit(name);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        new GoshDao {stateInit: s1, value: 0.4 ton, wid: 0}(address(this), root_pubkey, name);
+        GoshDao(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
+        GoshDao(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
+        GoshDao(addr).setRepository{value: 0.2 ton}(m_RepositoryCode, m_RepositoryData);
     }
 
     function onCodeUpgrade() internal override {}
@@ -92,6 +118,18 @@ contract Gosh is Upgradable {
         tvm.accept();
         m_WalletCode = code;
         m_WalletData = data;
+    }
+    
+    function setDao(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_codeDao = code;
+        m_dataDao = data;
+    }
+    
+    function setTag(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_codeTag = code;
+        m_dataTag = data;
     }
 
     //Getters

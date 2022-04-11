@@ -14,6 +14,7 @@ import "Upgradable.sol";
 import "commit.sol";
 import "snapshot.sol";
 import "goshwallet.sol";
+import "tag.sol";
 
 /* Root contract of Repository */
 struct Item {
@@ -33,8 +34,11 @@ contract Repository is Upgradable{
     TvmCell m_dataSnapshot;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
+    TvmCell m_codeTag;
+    TvmCell m_dataTag;
     address _rootGosh;
     string _name;
+    address _goshdao;
     mapping(string => Item) _Branches;
 
     modifier onlyOwner {
@@ -42,10 +46,11 @@ contract Repository is Upgradable{
         _;
     }
 
-    constructor(uint256 value0, string name) public {
+    constructor(uint256 value0, string name, address goshdao) public {
         tvm.accept();
         _pubkey = value0;
         _rootGosh = msg.sender;
+        _goshdao = goshdao;
         _name = name;
     }
 
@@ -112,10 +117,11 @@ contract Repository is Upgradable{
     
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
         TvmBuilder b;
-        b.store(address(this));
+        b.store(_goshdao);
+        b.store(_rootGosh);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_WalletCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_nameRepo: _name, _rootRepoPubkey: _pubkey, _pubkey: pubkey}});
+        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_rootRepoPubkey: _pubkey, _pubkey: pubkey}});
         return _contractflex;
     }
 
@@ -132,16 +138,34 @@ contract Repository is Upgradable{
         require(_Branches[nameBranch].value == parent, 120);
         TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 5 ton, wid: 0}(_pubkey, _name, nameBranch, fullCommit, _Branches[nameBranch].value);
+        new Commit {stateInit: s1, value: 5 ton, wid: 0}(_goshdao, _rootGosh, _pubkey, _name, nameBranch, fullCommit, _Branches[nameBranch].value);
         Commit(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         Commit(addr).setWallet{value: 0.2 ton}(m_WalletCode, m_WalletData);
         _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
+    }
+    
+    function deployTag(uint256 pubkey, string nametag, string nameCommit, address commit) public view {
+        tvm.accept();
+        require(checkAccess(pubkey, msg.sender));
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(nametag);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_codeTag, b.toCell());
+        TvmCell s1 = tvm.buildStateInit(deployCode, m_dataTag);
+        new Tag {stateInit: s1, value: 5 ton, wid: 0}(nametag, nameCommit, commit);
     }
 
     function onCodeUpgrade() internal override {
     }
 
     //Setters
+    
+    function setTag(TvmCell code, TvmCell data) public  onlyOwner {
+        tvm.accept();
+        m_codeTag = code;
+        m_dataTag = data;
+    }
 
     function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
         tvm.accept();

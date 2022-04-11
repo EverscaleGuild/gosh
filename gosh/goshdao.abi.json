@@ -6,6 +6,9 @@
 		{
 			"name": "constructor",
 			"inputs": [
+				{"name":"rootgosh","type":"address"},
+				{"name":"pubkey","type":"uint256"},
+				{"name":"name","type":"string"}
 			],
 			"outputs": [
 			]
@@ -14,8 +17,34 @@
 			"name": "deployWallet",
 			"inputs": [
 				{"name":"pubkeyroot","type":"uint256"},
-				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"pubkey","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setRepository",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setCommit",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setBlob",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -33,8 +62,7 @@
 			"name": "getAddrWallet",
 			"inputs": [
 				{"name":"pubkeyroot","type":"uint256"},
-				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"pubkey","type":"uint256"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}
@@ -46,6 +74,14 @@
 			],
 			"outputs": [
 				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getNameDao",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
 			]
 		},
 		{
@@ -67,6 +103,15 @@
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"version","type":"string"},
 		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"}
+		{"name":"m_WalletData","type":"cell"},
+		{"name":"m_RepositoryCode","type":"cell"},
+		{"name":"m_RepositoryData","type":"cell"},
+		{"name":"m_CommitCode","type":"cell"},
+		{"name":"m_CommitData","type":"cell"},
+		{"name":"m_BlobCode","type":"cell"},
+		{"name":"m_BlobData","type":"cell"},
+		{"name":"_rootgosh","type":"address"},
+		{"name":"_rootpubkey","type":"uint256"},
+		{"name":"_nameDao","type":"string"}
 	]
 }

@@ -7,7 +7,8 @@
 			"name": "constructor",
 			"inputs": [
 				{"name":"value0","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"name","type":"string"},
+				{"name":"goshdao","type":"address"}
 			],
 			"outputs": [
 			]
@@ -37,6 +38,26 @@
 				{"name":"nameCommit","type":"string"},
 				{"name":"fullCommit","type":"string"},
 				{"name":"parent","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployTag",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"},
+				{"name":"nametag","type":"string"},
+				{"name":"nameCommit","type":"string"},
+				{"name":"commit","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTag",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -155,8 +176,11 @@
 		{"name":"m_dataSnapshot","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
+		{"name":"m_codeTag","type":"cell"},
+		{"name":"m_dataTag","type":"cell"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_name","type":"string"},
+		{"name":"_goshdao","type":"address"},
 		{"name":"_Branches","type":"optional(cell)"}
 	]
 }
