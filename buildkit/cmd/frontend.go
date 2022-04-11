@@ -160,7 +160,9 @@ func frontendBuild() client.BuildFunc {
 		}
 
 		labels := filter(opts, labelPrefix)
-		labels["WALLET_PUBLIC"] = wallet_public
+		if _, ok := labels["WALLET_PUBLIC"]; !ok {
+			labels["WALLET_PUBLIC"] = wallet_public
+		}
 
 		env := []string{
 			"PATH=" + system.DefaultPathEnv(def.Constraints.Platform.OS),
