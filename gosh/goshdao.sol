@@ -67,18 +67,21 @@ contract GoshDao is Upgradable {
     //Setters
     
     function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
+        require(_rootgosh == msg.sender, 101);
         tvm.accept();
         m_RepositoryCode = code;
         m_RepositoryData = data;
     }
 
     function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
+        require(_rootgosh == msg.sender, 101);
         tvm.accept();
         m_CommitCode = code;
         m_CommitData = data;
     }
 
     function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
+        require(_rootgosh == msg.sender, 101);
         tvm.accept();
         m_BlobCode = code;
         m_BlobData = data;
@@ -86,6 +89,7 @@ contract GoshDao is Upgradable {
 
 
     function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
+        require(_rootgosh == msg.sender, 101);
         tvm.accept();
         m_WalletCode = code;
         m_WalletData = data;
