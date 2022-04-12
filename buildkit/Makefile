@@ -4,7 +4,7 @@ IMAGE_REFERENCE = ${DOCKER_REG}/goshfile
 DOCKER          = docker
 
 
-all: image build-example run-example save-example
+all: image build-example run-example
 
 .PHONE: test
 test:
@@ -36,8 +36,7 @@ image:
 	@echo ------------------------------------
 	@echo Build buildkit-gosh \(aka frontend\)
 	@echo ------------------------------------
-	${DOCKER} buildx build -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
-	${DOCKER} push ${IMAGE_REFERENCE}:${VERSION}
+	${DOCKER} buildx build --push -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
 
 # Examples
 .PHONE: build-example
@@ -66,6 +65,6 @@ public_image:
 	@echo ------------------------------------
 	@echo Build and push public image
 	@echo ------------------------------------
-	go mod vendor
-	${DOCKER} build -f Dockerfile -t teamgosh/goshfile:${VERSION} .
-	${DOCKER} push teamgosh/goshfile:${VERSION}
+	${DOCKER} buildx create --use
+	${DOCKER} buildx build --push --platform linux/amd64,linux/arm64 -f Dockerfile -t teamgosh/goshfile:${VERSION} .
+	${DOCKER} buildx rm

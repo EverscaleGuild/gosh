@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/
     apt-get update -qy
     apt-get install git -qy
 EOF
+ENTRYPOINT [ "git" ]
 
 WORKDIR /app
 COPY gosh gosh

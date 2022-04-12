@@ -11,8 +11,11 @@ case "$1" in
     build)
         docker buildx build \
             --push \
+            --label WALLET_PUBLIC="$WALLET_PUBLIC" \
             -f goshfile.yaml \
             -t "$IMAGE" .
+
+        docker inspect --format '{{ json .Config }}' "$IMAGE"
         ;;
     buildctl)
         buildctl --addr=docker-container://buildkitd build \
