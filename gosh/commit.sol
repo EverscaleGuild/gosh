@@ -75,26 +75,6 @@ contract Commit {
         _blob.push(addr);
     }    
     
-    function destroy() public onlyOwner {
-        tvm.accept();
-        _num -= 1;
-        if (_num == 0) { this.destroyAll(); }
-        else { ARepository(_rootRepo).deleteCommit{value: 0.1 ton, bounce: true, flag: 1}(address.makeAddrNone(), _nameBranch); }
-    }
-    
-    function destroyAll() public {
-        require(msg.sender == address(this));
-        tvm.accept();
-        if (_blob.length == 0) { 
-            ARepository(_rootRepo).deleteCommit{value: 0.1 ton, bounce: true, flag: 1}(_parent, _nameBranch);
-            selfdestruct(_rootRepo); 
-            return;
-        }
-        Blob(_blob[_blob.length - 1]).destroy{value: 0.1 ton, bounce: true, flag: 1}(_rootRepo);
-        _blob.pop();
-        this.destroyAll();
-    }
-
     //Setters
     function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
         tvm.accept();

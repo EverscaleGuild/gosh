@@ -36,10 +36,6 @@ contract Blob{
         _blob = blob;
     }    
     
-    function destroy(address addr) public onlyOwner {
-        selfdestruct(addr);
-    }
-    
     //Setters
     
     //Getters

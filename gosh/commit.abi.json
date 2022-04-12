@@ -24,20 +24,6 @@
 			]
 		},
 		{
-			"name": "destroy",
-			"inputs": [
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "destroyAll",
-			"inputs": [
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "setBlob",
 			"inputs": [
 				{"name":"code","type":"cell"},

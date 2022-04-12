@@ -75,25 +75,18 @@ contract Repository is Upgradable{
     }
 
     function deployBranch(string newname, string fromname)  public {
-        require(msg.value > 0.2 ton, 100);
+        require(msg.value > 1.5 ton, 100);
         if (_Branches.exists(newname)) { return; }
         if (_Branches.exists(fromname) == false) { return; }
+        deployNewSnapshot(newname);
         _Branches[newname] = Item(newname, _Branches[fromname].value, getSnapshotAddr(newname));
     }
 
-    function deleteBranch(string name) public view {
+    function deleteBranch(string name) public {
         require(msg.value > 0.1 ton, 100);
-        require(_Branches.exists(name), 102);
-        Commit(_Branches[name].value).destroy{value: 0.1 ton, bounce: true, flag: 1}();
+        delete _Branches[name];
     }
     
-    function deleteCommit(address parent, string nameBranch) public {
-        require(msg.sender == _Branches[nameBranch].value,101);
-        if (parent == address.makeAddrNone()) { delete _Branches[nameBranch]; return; }
-        _Branches[nameBranch].value = parent;
-        Commit(parent).destroy{value: 0.1 ton, bounce: true, flag: 1}();
-    }
-
     function _composeCommitStateInit(string _branch, string _commit) internal view returns(TvmCell) {
         TvmBuilder b;
         b.store(address(this));
