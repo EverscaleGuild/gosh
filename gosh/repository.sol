@@ -62,6 +62,23 @@ contract Repository is Upgradable{
         _Branches["master"] = (Item("master", address.makeAddrNone(), addr));
     }
 
+    function deployNewSnapshotPrivate (string name) private {
+        tvm.accept();
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(name);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_codeSnapshot, b.toCell());
+        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_dataSnapshot);
+        TvmCell s1 = tvm.insertPubkey(_contractflex, pubkey);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        new Snapshot{stateInit:s1, value: 1 ton, wid: 0}(pubkey, address(this), name);
+        Snapshot(addr).setSnapshotCode{value: 0.1 ton, bounce: true, flag: 1}(m_codeSnapshot, m_dataSnapshot);
+        Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}("");
+        _Branches["master"] = (Item("master", address.makeAddrNone(), addr));
+    }
+
+
     function getSnapshotAddr(string name) private view returns(address) {
         TvmBuilder b;
         b.store(address(this));
@@ -78,7 +95,7 @@ contract Repository is Upgradable{
         require(msg.value > 1.5 ton, 100);
         if (_Branches.exists(newname)) { return; }
         if (_Branches.exists(fromname) == false) { return; }
-        deployNewSnapshot(newname);
+        deployNewSnapshotPrivate(newname);
         _Branches[newname] = Item(newname, _Branches[fromname].value, getSnapshotAddr(newname));
     }
 
