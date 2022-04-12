@@ -62,7 +62,7 @@ contract Repository is Upgradable{
         _Branches["master"] = (Item("master", address.makeAddrNone(), addr));
     }
 
-    function deployNewSnapshotPrivate (string name) private {
+    function deployNewSnapshotPrivate (string name) private view {
         tvm.accept();
         TvmBuilder b;
         b.store(address(this));
@@ -75,7 +75,6 @@ contract Repository is Upgradable{
         new Snapshot{stateInit:s1, value: 1 ton, wid: 0}(pubkey, address(this), name);
         Snapshot(addr).setSnapshotCode{value: 0.1 ton, bounce: true, flag: 1}(m_codeSnapshot, m_dataSnapshot);
         Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}("");
-        _Branches["master"] = (Item("master", address.makeAddrNone(), addr));
     }
 
 
