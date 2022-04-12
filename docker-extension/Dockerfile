@@ -1,10 +1,4 @@
-FROM node:16.14-alpine
-ARG content_signature_local_dir
-
-LABEL org.opencontainers.image.title="GoshDockerExtension" \
-    org.opencontainers.image.description="Gosh Docker Extension description stub." \
-    org.opencontainers.image.vendor="Tonlabs" \
-    com.docker.desktop.extension.api.version="1.0.0-beta.1"
+FROM node:16.14-alpine AS build
 
 RUN apk --no-cache add curl coreutils docker yarn \
     ca-certificates file iptables libc6-compat libgcc libstdc++ wget && \
@@ -13,13 +7,26 @@ RUN apk --no-cache add curl coreutils docker yarn \
 
 COPY --chown=root ./ui/ /ui-build/
 
-RUN cd /ui-build && yarn install --silent && npm run build --silent && mv /ui-build/build /ui
+RUN cd /ui-build && yarn install --silent && npm run build --silent
 
+FROM node:16.14-alpine
+ARG content_signature_local_dir
+
+LABEL org.opencontainers.image.title="Gosh" \
+    org.opencontainers.image.description="Build your decentralized and secure software supply chain with Docker and Git On-chain Source Holder" \
+    org.opencontainers.image.vendor="EverX" \
+    com.docker.desktop.extension.api.version=">=0.2.1" \
+    com.docker.desktop.extension.icon="http://icons.gosh.run/Gosh%20icon%20-%20black.svg"
+
+COPY --from=build /ui-build/build /ui 
 COPY metadata.json /
 COPY ./vm/docker-compose.yaml /
 COPY ./vm/commands/ /command/
 COPY $content_signature_local_dir /command/
 
-RUN cd /command/content-signature/ && npm install && npm -g install typescript && tsc
+RUN ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2 && \
+    cd /command/content-signature/ && npm install --production
+
+COPY icon.svg /
 
 CMD [ "sleep", "infinity" ]

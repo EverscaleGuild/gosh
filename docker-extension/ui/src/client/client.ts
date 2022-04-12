@@ -28,15 +28,15 @@ export class DockerClient {
    * Get containers list
    **/
   static async getContainers(): Promise<Array<Container>> {
-    logger.log(`Calling getContainers...\n`);
     const containers = await window.ddClient.docker.listContainers();
     const containersViewModel:Array<Container> = [];
     for (var i=0; i < containers.length; i++) {
       const container = containers[i];
       const containerName = container.Names.length > 0 ? container.Names[0] : container.Id;
       const [isSigned, buildProvider] = await DockerClient.getBuildProvider(container);
+      const digestId = await DockerClient.getContainerDigestId(container);
       const verificationStatus = isSigned ? 
-        await DockerClient.getImageStatus(buildProvider, container.ImageID)
+        await DockerClient.getImageStatus(buildProvider, digestId)
         : UNSIGNED_STATUS;
       containersViewModel.push({
         validated: verificationStatus,
@@ -50,18 +50,41 @@ export class DockerClient {
     return containersViewModel;
   }
 
+  static readImageDigest(image: any): string {
+    if (!!image.RepoDigests && image.RepoDigests.length > 0) {
+      const digest = image.RepoDigests[0];
+      if (digest.includes('@')) {
+        return digest.split('@')[1];
+      } else {
+        return digest;
+      }
+    } else {
+      return "";
+    }
+  }
+
+  static async getContainerDigestId(container: any): Promise<string> {
+    const images = await window.ddClient.docker.listImages();
+    for (let i = 0; i < images.length; i++) {
+      if (images[i].Id == container.ImageID) {
+        return DockerClient.readImageDigest(images[i]);
+      }
+    }
+    return "";
+  }
+
   /**
    * Get containers list
    **/
   static async getImages(): Promise<Array<Image>> {
-    logger.log(`Calling getImages...\n`);
     const images = await window.ddClient.docker.listImages();
     const imagesViewModel = [];
     for (var i=0; i < images.length; i++) {
       const image = images[i];
       const [isSigned, buildProvider] = await DockerClient.getBuildProvider(image);
+      const digestId = DockerClient.readImageDigest(image);
       const verificationStatus = isSigned ? 
-        await DockerClient.getImageStatus(buildProvider, image.Id)
+        await DockerClient.getImageStatus(buildProvider, digestId)
         : UNSIGNED_STATUS;
       imagesViewModel.push({
         validated: verificationStatus,
@@ -77,7 +100,7 @@ export class DockerClient {
    * Get image state
    **/
   static async getImageStatus(buildProviderPublicKey: string, imageHash: string): Promise<any> {
-    logger.log(`Calling getImageStatus...\n`);
+    logger.log(`Calling getImageStatus: pubkey - ${buildProviderPublicKey}  digest: ${imageHash}...\n`);
     try {
       const result = await window.ddClient.extension.vm.cli.exec(
         COMMAND_VALIDATE_IMAGE_SIGNATURE,
