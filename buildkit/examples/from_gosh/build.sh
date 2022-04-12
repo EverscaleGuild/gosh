@@ -18,7 +18,7 @@ echo
 docker run --rm -ti \
     -v "$(pwd)":/root \
     teamgosh/git-remote-gosh \
-    git clone \
+    clone \
     gosh::net.ton.dev://0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/gosh/example \
     example1
 
@@ -77,6 +77,11 @@ docker run --rm teamgosh/sign-cli sign \
 read -r -p "Check? [y/N]
 " y
 [[ ! "$y" = [yY]* ]] && exit 1
+
+echo
+echo Check "$TARGET_IMAGE"@"$TARGET_IMAGE_SHA"
+echo
+echo
 
 docker run --rm teamgosh/sign-cli check \
     -n "$NETWORKS" \
