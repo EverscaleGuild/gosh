@@ -27,8 +27,8 @@ echo Clone DONE
 echo
 echo
 
-read -r -p "Continue? [y/N]
-" y
+
+read -r -p "Build. Continue? [y/N] : " y
 [[ ! "$y" = [yY]* ]] && exit 1
 
 echo
@@ -37,35 +37,34 @@ echo
 echo
 
 docker buildx build \
-    --push \
     -f example1/goshfile.yaml \
-    --label WALLET_PUBLIC="$WALLET_PUBLIC" \
     -t $TARGET_IMAGE \
+    --label WALLET_PUBLIC="$WALLET_PUBLIC" \
+    --push \
     example1
+
+docker pull "$TARGET_IMAGE"
+TARGET_IMAGE_SHA=$(docker inspect --format='{{index (split (index .RepoDigests 0) "@") 1}}' $TARGET_IMAGE)
+
+if [[ -z "$TARGET_IMAGE_SHA" ]]; then
+    echo Error: Target image hash not found
+    exit
+fi
 
 echo
 echo Build and push DONE
+echo Image: "$TARGET_IMAGE"@"$TARGET_IMAGE_SHA"
 echo
 echo
 
-read -r -p "Continue? [y/N]
-" y
+
+read -r -p "Sign. Continue? [y/N] : " y
 [[ ! "$y" = [yY]* ]] && exit 1
 
 echo
-echo Sign "$TARGET_IMAGE"
+echo Sign "$TARGET_IMAGE"@"$TARGET_IMAGE_SHA"
+echo with public key "$WALLET_PUBLIC"
 echo
-echo
-
-docker pull "$TARGET_IMAGE"
-
-TARGET_IMAGE_SHA=$(docker inspect --format='{{index (split (index .RepoDigests 0) "@") 1}}' $TARGET_IMAGE)
-echo TARGET_IMAGE_SHA=\'"$TARGET_IMAGE_SHA"\'
-
-if [[ -z "$TARGET_IMAGE_SHA" ]]; then
-    echo Target image hash not found
-    exit
-fi
 
 docker run --rm teamgosh/sign-cli sign \
     -n "$NETWORKS" \
@@ -74,16 +73,23 @@ docker run --rm teamgosh/sign-cli sign \
     "$WALLET_SECRET" \
     "$TARGET_IMAGE_SHA"
 
-read -r -p "Check? [y/N]
-" y
+echo
+echo Image signed
+echo
+echo
+
+read -r -p "Check. Continue? [y/N] : " y
 [[ ! "$y" = [yY]* ]] && exit 1
 
 echo
 echo Check "$TARGET_IMAGE"@"$TARGET_IMAGE_SHA"
-echo
-echo
+echo -n ...
 
 docker run --rm teamgosh/sign-cli check \
     -n "$NETWORKS" \
     "$WALLET_PUBLIC" \
     "$TARGET_IMAGE_SHA"
+
+echo
+echo DONE
+echo
