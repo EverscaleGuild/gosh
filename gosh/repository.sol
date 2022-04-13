@@ -103,10 +103,9 @@ contract Repository is Upgradable{
         delete _Branches[name];
     }
     
-    function _composeCommitStateInit(string _branch, string _commit) internal view returns(TvmCell) {
+    function _composeCommitStateInit(string _commit) internal view returns(TvmCell) {
         TvmBuilder b;
         b.store(address(this));
-        b.store(_branch);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_CommitCode, b.toCell());
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
@@ -118,7 +117,7 @@ contract Repository is Upgradable{
         tvm.accept();
         require(_Branches.exists(nameBranch));
 
-        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
+        TvmCell s1 = _composeCommitStateInit(nameCommit);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 5 ton, wid: 0}(msg.pubkey(), nameBranch, fullCommit, _Branches[nameBranch].value);
         Commit(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
@@ -171,9 +170,8 @@ contract Repository is Upgradable{
         return _rootGosh;
     }
 
-    function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
-        require(_Branches.exists(nameBranch));
-        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
+    function getCommitAddr(string nameCommit) external view returns(address)  {
+        TvmCell s1 = _composeCommitStateInit(nameCommit);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
 }
