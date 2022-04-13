@@ -7,7 +7,6 @@
 			"name": "constructor",
 			"inputs": [
 				{"name":"value0","type":"uint256"},
-				{"name":"nameCommit","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
 				{"name":"parent","type":"address"}
@@ -19,7 +18,7 @@
 			"name": "deployBlob",
 			"inputs": [
 				{"name":"nameBlob","type":"string"},
-				{"name":"fullblob","type":"string"}
+				{"name":"fullBlob","type":"string"}
 			],
 			"outputs": [
 			]
@@ -29,6 +28,14 @@
 			"inputs": [
 				{"name":"code","type":"cell"},
 				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setStatus",
+			"inputs": [
+				{"name":"status","type":"bool"}
 			],
 			"outputs": [
 			]
@@ -72,9 +79,39 @@
 			"outputs": [
 				{"name":"value0","type":"address"}
 			]
+		},
+		{
+			"name": "getCommit",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"repo","type":"address"},
+				{"name":"branch","type":"string"},
+				{"name":"sha","type":"string"},
+				{"name":"parent","type":"address"},
+				{"name":"content","type":"string"}
+			]
+		},
+		{
+			"name": "getBlobAddr",
+			"inputs": [
+				{"name":"nameBlob","type":"string"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "getStatus",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"bool"}
+			]
 		}
 	],
 	"data": [
+		{"key":1,"name":"_nameCommit","type":"string"}
 	],
 	"events": [
 	],
@@ -92,6 +129,8 @@
 		{"name":"_blob","type":"address[]"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
-		{"name":"_parent","type":"address"}
+		{"name":"_parent","type":"address"},
+		{"name":"_num","type":"uint128"},
+		{"name":"_isFinish","type":"bool"}
 	]
 }

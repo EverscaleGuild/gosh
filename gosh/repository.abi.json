@@ -108,6 +108,16 @@
 			]
 		},
 		{
+			"name": "getCommitAddr",
+			"inputs": [
+				{"name":"nameBranch","type":"string"},
+				{"name":"nameCommit","type":"string"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
 			"name": "upgrade",
 			"inputs": [
 				{"name":"state","type":"cell"}

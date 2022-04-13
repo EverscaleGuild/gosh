@@ -35,7 +35,7 @@ contract Repository is Upgradable{
     mapping(string => Item) _Branches;
 
     modifier onlyOwner {
-        require(msg.sender == _rootGosh,500);
+        require(msg.sender == _rootGosh, 500);
         _;
     }
 
@@ -47,7 +47,7 @@ contract Repository is Upgradable{
     }
 
     function deployNewSnapshot(string name) public onlyOwner {
-        require(msg.value > 1.4 ton, 100);
+        tvm.accept();
         TvmBuilder b;
         b.store(address(this));
         b.store(name);
@@ -62,6 +62,22 @@ contract Repository is Upgradable{
         _Branches["master"] = (Item("master", address.makeAddrNone(), addr));
     }
 
+    function deployNewSnapshotPrivate (string name) private view {
+        tvm.accept();
+        TvmBuilder b;
+        b.store(address(this));
+        b.store(name);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_codeSnapshot, b.toCell());
+        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_dataSnapshot);
+        TvmCell s1 = tvm.insertPubkey(_contractflex, pubkey);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        new Snapshot{stateInit:s1, value: 1 ton, wid: 0}(pubkey, address(this), name);
+        Snapshot(addr).setSnapshotCode{value: 0.1 ton, bounce: true, flag: 1}(m_codeSnapshot, m_dataSnapshot);
+        Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}("");
+    }
+
+
     function getSnapshotAddr(string name) private view returns(address) {
         TvmBuilder b;
         b.store(address(this));
@@ -75,9 +91,10 @@ contract Repository is Upgradable{
     }
 
     function deployBranch(string newname, string fromname)  public {
-        require(msg.value > 0.2 ton, 100);
+        require(msg.value > 1.5 ton, 100);
         if (_Branches.exists(newname)) { return; }
         if (_Branches.exists(fromname) == false) { return; }
+        deployNewSnapshotPrivate(newname);
         _Branches[newname] = Item(newname, _Branches[fromname].value, getSnapshotAddr(newname));
     }
 
@@ -85,19 +102,25 @@ contract Repository is Upgradable{
         require(msg.value > 0.1 ton, 100);
         delete _Branches[name];
     }
-
-    function deployCommit(string nameBranch, string nameCommit, string fullCommit) public {
-        require(msg.value > 1.3 ton, 100);
-        require(_Branches.exists(nameBranch));
+    
+    function _composeCommitStateInit(string _branch, string _commit) internal view returns(TvmCell) {
         TvmBuilder b;
         b.store(address(this));
-        b.store(nameBranch);
+        b.store(_branch);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_CommitCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit(deployCode, m_CommitData);
-        TvmCell s1 = tvm.insertPubkey(_contractflex, msg.pubkey());
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
+        // return tvm.insertPubkey(stateInit, msg.pubkey());
+        return stateInit;
+    }
+
+    function deployCommit(string nameBranch, string nameCommit, string fullCommit) public {
+        tvm.accept();
+        require(_Branches.exists(nameBranch));
+
+        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit:s1, value: 1 ton, wid: 0} (msg.pubkey(), nameCommit, nameBranch, fullCommit, _Branches[nameBranch].value);
+        new Commit {stateInit: s1, value: 5 ton, wid: 0}(msg.pubkey(), nameBranch, fullCommit, _Branches[nameBranch].value);
         Commit(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
     }
@@ -146,5 +169,11 @@ contract Repository is Upgradable{
 
     function getGoshAdress() external view returns(address) {
         return _rootGosh;
+    }
+
+    function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
+        require(_Branches.exists(nameBranch));
+        TvmCell s1 = _composeCommitStateInit(nameBranch, nameCommit);
+        return address.makeAddrStd(0, tvm.hash(s1));
     }
 }

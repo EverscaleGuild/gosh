@@ -1,6 +1,6 @@
-IMAGE?=teamgosh/docker-extension
-#IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.2
+#IMAGE?=teamgosh/docker-extension
+IMAGE?=teamgosh-docker-extension
+TAG?=1.0.0-alpha.3
 LOCAL_TEMP_DIR=./.tmp/
 
 .DEFAULT_GOAL := debug
@@ -10,10 +10,11 @@ build: ## Build service image to be deployed as a desktop extension
 	-mkdir $(LOCAL_TEMP_DIR)
 	-cp -r ../content-signature $(LOCAL_TEMP_DIR)
 	docker buildx build \
-	  --platform linux/amd64,linux/arm64 \
+	  --platform linux/amd64 \
 	  --tag=$(IMAGE):$(TAG) \
 	  --tag=$(IMAGE):latest \
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)" \
+	  --output=type=docker \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
 

@@ -1,3 +1,3 @@
 package constants
 
-const DefaultConfigFile = "docker-gosh.yaml"
+const DefaultConfigFile = "goshfile.yaml"
