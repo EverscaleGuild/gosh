@@ -42,11 +42,9 @@ contract Gosh is Upgradable {
     }
 
     function _composeRepoStateInit(string name) internal view returns(TvmCell) {
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(name);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_RepositoryCode, b.toCell());
+        TvmCell deployCode = GoshLib.buildRepositoryCode(
+            m_RepositoryCode, address(this), name, version
+        );
         return tvm.buildStateInit(deployCode, m_RepositoryData);
     }
 
