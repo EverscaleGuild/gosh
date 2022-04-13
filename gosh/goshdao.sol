@@ -12,6 +12,7 @@ pragma AbiHeader pubkey;
 
 import "Upgradable.sol";
 import "goshwallet.sol";
+import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
 contract GoshDao is Upgradable {
@@ -41,12 +42,13 @@ contract GoshDao is Upgradable {
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(_rootgosh);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_WalletCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_rootRepoPubkey: pubkeyroot, _pubkey: pubkey}});
+        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, address(this), _rootgosh, version);
+        TvmCell _contractflex = tvm.buildStateInit({
+            code: deployCode,
+            pubkey: pubkey,
+            contr: GoshWallet,
+            varInit: {_rootRepoPubkey: pubkeyroot}
+        });
         return _contractflex;
     }
 
@@ -55,11 +57,11 @@ contract GoshDao is Upgradable {
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new GoshWallet {stateInit: s1, value: 0.9 ton, wid: 0}(_rootgosh);
-        GoshWallet(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
-        GoshWallet(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
-        GoshWallet(addr).setRepository{value: 0.2 ton}(m_RepositoryCode, m_RepositoryData);
+        new GoshWallet {
+            stateInit: s1, value: 0.9 ton, wid: 0
+        }(m_CommitCode, m_CommitData, 
+            m_BlobCode, m_BlobData, 
+            m_RepositoryCode, m_RepositoryData);
     }
 
     function onCodeUpgrade() internal override {}

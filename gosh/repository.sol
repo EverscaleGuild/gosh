@@ -15,6 +15,7 @@ import "commit.sol";
 import "snapshot.sol";
 import "goshwallet.sol";
 import "tag.sol";
+import "./libraries/GoshLib.sol";
 
 /* Root contract of Repository */
 struct Item {
@@ -116,12 +117,13 @@ contract Repository is Upgradable{
     }
     
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
-        TvmBuilder b;
-        b.store(_goshdao);
-        b.store(_rootGosh);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_WalletCode, b.toCell());
-        TvmCell _contractflex = tvm.buildStateInit({code: deployCode, contr: GoshWallet, varInit: {_rootRepoPubkey: _pubkey, _pubkey: pubkey}});
+        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, _goshdao, _rootGosh, version);
+        TvmCell _contractflex = tvm.buildStateInit({
+            code: deployCode,
+            pubkey: pubkey,
+            contr: GoshWallet,
+            varInit: {_rootRepoPubkey: _pubkey}
+        });
         return _contractflex;
     }
 

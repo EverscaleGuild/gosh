@@ -6,7 +6,7 @@
 	
 	Copyright 2019-2022 (c) EverX
 */
-pragma ton-solidity >=0.54.0;
+pragma ton-solidity >=0.58.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
@@ -15,14 +15,25 @@ import "gosh.sol";
 import "repository.sol";
 import "commit.sol";
 import "tag.sol";
+import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
 contract GoshWallet is Upgradable {
-    string version = "0.0.1";
+    uint constant ERR_NO_SALT = 100;
+    uint constant ERR_SENDER_NOT_DAO = 102;
+    uint constant ERR_ZERO_ROOT_KEY = 103;
+    uint constant ERR_ZERO_ROOT_GOSH = 106;
+    uint constant ERR_LOW_VALUE = 104;
+    uint constant ERR_NOT_ROOT_REPO = 105;
+    uint constant ERR_INVALID_SENDER = 107;
+
+    uint128 constant FEE_DEPLOY_REPO = 3 ton;
+    uint128 constant FEE_DEPLOY_COMMIT = 3 ton;
+
+    string public version;
+    uint256 static _rootRepoPubkey;
     address _rootgosh;
     address _goshdao;
-    uint256 static _rootRepoPubkey;
-    uint256 static _pubkey;   
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
@@ -31,59 +42,101 @@ contract GoshWallet is Upgradable {
     TvmCell m_BlobData;
 
     modifier onlyOwner {
-        require(msg.pubkey() == _pubkey, 500);
+        require(msg.pubkey() == tvm.pubkey(), 100);
         _;
     }
 
-    constructor(address gosh) public {
-        tvm.accept();
-        _rootgosh = gosh;
-        _goshdao = msg.sender;
+    modifier onlyRootRepoKey {
+        require(msg.pubkey() == _rootRepoPubkey, ERR_NOT_ROOT_REPO);
+        _;
     }
 
-    function deployRepository(string nameRepo) public view {
-        require(msg.value > 3 ton, 100);
-        require(msg.pubkey() == _rootRepoPubkey, 121);
+    modifier minValue(uint128 val) {
+        require(msg.value >= val, ERR_LOW_VALUE);
+        _;
+    }
+
+    modifier senderIs(address sender) {
+        require(msg.sender == sender, ERR_INVALID_SENDER);
+        _;
+    }
+
+    modifier accept() {
         tvm.accept();
-        Gosh(_rootgosh).deployRepository{value: 2.8 ton}(_rootRepoPubkey, nameRepo, _goshdao);
+        _;
+    }
+
+    constructor(
+        TvmCell commitCode,
+        TvmCell commitData,
+        TvmCell blobCode,
+        TvmCell blobData,
+        TvmCell repositoryCode,
+        TvmCell repositoryData
+    ) public {
+        (_goshdao, _rootgosh, version) = _unpackSalt();
+        require(_goshdao == msg.sender, ERR_SENDER_NOT_DAO);
+        require(_rootgosh.value != 0, ERR_ZERO_ROOT_GOSH);
+        require(_rootRepoPubkey != 0, ERR_ZERO_ROOT_KEY);
+        m_CommitCode = commitCode;
+        m_BlobCode = blobCode;
+        m_RepositoryCode = repositoryCode;
+
+        m_CommitData = commitData;
+        m_BlobData = blobData;
+        m_RepositoryData = repositoryData;
+    }
+
+    function deployRepository(
+        string nameRepo
+    ) public view onlyRootRepoKey accept {
+        Gosh(_rootgosh).deployRepository{
+            value: FEE_DEPLOY_REPO, bounce: true, flag: 2
+        }(_rootRepoPubkey, nameRepo, _goshdao);
     }
     
-    function deployCommit(address repo, string nameBranch, string nameCommit, string fullCommit, address parent) public view onlyOwner {
-        tvm.accept();
-        Repository(repo).deployCommit{value: 2.8 ton}(_pubkey, nameBranch, nameCommit, fullCommit, parent);
+    function deployCommit(
+        string repoName,
+        string nameBranch,
+        string nameCommit,
+        string fullCommit,
+        address parent
+    ) public view onlyOwner accept {
+        address repo = _buildRepositoryAddr(repoName);
+        Repository(repo).deployCommit{
+            value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
+        }(tvm.pubkey(), nameBranch, nameCommit, fullCommit, parent);
     }
     
     function deployBlob(address commit, string nameBlob, string fullBlob) public view onlyOwner {
         tvm.accept();
-        Commit(commit).deployBlob{value: 2.8 ton}(_pubkey, nameBlob, fullBlob);
+        Commit(commit).deployBlob{value: 2.8 ton}(tvm.pubkey(), nameBlob, fullBlob);
     }
     
     function deployTag(address repo, string nametag, string nameCommit, address commit) public view onlyOwner {
         tvm.accept();
-        Repository(repo).deployTag{value: 2.8 ton}(_pubkey, nametag, nameCommit, commit);
+        Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
 
+    // TODO remove or not???
     function onCodeUpgrade() internal override {}
 
     //Setters
     
-    function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
-        require(msg.sender == _goshdao, 101);
-        tvm.accept();
+    function setRepository(TvmCell code, TvmCell data) public 
+        senderIs(_goshdao) accept {
         m_RepositoryCode = code;
         m_RepositoryData = data;
     }
 
-    function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
-        require(msg.sender == _goshdao, 101);
-        tvm.accept();
+    function setCommit(TvmCell code, TvmCell data) public 
+        senderIs(_goshdao) accept {
         m_CommitCode = code;
         m_CommitData = data;
     }
 
-    function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
-        require(msg.sender == _goshdao, 101);
-        tvm.accept();
+    function setBlob(TvmCell code, TvmCell data) public 
+        senderIs(_goshdao) accept {
         m_BlobCode = code;
         m_BlobData = data;
     }
@@ -103,6 +156,23 @@ contract GoshWallet is Upgradable {
     }
 
     function getWalletPubkey() external view returns(uint256) {
-        return _pubkey;
+        return tvm.pubkey();
+    }
+
+    //
+    // Internals
+    //
+
+    function _unpackSalt() private pure returns (address, address, string) {
+        optional(TvmCell) optsalt = tvm.codeSalt(tvm.code());
+        require(optsalt.hasValue(), ERR_NO_SALT);
+        return optsalt.get().toSlice().decode(address, address, string);
+    }
+
+    function _buildRepositoryAddr(string name) private view returns (address) {
+        TvmCell deployCode = GoshLib.buildRepositoryCode(
+            m_RepositoryCode, address(this), name, version
+        );
+        return address(tvm.hash(tvm.buildStateInit(deployCode, m_RepositoryData)));
     }
 }
