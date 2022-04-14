@@ -13,23 +13,51 @@ test:
 .PHONE: prepare
 prepare:
 	@echo ------------------------------------
-	@echo Prepare custom docker registry
+	@echo Prepare local docker registry
+	@echo ${DOCKER_REG}
 	@echo ------------------------------------
-	${DOCKER} rm -f buildkitd || true
-	${DOCKER} run -d --name buildkitd --network host --privileged moby/buildkit:latest
 	${DOCKER} rm -f reg || true
 	${DOCKER} run -d --name reg -p ${DOCKER_REG}:5000 docker.io/library/registry:2
-	# debug logserver
-	(cd hack/logserver; ${DOCKER} build -t logserver .)
-	${DOCKER} rm -f logserver || true
-	${DOCKER} run -d -p 8888:8888 --name logserver logserver
+	## required for buildctl
+	# ${DOCKER} rm -f buildkitd || true
+	# ${DOCKER} run -d --name buildkitd --network host --privileged moby/buildkit:latest
 
 .PHONE: jaeger
 jaeger:
+	@echo ------------------------------------
+	@echo Run all-in-one jaeger
+	@echo ------------------------------------
 	${DOCKER} rm -f jaeger || true
 	${DOCKER} run -d --name jaeger \
-		-p 6831:6831/udp -p 16686:16686 \
+		-p 6831:6831/udp \
+		-p 6832:6832/udp \
+		-p 5778:5778 \
+		-p 16686:16686 \
+		-e SPAN_STORAGE_TYPE=badger \
+		-e BADGER_EPHEMERAL=false \
+		-e BADGER_DIRECTORY_VALUE=/badger/data \
+		-e BADGER_DIRECTORY_KEY=/badger/key \
+		-v "$$(pwd)"/badger:/badger \
 		jaegertracing/all-in-one
+	##
+	## from https://www.docker.com/blog/engineering-update-buildkit-0-9-and-docker-buildx-0-6-releases/
+	##
+	@echo ------------------------------------
+	@echo Set up custom buildx builder
+	@echo Hint: buildx build require --load to make images visible in docker images
+	@echo ------------------------------------
+	${DOCKER} buildx rm builder || true
+	${DOCKER} buildx create \
+		--name builder \
+		--driver docker-container \
+		--driver-opt network=host \
+		--driver-opt env.JAEGER_TRACE=localhost:6831 \
+		--use
+
+.PHONE: jaeger-off
+jaeger-off:
+	${DOCKER} rm -f jaeger || true
+	${DOCKER} buildx rm builder || true
 
 .PHONE: image
 image:

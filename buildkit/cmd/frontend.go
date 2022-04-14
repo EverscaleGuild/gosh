@@ -4,6 +4,8 @@ import (
 	"buildkit-gosh/pkg/constants"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"strings"
 
 	"github.com/moby/buildkit/client/llb"
@@ -11,11 +13,15 @@ import (
 	"github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/frontend/gateway/grpcclient"
 	"github.com/moby/buildkit/solver/pb"
+
 	"github.com/moby/buildkit/util/appcontext"
 	"github.com/moby/buildkit/util/system"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	opentracing "github.com/opentracing/opentracing-go"
+	config "github.com/uber/jaeger-client-go/config"
 )
 
 func frontendCmd() *cobra.Command {
@@ -35,15 +41,45 @@ const (
 	labelPrefix      = "label:"
 )
 
-func frontend(cmd *cobra.Command, args []string) error {
+func initJaeger(service string) (opentracing.Tracer, io.Closer) {
+	cfg := &config.Configuration{
+		ServiceName: service,
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans: true,
+		},
+	}
+	tracer, closer, err := cfg.NewTracer()
+
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: cannot init Jaeger: %v\n", err))
+	}
+	opentracing.SetGlobalTracer(tracer)
+	return tracer, closer
+}
+
+func frontend(_ *cobra.Command, _ []string) error {
+	_, closer := initJaeger("gosh-buildkit-frontend")
+	defer closer.Close()
+
+	span := opentracing.StartSpan("grpcclient")
+	defer span.Finish()
 	sendWebLog("start logging")
 	defer sendWebLog("end logging")
-	return grpcclient.RunFromEnvironment(appcontext.Context(), frontendBuild())
+
+	err := grpcclient.RunFromEnvironment(appcontext.Context(), frontendBuild())
+	return err
 }
 
 func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
+	span := opentracing.StartSpan("loadConfig")
+	defer span.Finish()
+
 	filename := c.BuildOpts().Opts[keyFilename]
-	logf("[docker-gosh frontend/loadConfig] filename %v", filename)
+	span.LogKV("filename", filename)
 	if filename == "" {
 		filename = constants.DefaultConfigFile
 	}
@@ -60,6 +96,7 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 		llb.WithCustomName("[docker-gosh frontend/loadConfig] "+name),
 	)
 
+	logf("[docker-gosh frontend/loadConfig] configState: %s", dumpp(configState))
 	def, err := configState.Marshal(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to marshal local source")
@@ -71,6 +108,7 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 	res, err := c.Solve(ctx, client.SolveRequest{
 		Definition: def.ToPB(),
 	})
+	logf("[docker-gosh frontend/loadConfig] res: %s", dumpp(res))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to resolve image config")
 	}
@@ -79,10 +117,12 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	logf("[docker-gosh frontend/loadConfig] ref: %s", dumpp(ref))
 
 	configFile, err = ref.ReadFile(ctx, client.ReadRequest{
 		Filename: filename,
 	})
+	logf("[docker-gosh frontend/loadConfig] ref: %s", dumpp(ref))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read image config "+filename)
 	}
@@ -92,8 +132,9 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 
 func frontendBuild() client.BuildFunc {
 	return func(ctx context.Context, c client.Client) (*client.Result, error) {
+		logf("[docker-gosh frontend/build] client %#v %s %s", c, dumpp(c), dump(c.(grpcclient.GrpcClient)))
 		opts := c.BuildOpts().Opts
-		logf("[docker-gosh frontend/build] opts %s", dumpp(opts))
+		logf("[docker-gosh frontend/build] opts %T %s", opts, dumpp(opts))
 		wallet := opts["wallet"]
 		wallet_secret := opts["wallet_secret"]
 		wallet_public := opts["wallet_public"]
@@ -123,6 +164,10 @@ func frontendBuild() client.BuildFunc {
 			if step.Run != nil {
 				runOptions := []llb.RunOption{
 					llb.IgnoreCache,
+					// llb.AddMount(
+					// 	"/var/gosh.sock",
+					// 	llb.Scratch(),
+					// ),
 					llb.Network(pb.NetMode_NONE), // important: disable internet
 					llb.WithCustomName("[docker-gosh frontend/build] " + step.Name),
 					llb.Args(append(step.Run.Command, step.Run.Args...)),
@@ -145,6 +190,11 @@ func frontendBuild() client.BuildFunc {
 		}
 		logf("[docker-gosh frontend/build] definition: %s", dumpp(def))
 
+		labels := filter(opts, labelPrefix)
+		if _, ok := labels["WALLET_PUBLIC"]; !ok {
+			labels["WALLET_PUBLIC"] = wallet_public
+		}
+
 		logf("[docker-gosh frontend/build] solve protobuf")
 		res, err := c.Solve(ctx, client.SolveRequest{
 			Definition: def.ToPB(),
@@ -153,16 +203,11 @@ func frontendBuild() client.BuildFunc {
 			return nil, errors.Wrapf(err, "failed to resolve dockerfile")
 		}
 
-		logf("[docker-gosh frontend/build] get ref")
 		ref, err := res.SingleRef()
 		if err != nil {
 			return nil, err
 		}
-
-		labels := filter(opts, labelPrefix)
-		if _, ok := labels["WALLET_PUBLIC"]; !ok {
-			labels["WALLET_PUBLIC"] = wallet_public
-		}
+		logf("[docker-gosh frontend/build] ref: %#+v %s", ref, dumpp(ref))
 
 		env := []string{
 			"PATH=" + system.DefaultPathEnv(def.Constraints.Platform.OS),

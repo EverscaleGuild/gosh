@@ -30,7 +30,7 @@ func dumpp(v interface{}) string {
 
 func sendWebLog(msg string) string {
 	if WebLogEnabled {
-		http.Get("http://localhost:8888/?" + url.Values{"log": {msg}}.Encode())
+		http.Get("http://host.docker.internal:8888/?" + url.Values{"log": {msg}}.Encode())
 	}
 	return msg
 }
