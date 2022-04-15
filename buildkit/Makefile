@@ -65,6 +65,7 @@ image:
 	@echo Build buildkit-gosh \(aka frontend\)
 	@echo ------------------------------------
 	${DOCKER} buildx build --push -f Dockerfile -t ${IMAGE_REFERENCE}:${VERSION} .
+	${DOCKER} pull ${IMAGE_REFERENCE}:${VERSION}
 
 # Examples
 .PHONE: build-example

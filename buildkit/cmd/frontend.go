@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/cobra"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	config "github.com/uber/jaeger-client-go/config"
 )
 
@@ -67,8 +68,6 @@ func frontend(_ *cobra.Command, _ []string) error {
 
 	span := opentracing.StartSpan("grpcclient")
 	defer span.Finish()
-	sendWebLog("start logging")
-	defer sendWebLog("end logging")
 
 	err := grpcclient.RunFromEnvironment(appcontext.Context(), frontendBuild())
 	return err
@@ -96,7 +95,7 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 		llb.WithCustomName("[docker-gosh frontend/loadConfig] "+name),
 	)
 
-	logf("[docker-gosh frontend/loadConfig] configState: %s", dumpp(configState))
+	span.LogFields(log.Object("configState", configState))
 	def, err := configState.Marshal(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to marshal local source")
