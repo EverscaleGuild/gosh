@@ -1,5 +1,5 @@
 # README
-## GOSH is Git Onchain Source Holder
+## GOSH is Git Open Source Hodler
 
 In this repository:
 
