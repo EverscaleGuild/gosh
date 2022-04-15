@@ -1,4 +1,4 @@
-tvcs = gosh.tvc goshdao.tvc repository.tvc snapshot.tvc commit.tvc goshwallet.tvc
+tvcs = gosh.tvc goshdao.tvc repository.tvc snapshot.tvc commit.tvc goshwallet.tvc blob.tvc tag.tvc
 all: $(tvcs)
 
 $(tvcs): %.tvc: %.sol

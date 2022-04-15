@@ -26,4 +26,17 @@ library GoshLib {
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
+
+    function buildCommitCode(
+        TvmCell originalCode,
+        address repo,
+        string branch,
+        string version
+    ) public returns (TvmCell) {
+        TvmBuilder b;
+        b.store(repo);
+        b.store(branch);
+        b.store(version);
+        return tvm.setCodeSalt(originalCode, b.toCell());
+    }
 }
