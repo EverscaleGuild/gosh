@@ -106,11 +106,7 @@ contract Repository is Upgradable{
 */
 
     function _composeCommitStateInit(string _branch, string _commit) internal view returns(TvmCell) {
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(_branch);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_CommitCode, b.toCell());
+        TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, address(this), _branch, version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
         // return tvm.insertPubkey(stateInit, msg.pubkey());
         return stateInit;

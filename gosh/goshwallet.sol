@@ -26,6 +26,7 @@ contract GoshWallet is Upgradable {
     uint constant ERR_LOW_VALUE = 104;
     uint constant ERR_NOT_ROOT_REPO = 105;
     uint constant ERR_INVALID_SENDER = 107;
+    uint constant ERR_LOW_BALANCE = 108;
 
     uint128 constant FEE_DEPLOY_REPO = 3 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 3 ton;
@@ -97,24 +98,47 @@ contract GoshWallet is Upgradable {
     
     function deployCommit(
         string repoName,
-        string nameBranch,
-        string nameCommit,
+        string branchName,
+        string commitName,
         string fullCommit,
         address parent
     ) public view onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
-        }(tvm.pubkey(), nameBranch, nameCommit, fullCommit, parent);
+        }(tvm.pubkey(), branchName, commitName, fullCommit, parent);
+    }
+
+    function topupCommit(
+        string repoName,
+        string branchName,
+        string commit,
+        uint128 value
+    ) public view onlyOwner {
+        require(address(this).balance > value + 1 ton, ERR_LOW_BALANCE);
+        tvm.accept();
+        address commitAddr = _buildCommitAddr(repoName, branchName, commit);
+        commitAddr.transfer(value, true, 3);
     }
     
-    function deployBlob(address commit, string nameBlob, string fullBlob) public view onlyOwner {
-        tvm.accept();
-        Commit(commit).deployBlob{value: 2.8 ton}(tvm.pubkey(), nameBlob, fullBlob);
+    function deployBlob(
+        string repoName,
+        string branchName,
+        string commit,
+        string blobName,
+        string fullBlob
+    ) public view onlyOwner accept {
+        address commitAddr = _buildCommitAddr(repoName, branchName, commit);
+        Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob);
     }
     
-    function deployTag(address repo, string nametag, string nameCommit, address commit) public view onlyOwner {
-        tvm.accept();
+    function deployTag(
+        string repoName,
+        string nametag,
+        string nameCommit,
+        address commit
+    ) public view onlyOwner accept {
+        address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
 
@@ -174,5 +198,20 @@ contract GoshWallet is Upgradable {
             m_RepositoryCode, address(this), name, version
         );
         return address(tvm.hash(tvm.buildStateInit(deployCode, m_RepositoryData)));
+    }
+
+    function _buildCommitAddr(
+        string repoName,
+        string branch,
+        string commit
+    ) private view returns(address) {
+        address repo = _buildRepositoryAddr(repoName);
+        TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, repo, branch, version);
+        TvmCell state = tvm.buildStateInit({
+            code: deployCode, 
+            contr: Commit,
+            varInit: {_nameCommit: commit}
+        });
+        return address(tvm.hash(state));
     }
 }
