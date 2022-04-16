@@ -6,7 +6,12 @@
 		{
 			"name": "constructor",
 			"inputs": [
-				{"name":"gosh","type":"address"}
+				{"name":"commitCode","type":"cell"},
+				{"name":"commitData","type":"cell"},
+				{"name":"blobCode","type":"cell"},
+				{"name":"blobData","type":"cell"},
+				{"name":"repositoryCode","type":"cell"},
+				{"name":"repositoryData","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -22,9 +27,9 @@
 		{
 			"name": "deployCommit",
 			"inputs": [
-				{"name":"repo","type":"address"},
-				{"name":"nameBranch","type":"string"},
-				{"name":"nameCommit","type":"string"},
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"},
+				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
 				{"name":"parent","type":"address"}
 			],
@@ -32,10 +37,42 @@
 			]
 		},
 		{
+			"name": "deployBranch",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"newName","type":"string"},
+				{"name":"fromName","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployDiff",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"name","type":"string"},
+				{"name":"branch","type":"string"},
+				{"name":"diff","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "topupCommit",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"commit","type":"string"},
+				{"name":"value","type":"uint128"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployBlob",
 			"inputs": [
-				{"name":"commit","type":"address"},
-				{"name":"nameBlob","type":"string"},
+				{"name":"repoName","type":"string"},
+				{"name":"commit","type":"string"},
+				{"name":"blobName","type":"string"},
 				{"name":"fullBlob","type":"string"}
 			],
 			"outputs": [
@@ -44,37 +81,10 @@
 		{
 			"name": "deployTag",
 			"inputs": [
-				{"name":"repo","type":"address"},
+				{"name":"repoName","type":"string"},
 				{"name":"nametag","type":"string"},
 				{"name":"nameCommit","type":"string"},
 				{"name":"commit","type":"address"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setRepository",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setCommit",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setBlob",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -112,17 +122,16 @@
 			]
 		},
 		{
-			"name": "upgrade",
+			"name": "version",
 			"inputs": [
-				{"name":"state","type":"cell"}
 			],
 			"outputs": [
+				{"name":"version","type":"string"}
 			]
 		}
 	],
 	"data": [
-		{"key":1,"name":"_rootRepoPubkey","type":"uint256"},
-		{"key":2,"name":"_pubkey","type":"uint256"}
+		{"key":1,"name":"_rootRepoPubkey","type":"uint256"}
 	],
 	"events": [
 	],
@@ -131,10 +140,9 @@
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"version","type":"string"},
+		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
-		{"name":"_rootRepoPubkey","type":"uint256"},
-		{"name":"_pubkey","type":"uint256"},
 		{"name":"m_RepositoryCode","type":"cell"},
 		{"name":"m_RepositoryData","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},

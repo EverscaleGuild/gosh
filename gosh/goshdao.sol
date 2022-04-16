@@ -10,12 +10,11 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
-import "Upgradable.sol";
 import "goshwallet.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
-contract GoshDao is Upgradable {
+contract GoshDao {
     string version = "0.0.1";
     TvmCell m_WalletCode;
     TvmCell m_WalletData;    
@@ -63,8 +62,6 @@ contract GoshDao is Upgradable {
             m_BlobCode, m_BlobData, 
             m_RepositoryCode, m_RepositoryData);
     }
-
-    function onCodeUpgrade() internal override {}
 
     //Setters
     

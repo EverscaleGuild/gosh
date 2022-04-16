@@ -12,7 +12,11 @@
 				{"name":"nameRepo","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
-				{"name":"parent","type":"address"}
+				{"name":"parent","type":"address"},
+				{"name":"BlobCode","type":"cell"},
+				{"name":"BlobData","type":"cell"},
+				{"name":"WalletCode","type":"cell"},
+				{"name":"WalletData","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -23,32 +27,6 @@
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBlob","type":"string"},
 				{"name":"fullBlob","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setBlob",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setStatus",
-			"inputs": [
-				{"name":"status","type":"bool"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setWallet",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -113,14 +91,6 @@
 			"outputs": [
 				{"name":"value0","type":"address"}
 			]
-		},
-		{
-			"name": "getStatus",
-			"inputs": [
-			],
-			"outputs": [
-				{"name":"value0","type":"bool"}
-			]
 		}
 	],
 	"data": [
@@ -148,7 +118,6 @@
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"_parent","type":"address"},
 		{"name":"_rootGosh","type":"address"},
-		{"name":"_num","type":"uint128"},
-		{"name":"_isFinish","type":"bool"}
+		{"name":"_num","type":"uint128"}
 	]
 }

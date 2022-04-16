@@ -10,12 +10,11 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
-import "Upgradable.sol";
 import "repository.sol";
 import "goshdao.sol";
 
 /* Root contract of gosh */
-contract Gosh is Upgradable {
+contract Gosh {
     string version = "0.0.1";
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
@@ -53,14 +52,8 @@ contract Gosh is Upgradable {
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(pubkey, name, goshdao);
-        Repository(addr).setCommit{value: 0.2 ton}(m_CommitCode, m_CommitData);
-        Repository(addr).setWallet{value: 0.2 ton}(m_WalletCode, m_WalletData);
-        Repository(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
-        Repository(addr).setTag{value: 0.2 ton}(m_codeTag, m_dataTag);
-        Repository(addr).setSnapshot{value: 0.2 ton}(m_codeSnapshot, m_dataSnapshot);
-        Repository(addr).deployNewSnapshot{value:1.5 ton}("master");
+        new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
+            pubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_codeSnapshot, m_dataSnapshot, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
     }
     
     function _composeDaoStateInit(string name) internal view returns(TvmCell) {
@@ -83,8 +76,6 @@ contract Gosh is Upgradable {
         GoshDao(addr).setBlob{value: 0.2 ton}(m_BlobCode, m_BlobData);
         GoshDao(addr).setRepository{value: 0.2 ton}(m_RepositoryCode, m_RepositoryData);
     }
-
-    function onCodeUpgrade() internal override {}
 
     //Setters
 

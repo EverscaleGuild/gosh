@@ -27,15 +27,50 @@ library GoshLib {
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
 
-    function buildCommitCode(
+    function buildSnapshotCode(
         TvmCell originalCode,
         address repo,
-        string branch,
         string version
     ) public returns (TvmCell) {
         TvmBuilder b;
         b.store(repo);
-        b.store(branch);
+        b.store(version);
+        return tvm.setCodeSalt(originalCode, b.toCell());
+    }
+    
+    function buildCommitCode(
+        TvmCell originalCode,
+        address repo,
+        string version
+    ) public returns (TvmCell) {
+        TvmBuilder b;
+        b.store(repo);
+        b.store(version);
+        return tvm.setCodeSalt(originalCode, b.toCell());
+    }
+    
+    function buildBlobCode(
+        TvmCell originalCode,
+        address commit,
+        string name,
+        string version
+    ) public returns (TvmCell) {
+        TvmBuilder b;
+        b.store(commit);
+        b.store(name);
+        b.store(version);
+        return tvm.setCodeSalt(originalCode, b.toCell());
+    }
+    
+    function buildTagCode(
+        TvmCell originalCode,
+        address repo,
+        string nametag,
+        string version
+    ) public returns (TvmCell) {
+        TvmBuilder b;
+        b.store(repo);
+        b.store(nametag);
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }

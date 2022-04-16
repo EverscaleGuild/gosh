@@ -36,7 +36,6 @@ contract Commit {
     address _parent;
     address _rootGosh;
     uint128 _num = 1;
-    bool _isFinish = false;
 
     modifier onlyOwner {
         bool checkOwn = false;
@@ -51,7 +50,17 @@ contract Commit {
         _;
     }
 
-    constructor(address goshdao, address rootGosh, uint256 value0, string nameRepo, string nameBranch, string commit, address parent) public {
+    constructor(address goshdao, 
+        address rootGosh, 
+        uint256 value0, 
+        string nameRepo, 
+        string nameBranch, 
+        string commit, 
+        address parent,
+        TvmCell BlobCode,
+        TvmCell BlobData,
+        TvmCell WalletCode,
+        TvmCell WalletData) public {
         _parent = parent;
         tvm.accept();
         _name = nameRepo;
@@ -61,14 +70,16 @@ contract Commit {
         _rootRepo = msg.sender;
         _nameBranch = nameBranch;
         _commit = commit;
+        m_BlobCode = BlobCode;
+        m_BlobData = BlobData;
+        m_WalletCode = WalletCode;
+        m_WalletData = WalletData;
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
-        TvmBuilder b;
-        b.store(address(this));
-        b.store(_nameBranch);
-        b.store(version);
-        TvmCell deployCode = tvm.setCodeSalt(m_BlobCode, b.toCell());
+        TvmCell deployCode = GoshLib.buildRepositoryCode(
+            m_BlobCode, address(this), _nameBranch, version
+        );
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});
         //return tvm.insertPubkey(stateInit, pubkey);
         return stateInit;
@@ -122,24 +133,7 @@ contract Commit {
 */
 
     //Setters
-    function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
-        tvm.accept();
-
-        m_BlobCode = code;
-        m_BlobData = data;
-    }
-
-    function setStatus(bool status) public  onlyOwner {
-        tvm.accept();
-        _isFinish = status;
-    }
     
-    function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
-        tvm.accept();
-        m_WalletCode = code;
-        m_WalletData = data;
-    }
-
     //Getters
     function getBlobs() external view returns(address[]) {
         return _blob;
@@ -174,9 +168,5 @@ contract Commit {
     function getBlobAddr(string nameBlob) external view returns(address) {
         TvmCell s1 = _composeBlobStateInit(nameBlob);
         return address.makeAddrStd(0, tvm.hash(s1));
-    }
-
-    function getStatus() external view returns(bool) {
-        return _isFinish;
     }
 }
