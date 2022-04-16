@@ -123,6 +123,7 @@ function EnhancedTableHead<T>(
             </TableSortLabel>
           </TableCell>
         ))}
+        <TableCell></TableCell>
       </TableRow>
     </TableHead>
   );
@@ -169,6 +170,15 @@ function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: D
                       key={index}
                     > 
                       {columns.map((column, index) => column.id === "validated" ? <TableCell key={String(column.id)}><StatusDot status={String(row[column.id])}/></TableCell> :  <TableCell key={String(column.id)}><>{row[column.id]}</></TableCell>)}
+                      <TableCell
+                        className="cell-button"
+                      >
+                        <Button
+                          color="inherit"
+                          variant="contained"
+                          size="small"
+                        >Validate</Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })
