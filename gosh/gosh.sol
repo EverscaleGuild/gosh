@@ -127,6 +127,11 @@ contract Gosh {
         TvmCell s1 = _composeRepoStateInit(name);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
+    
+    function getAddrDao(string name) external view returns(address) {
+        TvmCell s1 = _composeDaoStateInit(name);
+        return address.makeAddrStd(0, tvm.hash(s1));
+    }
 
     function getRepositoryCode() external view returns(TvmCell) {
         return m_RepositoryCode;
