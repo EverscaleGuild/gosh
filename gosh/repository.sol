@@ -169,7 +169,7 @@ contract Repository {
         require(_Branches[nameBranch].value == parent1, 120);
         TvmCell s1 = _composeCommitStateInit(nameCommit);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 5 ton, wid: 0}(
+        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
             _goshdao, _rootGosh, _pubkey, _name, nameBranch, fullCommit, _Branches[nameBranch].value, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
         _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
     }
