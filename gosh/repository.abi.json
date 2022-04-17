@@ -120,6 +120,14 @@
 			]
 		},
 		{
+			"name": "getName",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
 			"name": "getCommitAddr",
 			"inputs": [
 				{"name":"nameBranch","type":"string"},

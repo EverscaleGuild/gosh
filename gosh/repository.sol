@@ -215,6 +215,10 @@ contract Repository {
     function getRepoPubkey() external view returns(uint256) {
         return _pubkey;
     }
+    
+    function getName() external view returns(string) {
+        return _name;
+    }
 
     function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
         require(_Branches.exists(nameBranch));
