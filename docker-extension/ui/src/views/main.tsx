@@ -101,12 +101,12 @@ const TabPanel = styled(TabPanelUnstyled)`
   height: calc(100% - 4rem);
 `;
 
-const StatusDot:React.FunctionComponent<{status: string}>  = ({status}) => <div className={cn("status-dot", status)}></div>
+const StatusDot  = ({status}: {status: string}) => <div className={cn("status-dot", status)}></div>
 
-const Help:React.FunctionComponent<{
+const Help = ({showModal, handleClose}: {
   showModal: boolean,
   handleClose: any,
-}> = ({showModal, handleClose}) => {
+}) => {
   return (
     <Overlay
       show={showModal}
@@ -118,10 +118,10 @@ const Help:React.FunctionComponent<{
   )
 };
 
-const HelpNewGosh:React.FunctionComponent<{
+const HelpNewGosh = ({showModal, handleClose}: {
   showModal: boolean,
   handleClose: any,
-}> = ({showModal, handleClose}) => {
+}) => {
   return (
     <Overlay
       show={showModal}
@@ -133,10 +133,10 @@ const HelpNewGosh:React.FunctionComponent<{
   )
 };
 
-const HelpNewBuild:React.FunctionComponent<{
+const HelpNewBuild = ({showModal, handleClose}: {
   showModal: boolean,
   handleClose: any,
-}> = ({showModal, handleClose}) => {
+}) => {
   return (
     <Overlay
       show={showModal}
@@ -298,7 +298,7 @@ function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: D
   );
 }
 
-const Main:React.FunctionComponent<{}> = () => {
+const Main = () => {
   const [containers, setContainers] = useState<Array<ContainerType>>([]);
   const [images, setImages] = useState<Array<ImageType>>([]);
   const [showModal, setShowModal] = useState<boolean>(false);

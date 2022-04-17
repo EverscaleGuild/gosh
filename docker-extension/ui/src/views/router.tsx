@@ -1,4 +1,4 @@
-import React from "react";
+
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import cn from "classnames";
 import {
@@ -9,7 +9,7 @@ import Main from "./main";
 import Content from "./content";
 import { Header, Footer } from "../layouts";
 
-const Router:React.FunctionComponent<{}> = () => {
+const Router = () => {
   const location:string = useLocation().pathname.split('/').filter(Boolean)[0];
   return (
     <div className={cn("ws-app", useLocation().pathname.split('/').filter(Boolean)[0], {"isMobile": isMobile, "main": !location})}>

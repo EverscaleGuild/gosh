@@ -1,10 +1,10 @@
-import { FunctionComponent, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Container from '@mui/material/Container';
 import { useParams, useLocation } from "react-router-dom";
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
-const Content: FunctionComponent<{title?: string, path?: string}> = ({title, path}) => {
+const Content = ({title, path}: {title?: string, path?: string}) => {
   
   const { id } = useParams<{id: string}>();
   const location = useLocation();

@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, forwardRef } from "react";
+import { ReactNode, forwardRef } from "react";
 
 import Dialog from '@mui/material/Dialog';
 
@@ -20,12 +20,12 @@ interface ModalProps {
 }
 
 
-export const Overlay: FunctionComponent<ModalProps & {children: ReactNode}> = ({
+export const Overlay = ({
   show,
   onHide,
   className,
   children
-}) => {
+}: ModalProps & {children: ReactNode}) => {
   const Transition = forwardRef(function Transition(
     props: TransitionProps & {
       children: React.ReactElement;

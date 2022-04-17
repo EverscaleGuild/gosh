@@ -148,15 +148,15 @@ main {
     align-items: center;
     flex-wrap: nowrap;
     position: absolute !important;
-    top: 1.25rem;
+    top: 1.0625rem;
     right: 1.5rem;
 
     & > * {
       background-color: #ebebef;
       border-radius: 1rem;
-      font-size1: 13px;
-      // font-weight: 600;
-      letter-spacing: -.02rem;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: -.025rem;
       // padding-top: 0;
       // padding-bottom: 0;
       margin-left: .75rem;

@@ -1,18 +1,18 @@
-import { FunctionComponent } from "react";
+
 import { Helmet } from 'react-helmet-async';
 
-export const MetaDecorator: FunctionComponent<{
-  title?: string,
-  description?: string,
-  keywords?: string,
-  url?: string,
-  image?: string
-}> = ({
+export const MetaDecorator = ({
     title = "Payments Surf",
     description="", 
     keywords,
     url,
     image
+  }: {
+    title?: string,
+    description?: string,
+    keywords?: string,
+    url?: string,
+    image?: string
   }) => {
   return (
     <Helmet>
