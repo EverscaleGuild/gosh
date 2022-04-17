@@ -80,7 +80,7 @@ contract Commit {
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
-        TvmCell deployCode = GoshLib.buildRepositoryCode(
+        TvmCell deployCode = GoshLib.buildBlobCode(
             m_BlobCode, address(this), _nameBranch, version
         );
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});

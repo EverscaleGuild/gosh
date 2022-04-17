@@ -40,18 +40,36 @@ contract Gosh {
         tvm.accept();
     }
 
-    function _composeRepoStateInit(string name) internal view returns(TvmCell) {
+    function _composeRepoStateInit(string name, address goshdao) internal view returns(TvmCell) {
         TvmCell deployCode = GoshLib.buildRepositoryCode(
-            m_RepositoryCode, address(this), name, version
+            m_RepositoryCode, address(this), goshdao, name, version
         );
         return tvm.buildStateInit(deployCode, m_RepositoryData);
     }
+    
+    function _composeWalletStateInit(uint256 pubkey, uint256 rootpubkey, address dao) internal view returns(TvmCell) {
+        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
+        TvmCell _contractflex = tvm.buildStateInit({
+            code: deployCode,
+            pubkey: pubkey,
+            contr: GoshWallet,
+            varInit: {_rootRepoPubkey: rootpubkey, _rootgosh : address(this), _goshdao: dao}
+        });
+        return _contractflex;
+    }
 
-    function deployRepository(uint256 pubkey, string name, address goshdao) public view {
+    function checkAccess(uint256 pubkey, uint256 rootpubkey, address sender, address dao) internal view returns(bool) {
+        TvmCell s1 = _composeWalletStateInit(pubkey, rootpubkey, dao);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        return addr == sender;
+    }
+
+    function deployRepository(uint256 pubkey, uint256 rootpubkey, string name, address goshdao) public view {
         require(msg.value > 3 ton, 100);
         require(pubkey > 0, 101);
+        require(checkAccess(pubkey, rootpubkey, msg.sender, goshdao));
         tvm.accept();
-        TvmCell s1 = _composeRepoStateInit(name);
+        TvmCell s1 = _composeRepoStateInit(name, goshdao);
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
             pubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_codeSnapshot, m_dataSnapshot, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
     }
@@ -120,8 +138,8 @@ contract Gosh {
 
     //Getters
 
-    function getAddrRepository(string name) external view returns(address) {
-        TvmCell s1 = _composeRepoStateInit(name);
+    function getAddrRepository(string name, address dao) external view returns(address) {
+        TvmCell s1 = _composeRepoStateInit(name, dao);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
     

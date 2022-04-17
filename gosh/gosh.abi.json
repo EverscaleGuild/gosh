@@ -14,6 +14,7 @@
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
+				{"name":"rootpubkey","type":"uint256"},
 				{"name":"name","type":"string"},
 				{"name":"goshdao","type":"address"}
 			],
@@ -95,7 +96,8 @@
 		{
 			"name": "getAddrRepository",
 			"inputs": [
-				{"name":"name","type":"string"}
+				{"name":"name","type":"string"},
+				{"name":"dao","type":"address"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}

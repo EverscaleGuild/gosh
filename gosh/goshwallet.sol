@@ -89,10 +89,10 @@ contract GoshWallet {
 
     function deployRepository(
         string nameRepo
-    ) public view onlyRootRepoKey accept {
+    ) public view onlyOwner accept {
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
-        }(_rootRepoPubkey, nameRepo, _goshdao);
+        }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
     }
     
     function deployCommit(
@@ -196,7 +196,7 @@ contract GoshWallet {
 
     function _buildRepositoryAddr(string name) private view returns (address) {
         TvmCell deployCode = GoshLib.buildRepositoryCode(
-            m_RepositoryCode, address(this), name, version
+            m_RepositoryCode, address(this), _goshdao, name, version
         );
         return address(tvm.hash(tvm.buildStateInit(deployCode, m_RepositoryData)));
     }
