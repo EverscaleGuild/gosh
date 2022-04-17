@@ -123,7 +123,7 @@
 			]
 		},
 		{
-			"name": "getRepoWalletCode",
+			"name": "getRepoDaoCode",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"}
 			],

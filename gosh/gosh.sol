@@ -152,7 +152,7 @@ contract Gosh {
         return _composeRepoStateInit(name, dao);
     }
     
-    function getRepoWalletCode(uint256 pubkey) external view returns(TvmCell) {
+    function getRepoDaoCode(uint256 pubkey) external view returns(TvmCell) {
         return GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
     }
 
