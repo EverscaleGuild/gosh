@@ -129,6 +129,10 @@ contract Gosh {
         TvmCell s1 = _composeDaoStateInit(name);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
+    
+    function getDaoWalletCode(uint256 pubkey) external view returns(TvmCell) {
+        return GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
+    }
 
     function getRepositoryCode() external view returns(TvmCell) {
         return m_RepositoryCode;
