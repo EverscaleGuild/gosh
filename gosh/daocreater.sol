@@ -45,7 +45,7 @@ contract DaoCreater {
 
     function deployDao(
         string name, 
-        uint256 root_pubkey) public view {
+        uint256 root_pubkey) public view accept {
         Gosh(_gosh).deployDao{
             value: FEE_DEPLOY_DAO, bounce: true, flag: 2
         }(name, root_pubkey);
