@@ -8,7 +8,15 @@
 			"inputs": [
 				{"name":"rootgosh","type":"address"},
 				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"name","type":"string"},
+				{"name":"CommitCode","type":"cell"},
+				{"name":"CommitData","type":"cell"},
+				{"name":"BlobCode","type":"cell"},
+				{"name":"BlobData","type":"cell"},
+				{"name":"RepositoryCode","type":"cell"},
+				{"name":"RepositoryData","type":"cell"},
+				{"name":"WalletCode","type":"cell"},
+				{"name":"WalletData","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -18,42 +26,6 @@
 			"inputs": [
 				{"name":"pubkeyroot","type":"uint256"},
 				{"name":"pubkey","type":"uint256"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setRepository",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setCommit",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setBlob",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setWallet",
-			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
 			],
 			"outputs": [
 			]

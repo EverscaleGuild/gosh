@@ -31,7 +31,8 @@
 				{"name":"branchName","type":"string"},
 				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
-				{"name":"parent","type":"address"}
+				{"name":"parent1","type":"address"},
+				{"name":"parent2","type":"address"}
 			],
 			"outputs": [
 			]

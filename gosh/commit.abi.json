@@ -12,7 +12,8 @@
 				{"name":"nameRepo","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
-				{"name":"parent","type":"address"},
+				{"name":"parent1","type":"address"},
+				{"name":"parent2","type":"address"},
 				{"name":"BlobCode","type":"cell"},
 				{"name":"BlobData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
@@ -44,7 +45,8 @@
 			"inputs": [
 			],
 			"outputs": [
-				{"name":"value0","type":"address"}
+				{"name":"value0","type":"address"},
+				{"name":"value1","type":"address"}
 			]
 		},
 		{
@@ -79,7 +81,8 @@
 				{"name":"repo","type":"address"},
 				{"name":"branch","type":"string"},
 				{"name":"sha","type":"string"},
-				{"name":"parent","type":"address"},
+				{"name":"parent1","type":"address"},
+				{"name":"parent2","type":"address"},
 				{"name":"content","type":"string"}
 			]
 		},
@@ -116,7 +119,8 @@
 		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
-		{"name":"_parent","type":"address"},
+		{"name":"_parent1","type":"address"},
+		{"name":"_parent2","type":"address"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_num","type":"uint128"}
 	]

@@ -100,12 +100,13 @@ contract GoshWallet {
         string branchName,
         string commitName,
         string fullCommit,
-        address parent
+        address parent1,
+        address parent2
     ) public view onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
-        }(tvm.pubkey(), branchName, commitName, fullCommit, parent);
+        }(tvm.pubkey(), branchName, commitName, fullCommit, parent1, parent2);
     }
     
     function deployBranch(

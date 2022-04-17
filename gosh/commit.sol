@@ -33,7 +33,8 @@ contract Commit {
     TvmCell m_BlobData;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
-    address _parent;
+    address _parent1;
+    address _parent2;
     address _rootGosh;
     uint128 _num = 1;
 
@@ -56,12 +57,14 @@ contract Commit {
         string nameRepo, 
         string nameBranch, 
         string commit, 
-        address parent,
+        address parent1,
+        address parent2,
         TvmCell BlobCode,
         TvmCell BlobData,
         TvmCell WalletCode,
         TvmCell WalletData) public {
-        _parent = parent;
+        _parent1 = parent1;
+        _parent2 = parent2;
         tvm.accept();
         _name = nameRepo;
         _rootGosh = rootGosh;
@@ -139,8 +142,8 @@ contract Commit {
         return _blob;
     }
 
-     function getParent() external view returns(address) {
-        return _parent;
+     function getParent() external view returns(address, address) {
+        return (_parent1, _parent2);
     }
 
     function getNameCommit() external view returns(string) {
@@ -159,10 +162,11 @@ contract Commit {
         address repo,
         string branch,
         string sha,
-        address parent,
+        address parent1,
+        address parent2,
         string content
     ) {
-        return (_rootRepo, _nameBranch, _nameCommit, _parent, _commit);
+        return (_rootRepo, _nameBranch, _nameCommit, _parent1, _parent2, _commit);
     }
 
     function getBlobAddr(string nameBlob) external view returns(address) {

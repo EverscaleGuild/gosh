@@ -33,11 +33,30 @@ contract GoshDao {
         _;
     }
 
-    constructor(address rootgosh, uint256 pubkey, string name) public {
+    constructor(
+        address rootgosh, 
+        uint256 pubkey, 
+        string name, 
+        TvmCell CommitCode,
+        TvmCell CommitData,
+        TvmCell BlobCode,
+        TvmCell BlobData,
+        TvmCell RepositoryCode,
+        TvmCell RepositoryData,
+        TvmCell WalletCode, 
+        TvmCell WalletData) public {
         tvm.accept();
         _rootgosh = rootgosh;
         _rootpubkey = pubkey;
         _nameDao = name;
+        m_WalletCode = WalletCode;
+        m_WalletData = WalletData;
+        m_RepositoryCode = RepositoryCode;
+        m_RepositoryData = RepositoryData;
+        m_CommitCode = CommitCode;
+        m_CommitData = CommitData;
+        m_BlobCode = BlobCode;
+        m_BlobData = BlobData;
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
@@ -64,35 +83,6 @@ contract GoshDao {
     }
 
     //Setters
-    
-    function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
-        require(_rootgosh == msg.sender, 101);
-        tvm.accept();
-        m_RepositoryCode = code;
-        m_RepositoryData = data;
-    }
-
-    function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
-        require(_rootgosh == msg.sender, 101);
-        tvm.accept();
-        m_CommitCode = code;
-        m_CommitData = data;
-    }
-
-    function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
-        require(_rootgosh == msg.sender, 101);
-        tvm.accept();
-        m_BlobCode = code;
-        m_BlobData = data;
-    }
-
-
-    function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
-        require(_rootgosh == msg.sender, 101);
-        tvm.accept();
-        m_WalletCode = code;
-        m_WalletData = data;
-    }
 
     //Getters
 
