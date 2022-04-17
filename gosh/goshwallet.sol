@@ -27,8 +27,8 @@ contract GoshWallet {
     uint constant ERR_INVALID_SENDER = 107;
     uint constant ERR_LOW_BALANCE = 108;
 
-    uint128 constant FEE_DEPLOY_REPO = 3 ton;
-    uint128 constant FEE_DEPLOY_COMMIT = 3 ton;
+    uint128 constant FEE_DEPLOY_REPO = 4 ton;
+    uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
 
     string public version;
     uint256 static _rootRepoPubkey;
