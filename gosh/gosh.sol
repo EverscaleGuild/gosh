@@ -42,9 +42,13 @@ contract Gosh {
 
     function _composeRepoStateInit(string name, address goshdao) internal view returns(TvmCell) {
         TvmCell deployCode = GoshLib.buildRepositoryCode(
-            m_RepositoryCode, address(this), goshdao, name, version
+            m_RepositoryCode, address(this), goshdao, version
         );
-        return tvm.buildStateInit(deployCode, m_RepositoryData);
+        return tvm.buildStateInit({
+            code: deployCode, 
+            contr: Repository,
+            varInit: {_name: name}
+        });
     }
     
     function _composeWalletStateInit(uint256 pubkey, uint256 rootpubkey, address dao) internal view returns(TvmCell) {
@@ -148,8 +152,10 @@ contract Gosh {
         return address.makeAddrStd(0, tvm.hash(s1));
     }
     
-    function getRepoDaoCode(string name, address dao) external view returns(TvmCell) {
-        return _composeRepoStateInit(name, dao);
+    function getRepoDaoCode(address dao) external view returns(TvmCell) {
+        return GoshLib.buildRepositoryCode(
+            m_RepositoryCode, address(this), dao, version
+        );
     }
     
     function getDaoWalletCode(uint256 pubkey) external view returns(TvmCell) {

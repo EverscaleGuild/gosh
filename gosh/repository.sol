@@ -37,7 +37,7 @@ contract Repository {
     TvmCell m_codeTag;
     TvmCell m_dataTag;
     address _rootGosh;
-    string _name;
+    string static _name;
     address _goshdao;
     mapping(string => Item) _Branches;
 

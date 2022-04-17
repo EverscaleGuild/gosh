@@ -184,9 +184,13 @@ contract GoshWallet {
     //
     function _buildRepositoryAddr(string name) private view returns (address) {
         TvmCell deployCode = GoshLib.buildRepositoryCode(
-            m_RepositoryCode, address(this), _goshdao, name, version
+            m_RepositoryCode, address(this), _goshdao, version
         );
-        return address(tvm.hash(tvm.buildStateInit(deployCode, m_RepositoryData)));
+        return address(tvm.hash(tvm.buildStateInit({
+            code: deployCode, 
+            contr: Repository,
+            varInit: {_name: name}
+        })));
     }
 
     function _buildCommitAddr(

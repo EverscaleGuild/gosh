@@ -16,13 +16,11 @@ library GoshLib {
         TvmCell originalCode,
         address gosh,
         address dao,
-        string name,
         string version
     ) public returns (TvmCell) {
         TvmBuilder b;
         b.store(gosh);
         b.store(dao);
-        b.store(name);
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }

@@ -131,6 +131,7 @@
 		}
 	],
 	"data": [
+		{"key":1,"name":"_name","type":"string"}
 	],
 	"events": [
 	],

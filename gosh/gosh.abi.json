@@ -115,7 +115,6 @@
 		{
 			"name": "getRepoDaoCode",
 			"inputs": [
-				{"name":"name","type":"string"},
 				{"name":"dao","type":"address"}
 			],
 			"outputs": [
