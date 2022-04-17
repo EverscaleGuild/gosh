@@ -1,4 +1,3 @@
-import { FunctionComponent } from "react";
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 // import { Link } from "react-router-dom";
@@ -7,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import styles from "./Footer.module.scss";
 
-export const Footer: FunctionComponent<{}> = () => {
+export const Footer = () => {
   return (
     <Paper
       elevation={3}
