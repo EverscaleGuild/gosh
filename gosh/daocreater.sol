@@ -45,7 +45,7 @@ contract DaoCreater {
         }(name, root_pubkey);
     }
     
-    function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view {
+    function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view accept {
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey, goshdao);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         addr.transfer(value);

@@ -71,7 +71,6 @@ contract GoshDao {
     }
 
     function deployWallet(uint256 pubkeyroot, uint256 pubkey) public view {
-        require(msg.value > 1 ton, 100);
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey);
