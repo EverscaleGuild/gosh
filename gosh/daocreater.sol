@@ -19,6 +19,8 @@ contract DaoCreater {
     address _gosh;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
+    TvmCell m_codeDao;
+    TvmCell m_dataDao;
 
     uint128 constant FEE_DEPLOY_DAO = 3 ton;
 
@@ -30,11 +32,15 @@ contract DaoCreater {
     constructor(
         address gosh, 
         TvmCell WalletCode,
-        TvmCell WalletData) public {
+        TvmCell WalletData,
+        TvmCell codeDao,
+        TvmCell dataDao) public {
         tvm.accept();
         _gosh = gosh;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
+        m_codeDao = codeDao;
+        m_dataDao = dataDao;
     }
 
     function deployDao(
@@ -49,6 +55,21 @@ contract DaoCreater {
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey, goshdao);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         addr.transfer(value);
+    }
+    
+    function sendMoneyDao(string name, uint128 value) public view accept {
+        TvmCell s1 = _composeDaoStateInit(name);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        addr.transfer(value);
+    }
+    
+    function _composeDaoStateInit(string name) internal view returns(TvmCell) {
+        TvmBuilder b;
+        b.store(_gosh);
+        b.store(name);
+        b.store(version);
+        TvmCell deployCode = tvm.setCodeSalt(m_codeDao, b.toCell());
+        return tvm.buildStateInit(deployCode, m_dataDao);
     }
     
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey, address goshdao) internal view returns(TvmCell) {
