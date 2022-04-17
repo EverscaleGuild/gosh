@@ -113,7 +113,7 @@
 			]
 		},
 		{
-			"name": "getDaoWalletCode",
+			"name": "getRepoDaoCode",
 			"inputs": [
 				{"name":"name","type":"string"},
 				{"name":"dao","type":"address"}
@@ -123,7 +123,7 @@
 			]
 		},
 		{
-			"name": "getRepoDaoCode",
+			"name": "getDaoWalletCode",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"}
 			],
