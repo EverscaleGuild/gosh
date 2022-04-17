@@ -74,14 +74,9 @@ contract GoshWallet {
         TvmCell repositoryCode,
         TvmCell repositoryData
     ) public {
-        (_goshdao, _rootgosh, version) = _unpackSalt();
-        require(_goshdao == msg.sender, ERR_SENDER_NOT_DAO);
-        require(_rootgosh.value != 0, ERR_ZERO_ROOT_GOSH);
-        require(_rootRepoPubkey != 0, ERR_ZERO_ROOT_KEY);
         m_CommitCode = commitCode;
         m_BlobCode = blobCode;
         m_RepositoryCode = repositoryCode;
-
         m_CommitData = commitData;
         m_BlobData = blobData;
         m_RepositoryData = repositoryData;
@@ -187,13 +182,6 @@ contract GoshWallet {
     //
     // Internals
     //
-
-    function _unpackSalt() private pure returns (address, address, string) {
-        optional(TvmCell) optsalt = tvm.codeSalt(tvm.code());
-        require(optsalt.hasValue(), ERR_NO_SALT);
-        return optsalt.get().toSlice().decode(address, address, string);
-    }
-
     function _buildRepositoryAddr(string name) private view returns (address) {
         TvmCell deployCode = GoshLib.buildRepositoryCode(
             m_RepositoryCode, address(this), _goshdao, name, version
