@@ -1,6 +1,13 @@
 @import '../../assets/styles/colors.scss';
 @import '../../assets/styles/mixins.scss';
 
+.footer-wrapper {
+  background-color: $white !important;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+}
 .footer {
   font-size: 0.925rem;
 

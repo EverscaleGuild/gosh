@@ -19,7 +19,7 @@ export const Header = ({location, ...props}: {location: string}) => {
         flexWrap: 'wrap',
       }}
     > 
-          <Link to={""} className={cn("logo")}><Logo/></Link>
+        <Link to={""} className={cn("logo")}><Logo/></Link>
       </Box>
     </header>
     </>

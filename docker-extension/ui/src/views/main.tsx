@@ -20,8 +20,14 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import { TabsUnstyled, TabPanelUnstyled, TabsListUnstyled, TabUnstyled } from '@mui/base';
+import { tabUnstyledClasses } from '@mui/base/TabUnstyled';
+import { buttonUnstyledClasses } from '@mui/base/ButtonUnstyled';
 
 import { visuallyHidden } from '@mui/utils';
+import { styled } from '@mui/system';
+
+import Logo from "../assets/images/logo.png";
 
 import {
   DataColumn,
@@ -29,6 +35,71 @@ import {
   Image as ImageType,
   Container as ContainerType
 } from "../interfaces";
+
+
+const Loading = () => (<div className={"loading-preview"}>
+  <img src={Logo}/>
+  <Typography>Coming soon...</Typography>
+</div>);
+
+const Tab = styled(TabUnstyled)`
+  background-color: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.03rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-left: .75rem;
+  font-family: "Open Sans", sans-serif;
+  padding: 4px 16px;
+  cursor: pointer;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+  &:hover, &:focus {
+    background-color: transparent;
+    border: none;
+    color: #024c9b;
+  }
+
+  &.${tabUnstyledClasses.selected} {
+    color: #007BFF;
+  }
+  &.${tabUnstyledClasses.selected}:hover {
+    background-color: transparent;
+    border: none;
+    color: #007BFF;
+  }
+
+
+  &.${buttonUnstyledClasses.disabled} {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const TabsList = styled(TabsListUnstyled)`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  position: absolute !important;
+  top: 1.125rem;
+  left: 4.5rem;
+
+  &:hover, &:focus {
+    background-color: transparent;
+    border: none;
+  }
+`;
+
+const Tabs = styled(TabsUnstyled)`
+  height: 100%;
+`;
+
+const TabPanel = styled(TabPanelUnstyled)`
+  padding-bottom: 4rem;
+  height: calc(100% - 4rem);
+`;
 
 const StatusDot:React.FunctionComponent<{status: string}>  = ({status}) => <div className={cn("status-dot", status)}></div>
 
@@ -42,7 +113,37 @@ const Help:React.FunctionComponent<{
       onHide={handleClose}
       className={cn("modal")}
     >
-      <Content title="Help" path="help" /><Button onClick={handleClose} className="close-button" color={undefined}><Icon icon="close"/></Button>
+      <Content title="Help" path="help" />
+    </Overlay>
+  )
+};
+
+const HelpNewGosh:React.FunctionComponent<{
+  showModal: boolean,
+  handleClose: any,
+}> = ({showModal, handleClose}) => {
+  return (
+    <Overlay
+      show={showModal}
+      onHide={handleClose}
+      className={cn("modal")}
+    >
+      <Content title="New Gosh" path="new-gosh" />
+    </Overlay>
+  )
+};
+
+const HelpNewBuild:React.FunctionComponent<{
+  showModal: boolean,
+  handleClose: any,
+}> = ({showModal, handleClose}) => {
+  return (
+    <Overlay
+      show={showModal}
+      onHide={handleClose}
+      className={cn("modal")}
+    >
+      <Content title="New build" path="new-build" />
     </Overlay>
   )
 };
@@ -147,7 +248,7 @@ function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: D
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }} elevation={1} variant={"elevation"}>
+      <Paper sx={{ width: '100%', mb: 2 }} elevation={1} variant={"elevation"} className={"table-wrapper"}>
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -201,6 +302,8 @@ const Main:React.FunctionComponent<{}> = () => {
   const [containers, setContainers] = useState<Array<ContainerType>>([]);
   const [images, setImages] = useState<Array<ImageType>>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showModalNewGosh, setShowModalNewGosh] = useState<boolean>(false);
+  const [showModalNewBuild, setShowModalNewBuild] = useState<boolean>(false);
 
   // function createData<T>(props: keyof T): T {
   //   return {
@@ -387,6 +490,12 @@ const Main:React.FunctionComponent<{}> = () => {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
+  const handleCloseNewGosh = () => setShowModalNewGosh(false);
+  const handleShowNewGosh = () => setShowModalNewGosh(true);
+
+  const handleCloseNewBuild = () => setShowModalNewBuild(false);
+  const handleShowNewBuild = () => setShowModalNewBuild(true);
+
 
   return (
     <>
@@ -396,7 +505,6 @@ const Main:React.FunctionComponent<{}> = () => {
       keywords="docker, gosh, extension, sssb, sssp"
     />
     <div className="button-block">
-
       <Button
         color="primary"
         size="medium"
@@ -414,18 +522,101 @@ const Main:React.FunctionComponent<{}> = () => {
         onClick={handleClick}
       >Update data</Button>
     </div>
+
     <Container maxWidth={false}>
-          <div className="content-container">
-            <Typography variant="h6">Containers</Typography>
-            <EnhancedTable<ContainerType> data={containers} columns={columns} />
-            <Typography variant="h6">Images</Typography>
-            <EnhancedTable<ImageType> data={images} columns={columnsImage} />
-          </div>
+    <Tabs defaultValue={0}>
+      <TabsList>
+        <Tab>Account</Tab>
+        <Tab>Repositories</Tab>
+        <Tab>Containers</Tab>
+      </TabsList>
+      <TabPanel value={0}>
+        <div className="button-block-top">
+          <Button
+            color="inherit"
+            variant="contained"
+            size="medium"
+            disableElevation
+            // icon={<Icon icon={"arrow-up-right"}/>}
+            // iconAnimation="right"
+            // iconPosition="after"
+            onClick={handleShow}
+          ><Icon icon="plus"/>Create</Button>
+          <Button
+            disableElevation
+            color="inherit"
+            variant="contained"
+            size="medium"
+            onClick={handleClick}
+          ><Icon icon="import"/>Import</Button>
+        </div>
+        <Loading />
+      </TabPanel>
+      <TabPanel value={1}>
+        <div className="button-block-top">
+          <Button
+            color="inherit"
+            variant="contained"
+            size="medium"
+            disableElevation
+            // icon={<Icon icon={"arrow-up-right"}/>}
+            // iconAnimation="right"
+            // iconPosition="after"
+            onClick={handleShow}
+          ><Icon icon="plus"/>New</Button>
+          <Button
+            disableElevation
+            color="inherit"
+            variant="contained"
+            size="medium"
+            onClick={handleClick}
+          ><Icon icon="download"/>Clone</Button>
+        </div>
+        <Loading />
+      </TabPanel>
+      <TabPanel value={2}>
+        <div className="button-block-top">
+          <Button
+            color="inherit"
+            variant="contained"
+            size="medium"
+            disableElevation
+            // icon={<Icon icon={"arrow-up-right"}/>}
+            // iconAnimation="right"
+            // iconPosition="after"
+            onClick={handleShow}
+          ><Icon icon="build"/>Build</Button>
+          <Button
+            disableElevation
+            color="inherit"
+            variant="contained"
+            size="medium"
+            onClick={handleClick}
+          ><Icon icon="check"/>Verify</Button>
+        </div>
+        <div className="content-container">
+          <Typography variant="h6">Containers</Typography>
+          <EnhancedTable<ContainerType> data={containers} columns={columns} />
+          <Typography variant="h6">Images</Typography>
+          <EnhancedTable<ImageType> data={images} columns={columnsImage} />
+        </div>
+      </TabPanel>
+    </Tabs>
 
     </Container>
       <Help
         showModal={showModal}
         handleClose={handleClose}
+      />
+
+    <HelpNewGosh
+        showModal={showModalNewGosh}
+        handleClose={handleCloseNewGosh}
+      />
+
+    <HelpNewBuild
+        showModal={showModalNewBuild}
+        handleClose={handleCloseNewBuild}
       />
     </>
   );
