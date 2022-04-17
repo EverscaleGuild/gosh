@@ -99,4 +99,7 @@ contract GoshDao {
         return _nameDao;
     }
 
+    function getRootPubkey() external view returns(uint256) {
+        return _rootpubkey;
+    }
 }
