@@ -92,7 +92,7 @@ contract Gosh {
         require(root_pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
-        new GoshDao {stateInit: s1, value: 0.4 ton, wid: 0}(
+        new GoshDao {stateInit: s1, value: 3 ton, wid: 0}(
             address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData);
     }
 

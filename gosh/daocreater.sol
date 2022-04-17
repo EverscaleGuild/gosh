@@ -22,7 +22,7 @@ contract DaoCreater {
     TvmCell m_codeDao;
     TvmCell m_dataDao;
 
-    uint128 constant FEE_DEPLOY_DAO = 3 ton;
+    uint128 constant FEE_DEPLOY_DAO = 4 ton;
 
     modifier accept() {
         tvm.accept();
