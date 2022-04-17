@@ -114,8 +114,8 @@ main {
 
   h6 {
     font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 12px;
+    font-size: 14px;
+    margin-bottom: 16px;
   }
 }
 
@@ -131,12 +131,53 @@ main {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    position: absolute !important;
-    top: 1rem;
+    position: fixed !important;
+    bottom: .875rem;
     right: 1.5rem;
+    z-index: 101;
 
     & > * {
       margin-left: .5rem;
+    }
+  }
+
+  .button-block-top {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: nowrap;
+    position: absolute !important;
+    top: 1.25rem;
+    right: 1.5rem;
+
+    & > * {
+      background-color: #ebebef;
+      border-radius: 1rem;
+      font-size1: 13px;
+      // font-weight: 600;
+      letter-spacing: -.02rem;
+      // padding-top: 0;
+      // padding-bottom: 0;
+      margin-left: .75rem;
+
+      svg {
+        color: #007BFF;
+        height: 18px;
+        width: 18px;
+        vertical-align: middle;
+        transform: translateX(-4px) translateY(0px);
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+      }
+
+      &:hover {
+        color: #ffffff;
+        background-color: #007BFF;
+
+        svg {
+          color: #003772;
+        }
+      }
     }
   }
 
@@ -271,4 +312,52 @@ th span {
     right: 22px;
     top: 18px;
   }
+}
+.cell-button {
+  padding: 12px 16px !important;
+  text-align: right;
+
+  button {
+    float: right;
+    background-color: #ebebef;
+    border-radius: 1rem;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+table {
+  tr {  
+    &:last-child {
+      td {
+        border-bottom: none !important;
+      }
+    }
+  }
+}
+.table-wrapper {
+  margin-bottom: 24px !important;
+}
+
+.loading-preview {
+  color: $gray-light;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100% - 3rem);
+  padding-bottom: 3rem;
+
+  img {
+    width: 176px;
+    height: auto;
+  }
+
+  p {
+    margin-top: -15px;
+    text-indent: 15px;
+  }
+}
+
+button {
+  cursor: pointer !important;
 }
