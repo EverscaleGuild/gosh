@@ -3,13 +3,11 @@ pragma ton-solidity >=0.54.0;
 library GoshLib {
     function buildWalletCode(
         TvmCell originalCode,
-        address dao,
-        address root,
+        uint256 pubkey,
         string version
     ) public returns (TvmCell) {
         TvmBuilder b;
-        b.store(dao);
-        b.store(root);
+        b.store(pubkey);
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }

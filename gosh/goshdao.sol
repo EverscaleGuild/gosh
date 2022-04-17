@@ -60,12 +60,12 @@ contract GoshDao {
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
-        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, address(this), _rootgosh, version);
+        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
         TvmCell _contractflex = tvm.buildStateInit({
             code: deployCode,
             pubkey: pubkey,
             contr: GoshWallet,
-            varInit: {_rootRepoPubkey: pubkeyroot}
+            varInit: {_rootRepoPubkey: pubkeyroot, _rootgosh : _rootgosh, _goshdao: address(this)}
         });
         return _contractflex;
     }

@@ -132,7 +132,9 @@
 		}
 	],
 	"data": [
-		{"key":1,"name":"_rootRepoPubkey","type":"uint256"}
+		{"key":1,"name":"_rootRepoPubkey","type":"uint256"},
+		{"key":2,"name":"_rootgosh","type":"address"},
+		{"key":3,"name":"_goshdao","type":"address"}
 	],
 	"events": [
 	],

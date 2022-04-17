@@ -32,8 +32,8 @@ contract GoshWallet {
 
     string public version;
     uint256 static _rootRepoPubkey;
-    address _rootgosh;
-    address _goshdao;
+    address static _rootgosh;
+    address static _goshdao;
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
