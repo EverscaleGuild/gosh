@@ -31,6 +31,7 @@ contract DaoCreater {
         address gosh, 
         TvmCell WalletCode,
         TvmCell WalletData) public {
+        tvm.accept();
         _gosh = gosh;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
