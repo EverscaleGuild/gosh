@@ -76,6 +76,8 @@ contract Repository {
         m_WalletData = WalletData;
         m_codeTag = codeTag;
         m_dataTag = dataTag;
+        address[] files;
+        _Branches["master"] = Item("master", address.makeAddrNone(), files);
     }
 
     function deployNewSnapshot(string name, string branch, string diff) private {
@@ -85,14 +87,7 @@ contract Repository {
         address addr = address.makeAddrStd(0, tvm.hash(stateInit));
         new Snapshot{stateInit:stateInit, value: 1 ton, wid: 0}(_pubkey, address(this), m_codeSnapshot, m_dataSnapshot);
         Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}(diff);
-        if (_Branches.exists(branch)) {
-            _Branches[branch].snapshot.push(addr);
-        }
-        else { 
-            address[] files;
-            files.push(addr);
-            _Branches[branch] = (Item(branch, address.makeAddrNone(), files));
-        }
+        _Branches[branch].snapshot.push(addr);
     }
     
     function deployDiff(uint256 pubkey, string name, string branch, string diff) public {
