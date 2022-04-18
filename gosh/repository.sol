@@ -132,13 +132,15 @@ contract Repository {
         }
     }
 
-/*
-    function deleteBranch(string name) public view {
-        require(msg.value > 0.1 ton, 100);
+    function deleteBranch(uint256 pubkey, string name) public {
+        require(msg.value > 0.3 ton, 100);
+        tvm.accept();
         require(_Branches.exists(name), 102);
-        Commit(_Branches[name].value).destroy{value: 0.1 ton, bounce: true, flag: 1}();
+        require(checkAccess(pubkey, msg.sender));
+        delete _Branches[name]; 
+//        Commit(_Branches[name].value).destroy{value: 0.1 ton, bounce: true, flag: 1}();
     }
-    
+/*    
     function deleteCommit(address parent, string nameBranch) public {
         require(msg.sender == _Branches[nameBranch].value,101);
         if (parent == address.makeAddrNone()) { delete _Branches[nameBranch]; return; }

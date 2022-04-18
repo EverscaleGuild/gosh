@@ -49,6 +49,15 @@
 			]
 		},
 		{
+			"name": "deleteBranch",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"Name","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployDiff",
 			"inputs": [
 				{"name":"repoName","type":"string"},

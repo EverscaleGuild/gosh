@@ -115,6 +115,16 @@ contract GoshWallet {
             value: amountFiles * 1.5 ton + 1 ton, bounce: true, flag: 2 
         }(tvm.pubkey(), newName, fromName);
     }
+
+    function deleteBranch(
+        string repoName,
+        string Name
+    ) public view onlyOwner accept {
+        address repo = _buildRepositoryAddr(repoName);
+        Repository(repo).deleteBranch{
+            value: 1 ton, bounce: true, flag: 2
+        }(tvm.pubkey(), Name);
+    }
     
     function deployDiff(
         string repoName,
