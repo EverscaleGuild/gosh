@@ -101,7 +101,7 @@ contract Repository {
     }
 
     function getSnapshotAddr(string name) private view returns(address) {
-        TvmCell deployCode = GoshLib.buildSnapshotCode(m_CommitCode, address(this), version);
+        TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Snapshot, varInit: {NameOfFile: name}});
         address addr = address.makeAddrStd(0, tvm.hash(stateInit));
         return addr;
