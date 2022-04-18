@@ -2,16 +2,39 @@ const { Buffer } = require('buffer')
 const { spawn, execSync: exec } = require('child_process')
 const zlib = require('zlib')
 
+let _verbosity = false
+let _progress = false
+let _dryRun = false
+
 const convert = (from, to) => data => Buffer.from(data, from).toString(to)
 
 const hexToAscii = convert('hex', 'ascii')
 const hexToUtf8 = convert('hex', 'utf8')
 const utf8ToHex = convert('utf8', 'hex')
 
-const verbose = (...data) => console.error(...data)
+function setVerboseFlag(flag) {
+    _verbosity = Boolean(flag > 1)
+}
+
+function setProgressFlag(flag) {
+    _progress = Boolean(flag)
+}
+
+function setDryRunFlag(flag) {
+    _dryRun = Boolean(flag)
+}
+
+const getProgressFlag = () => _progress
+const getDryRunFlag = () => _dryRun
+
+const verbose = (...data) => {
+    if (_verbosity) {
+        console.error('debug:', ...data)
+    }
+}
 
 const fatal = (...data) => {
-    verbose(...data)
+    console.error('error:', ...data)
     process.exit(1)
 }
 
@@ -65,43 +88,49 @@ const deconstructRemoteUrl = (url) => {
     }
 }
 
-/* function execCmd(cmd, raw = false, options = {}) {
-    verbose(`debug: shell$ ${cmd}`)
+function execCmd(cmd, raw = false, options = {}) {
+    // verbose(`shell$ ${cmd}`)
     const [command, ...args] = cmd.trimEnd().split(' ')
 
     return new Promise((resolve, reject) => {
-        const subprocess = spawn(command, args, { stdio: [null, null, null] })
-        verbose('debug: spawned subprocess')
+        const subprocess = spawn(command, args/* , { stdio: [null, null, null] } */)
+        if (options.input) {
+            subprocess.stdin.write(options.input)
+            subprocess.stdin.end()
+        }
         const output = []
         
         subprocess.stdout.on('data', (data) => {
-            process.stderr.write(`child stdout: ${data}`)
-            output.push(...data.toString('utf-8').trimEnd().split('\n'))
+            output.push(data)
         })
 
         subprocess.stderr.on('data', (data) => {
-            process.stderr.write(`child stderr: ${data}`)
+            verbose(`child stderr: ${data}`)
         })
 
         subprocess.on('error', (err) => {
-            process.stderr.write(`error: failed to run subrocess "${cmd} ${JSON.stringify(args)}"`)
+            verbose(`error: failed to run subrocess "${cmd} ${JSON.stringify(args)}"`)
             reject(err)
         })
 
         subprocess.on('close', (code) => {
-            process.stderr.write(`child: process exited with code ${code}\n`)
-            resolve(output)
+            if (code === 0) {
+                const result = Buffer.concat(output).toString('utf-8').trimEnd()
+                resolve(raw ? result : result.split('\n'))
+            } else {
+                reject(new Error(`child: process exited with code ${code}`))
+            }
         })
     })
-} */
+}
 
-const execCmd = (cmd, raw = false, options = {}) => {
+/* const execCmd = (cmd, raw = false, options = {}) => {
     // verbose(`debug: shell$ ${cmd}`)
     // if (options.input) verbose(`\twith piped: ${options.input}`)
 
     const out = exec(cmd, options).toString('utf-8').trimEnd()
     return raw ? out : out.split('\n')
-}
+} */
 
 const deflate = (data) => {
     const input = Buffer.from(data, 'utf8')
@@ -129,6 +158,11 @@ module.exports = {
     hexToAscii,
     hexToUtf8,
     utf8ToHex,
+    setVerboseFlag,
+    setProgressFlag,
+    setDryRunFlag,
+    getProgressFlag,
+    getDryRunFlag,
     verbose,
     fatal,
     emoji_shrug,
