@@ -49,11 +49,13 @@ library GoshLib {
     
     function buildBlobCode(
         TvmCell originalCode,
+        address repo,
         string name,
         string version
     ) public returns (TvmCell) {
         TvmBuilder b;
         b.store(name);
+        b.store(repo);
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
