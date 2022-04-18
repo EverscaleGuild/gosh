@@ -159,12 +159,23 @@ export class DockerClient {
       );
       return result == 0;
 
-    } catch(error:any) {
+    } 
+    catch(error:any) {
       console.error(error);
+    } 
+    finally {
       closeValidationLog();
     }
 
     return false;
+  }
+  static readMetadata(container: any, key: string, default: string): [boolean, string] {
+    const metadata = container.Labels || {};
+    if (key in metadata) {
+      return [true, metadata[key]];
+    } else {
+      return [false, default];
+    }
   }
 }
 
