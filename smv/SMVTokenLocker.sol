@@ -260,12 +260,11 @@ function updateHead() external override check_account
 {
     require(msg.value > 5*SMVConstants.VOTING_COMPLETION_FEE +                              
                         4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
-    require(!lockerBusy, SMVErrors.error_locker_busy); 
-
-    lockerBusy = true;                                    
+    require(!lockerBusy, SMVErrors.error_locker_busy);                                    
 
     if (clientHead.hasValue())
     {   
+        lockerBusy = true; 
         LockableBase(clientHead.get()).updateHead {value: 
                                      5*SMVConstants.VOTING_COMPLETION_FEE +                              
                                      3*SMVConstants.ACTION_FEE, flag: 1} ();
