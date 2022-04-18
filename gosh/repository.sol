@@ -82,7 +82,7 @@ contract Repository {
 
     function deployNewSnapshot(string name, string branch, string diff) private {
         tvm.accept();
-        TvmCell deployCode = GoshLib.buildSnapshotCode(m_CommitCode, address(this), version);
+        TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Snapshot, varInit: {NameOfFile: branch + "/" + name}});
         address addr = address.makeAddrStd(0, tvm.hash(stateInit));
         new Snapshot{stateInit:stateInit, value: 1 ton, wid: 0}(_pubkey, address(this), m_codeSnapshot, m_dataSnapshot);
