@@ -220,4 +220,8 @@ contract Repository {
         TvmCell s1 = _composeCommitStateInit(nameCommit);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
+    
+    function getSnapAddr(string branch, string name) external view returns(address)  {
+        return getSnapshotAddr(branch + "/" + name);
+    }
 }
