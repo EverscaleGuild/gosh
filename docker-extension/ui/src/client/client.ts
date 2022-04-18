@@ -40,6 +40,7 @@ export class DockerClient {
         : UNSIGNED_STATUS;
       containersViewModel.push({
         validated: verificationStatus,
+        id: container.Id,
         containerHash: container.Id,
         containerName: containerName,
         imageHash: container.ImageID,
@@ -78,7 +79,7 @@ export class DockerClient {
    **/
   static async getImages(): Promise<Array<Image>> {
     const images = await window.ddClient.docker.listImages();
-    const imagesViewModel = [];
+    const imagesViewModel: Array<Image> = [];
     for (var i=0; i < images.length; i++) {
       const image = images[i];
       const [isSigned, buildProvider] = await DockerClient.getBuildProvider(image);
@@ -88,6 +89,7 @@ export class DockerClient {
         : UNSIGNED_STATUS;
       imagesViewModel.push({
         validated: verificationStatus,
+        id: image.Id,
         imageHash: image.Id,
         buildProvider: buildProvider,
         goshRootAddress: ""

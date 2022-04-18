@@ -333,6 +333,11 @@ table {
       }
     }
   }
+  td {
+    button:disabled {
+      background-color: rgba(0, 0, 40, 0.1) !important;
+    }
+  }
 }
 .table-wrapper {
   margin-bottom: 24px !important;
@@ -360,4 +365,32 @@ table {
 
 button {
   cursor: pointer !important;
+}
+
+.table-row-noborder {
+  td, th {
+    border-bottom: none !important;
+  }
+
+  & + tr {
+    td, th {
+      padding-top: 0;
+    }
+  }
+}
+
+pre {
+  font-family: 'Noto Sans Mono', 'Courier New', Courier, monospace;
+  font-family: 'Red Hat Mono', 'Courier New', Courier, monospace;
+  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  font-weight: 400;
+  background-color: darken($surf-gray-background, 1);
+  margin: 0;
+  border-radius: .5rem;
+  padding: 1rem 1rem;
+  font-size: 13px;
+
+  code {
+    font-family: inherit;
+  }
 }

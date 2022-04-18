@@ -31,10 +31,9 @@ const Content = ({title, path}: {title?: string, path?: string}) => {
 
   return (
     <Container maxWidth={false}>
-          <section className="content-wrapper" ref={ref}>
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
-          </section>
-
+      <section className="content-wrapper" ref={ref}>
+        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
+      </section>
     </Container>
   );
 };
