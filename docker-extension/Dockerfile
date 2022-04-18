@@ -6,8 +6,9 @@ RUN apk --no-cache add curl coreutils docker yarn \
     ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2
 
 COPY --chown=root ./ui/ /ui-build/
-
-RUN cd /ui-build && yarn install --silent && npm run build --silent
+WORKDIR /ui-build
+RUN yarn install --silent
+RUN  npm run build --silent
 
 FROM node:16.14-alpine
 ARG content_signature_local_dir
@@ -21,6 +22,7 @@ LABEL org.opencontainers.image.title="Gosh" \
     com.docker.desktop.extension.icon="http://icons.gosh.run/Gosh%20icon%20-%20black.svg"
 
 COPY --from=build /ui-build/build /ui 
+COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 COPY metadata.json /
 COPY ./vm/docker-compose.yaml /
 COPY ./vm/commands/ /command/

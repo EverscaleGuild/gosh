@@ -8,6 +8,7 @@ const logger = console;
 const METADATA_KEY_BUILD_PROVIDER = "WALLET_PUBLIC";
 const COMMAND_VALIDATE_IMAGE_SIGNATURE = "/command/ensure-image-signature.sh" 
 const UNSIGNED_STATUS = "error";
+const COMMAND_REBUILD_IMAGE = "/command/build-image.sh"
 
 declare global {
   interface Window {
@@ -129,6 +130,31 @@ export class DockerClient {
     } else {
       return [false, "-"];
     }
+  }
+
+  static async validateContainerImage(appendValidationLog: any):  Promise<boolean> {
+    const goshRepositoryAddress = "demo-1";  
+    const result = window.ddClient.extension.vm.cli.exec(
+      COMMAND_REBUILD_IMAGE,
+      [goshRepositoryAddress, "gosh-repository"],
+      {
+        onOutput(data: any): void {
+          if (!!data.stdout) {
+            appendValidationLog(data.stdout);
+          }
+          if (!!data.stdout) {
+            appendValidationLog("Error: " + data.stderr);
+          }
+        },
+        onError(error: any): void {
+          console.error(error);
+        },
+        onClose(exitCode: number): void {
+          console.log("onClose with exit code " + exitCode);
+        },
+      }
+    );
+    return result == 0;
   }
 }
 

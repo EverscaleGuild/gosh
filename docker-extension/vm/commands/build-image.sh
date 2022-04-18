@@ -14,6 +14,9 @@ cd /workdir/$REPOSITORY_NAME
 git clone gosh::${GOSH_NETWORK}://${GOSH_ROOT_CONTRACT_ADDRESS}/$REPOSITORY_NAME
 cd $REPOSITORY_NAME
 
+set DOCKER_BUILDKIT=1
+set DOCKER_CLI_EXPERIMENTAL=enabled
+
 TARGET_IMAGE=$(docker buildx build \
     -f goshfile.yaml \
     --iidfile ../id.txt \
@@ -28,6 +31,7 @@ if [[ -z "$TARGET_IMAGE" ]]; then
     exit 1
 fi
 
+if [[]];
 TARGET_IMAGE_SHA=$(docker inspect --format='{{index (split (index .RepoDigests 0) "@") 1}}' $TARGET_IMAGE)
 
 if [[ -z "$TARGET_IMAGE_SHA" ]]; then
