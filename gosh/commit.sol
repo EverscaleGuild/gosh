@@ -57,7 +57,7 @@ contract Commit {
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
         TvmBuilder b;
-        b.store(address(this));
+        // b.store(address(this));
         b.store(_nameBranch);
         b.store(version);
         TvmCell deployCode = tvm.setCodeSalt(m_BlobCode, b.toCell());

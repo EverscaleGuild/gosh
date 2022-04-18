@@ -5,6 +5,11 @@ const { join: pathJoin } = require('path')
 const readline = require('readline')
 
 const {
+    setVerboseFlag,
+    setProgressFlag,
+    setDryRunFlag,
+    getProgressFlag,
+    getDryRunFlag,
     verbose,
     fatal,
     send,
@@ -21,6 +26,7 @@ const CAPABILITIES_LIST = ['list', 'push', 'fetch']
 let firstPush
 const _remoteRefs = {} // remote refs: ref_name => sha1, addr
 const _pushed = {} // pushed refs
+const received = []
 
 function accountRequired() {
     verbose('error: account credentials required')
@@ -59,10 +65,14 @@ async function getRefs() {
 }
 
 function objectData(object) {
-    return {
+    return Promise.all([
+        git.typeObject(object),
+        git.catObject(object),
+    ]).then(([type, content]) => ({ type, content }))
+    /* return {
         type: git.typeObject(object),
         content: git.catObject(object)
-    }
+    } */
 }
 
 async function deleteRemoteRef(ref) {
@@ -70,7 +80,7 @@ async function deleteRemoteRef(ref) {
 }
 
 async function pushObject(sha, currentCommit, branch) {
-    const { type, content } = objectData(sha)
+    const { type, content } = await objectData(sha)
     // verbose(`debug: object ${type} "${content}"`)
     if (type === 'commit') {
         const address = await helper.getCommitAddr(sha, branch)
@@ -94,7 +104,7 @@ async function pushRef(localRef, remoteRef) {
         const branch = localRef.slice('refs/heads/'.length)
         // verbose(`debug: pushRef(${localRef}, ${remoteRef})`)
         const exists = Object.values(_remoteRefs).map(ref => ref.sha)
-        const output = git.lsObjects(localRef, exists)
+        const output = await git.lsObjects(localRef, exists)
         // verbose(`debug: listed ${output.length} object(s):`)
         // verbose(output)
         const objects = output.map(o => o.split(' ')[0])
@@ -114,13 +124,23 @@ async function pushRef(localRef, remoteRef) {
     //})
 }
 
-function fetch(sha) {
-
-}
-
 function doCapabilities() {
     CAPABILITIES_LIST.forEach(cap => send(cap))
     send()
+}
+
+function doOption(input) {
+    const [, optName, optValue] = input.split(' ')
+    if (optName === 'verbosity') {
+        send('ok')
+        setVerboseFlag(optValue)
+        return
+    // } else if (optName === 'progress') {
+    //     setProgressFlag(optName)
+    // } else if (optName === 'dry-run') {
+    //     setDryRunFlag(optValue)
+    }
+    send('unsupported')
 }
 
 async function doList(forPush = false) {
@@ -152,55 +172,79 @@ async function doPush(input) {
 async function doFetch(input) {
     const [, commitSha, ref] = input.split(' ')
     const branch = ref.slice('refs/heads/'.length)
-
+    
     const queue = [{ type: 'commit', sha: commitSha }]
-    const received = []
+    const notQueued = obj => !queue.find(elem => elem.sha === obj.sha)
+    // const received = []
+    const serializationQueue = []
+    const commits = {}
 
+    const promises = []
     while (queue.length) {
         const { type, sha, commit } = queue.shift()
         if (received.includes(sha)) continue
-        if (git.isExistsObject(sha)) {
-            verbose(`debug: already downloaded: ${sha}`)
-        } else {
+        if (serializationQueue.includes(sha)) continue
+        // if (await git.isExistsObject(sha)) {
+        //     verbose(`debug: already downloaded: ${sha}`)
+        // } else {
             if (type === 'commit') {
                 const object = await helper.getCommit(sha, branch)
                 verbose(`debug: got: ${sha}`)
-                const refList = git.extractRefs(type, object.content).map(o => ({ ...o, commit: sha }))
+                commits[object.sha] = object
+                const refList = git.extractRefs(type, object.content)
+                    .map(o => ({ ...o, commit: sha }))
+                    .filter(notQueued)
                 queue.push(...refList)
                 // verbose('debug: after load commit:', queue)
-                git.writeObject(type, object.content, { sha })
+                if (!serializationQueue.includes(sha)) {
+                    promises.push(git.writeObject(type, object.content, { sha }))
+                    serializationQueue.push(sha)
+                }
             } else if (type === 'tag') {
                 verbose(`debug: warning: retrieving ${type}-object not supported yet`)
                 continue
             } else {
-                const commitAddr = await helper.getCommitAddr(commit, branch)
+                const commitAddr = commits[commit]
+                    ? commits[commit].address
+                    : await helper.getCommitAddr(commit, branch)
                 const object = await helper.getBlob(sha, type, commitAddr)
                 verbose(`debug: got: ${sha}`)
-                const refList = git.extractRefs(type, object.content).map(o => ({ ...o, commit }))
+                const refList = git.extractRefs(type, object.content)
+                    .map(o => ({ ...o, commit }))
+                    .filter(notQueued)
                 queue.push(...refList)
                 // verbose(`debug: after load ${type}:`, queue)
                 // verbose({ type, sha, content: object.content })
-                git.writeObject(type, object.content, { sha })
+                if (!serializationQueue.includes(sha)) {
+                    promises.push(git.writeObject(type, object.content, { sha }))
+                    serializationQueue.push(sha)
+                }
             }
-            received.push(sha)
-            verbose(`debug: wrote: ${sha}`)
-        }
+            // received.push(sha)
+            // verbose(`debug: wrote: ${sha}`)
+        // }
     }
+    verbose(`collected ${promises.length} objects`)
+    await Promise.all(promises).then(values => {
+        values.forEach(sha => {
+            received.push(sha)
+            verbose(`wrote: ${sha}`)
+        })
+    }, reason => fatal('doFetch() error:', reason))
     send()
-    return
+    return Promise.resolve()
 }
 
 ;(async () => {
+    const startTime = process.hrtime.bigint()
     const args = process.argv.slice(2)
 
     if (args.length !== 2) {
         fatal('Expected 2 arguments')
     }
 
-    const [cmd, remoteUrl] = args
+    const [, remoteUrl] = args
     const context = deconstructRemoteUrl(remoteUrl)
-    const gitDir = process.env.GIT_DIR
-    // verbose(context, { gitDir })
     
     const credentials = await userCredentials(context.account)
 
@@ -218,7 +262,7 @@ async function doFetch(input) {
             doCapabilities()
         } else if (input === 'option') {
             // list of possible options: https://git-scm.com/docs/gitremote-helpers#_options
-            fatal(`Not implemented yet: '${input}'`)
+            doOption(input)
         } else if(input === 'list') {
             await doList()
         } else if (input === 'list for-push') {
@@ -229,18 +273,20 @@ async function doFetch(input) {
             await doPush(input)
         } else if (input.startsWith('fetch')) {
             await doFetch(input)
-        //} else if (input.startsWith('connect')) {
-        //    verbose(`> ${input}`)
-        //    const [, arg] = input.split(' ')
-        //    const result = await execCmd(`${arg} ${context.repo}`)
-        //    verbose('[DEBUG] stdout:', result)
-        //    send(result)
-        } else if (input === '') { // finish communication
-            send()
-            process.exit(0)
-        } else {
-            verbose(`remote: got unknown command: "${input}"`)
-            process.exit(1)
+            //} else if (input.startsWith('connect')) {
+                //    verbose(`> ${input}`)
+                //    const [, arg] = input.split(' ')
+                //    const result = await execCmd(`${arg} ${context.repo}`)
+                //    verbose('[DEBUG] stdout:', result)
+                //    send(result)
+            } else if (input === '') { // finish communication
+                send()
+                const endTime = process.hrtime.bigint()
+                verbose(`completed in ${(endTime - startTime) / BigInt(1e9)} sec`)
+                process.exit(0)
+            } else {
+                verbose(`remote: got unknown command: "${input}"`)
+                process.exit(1)
+            }
         }
-    }
 })()
