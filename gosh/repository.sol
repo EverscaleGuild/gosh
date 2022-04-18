@@ -77,7 +77,7 @@ contract Repository {
         m_codeTag = codeTag;
         m_dataTag = dataTag;
         address[] files;
-        _Branches["master"] = Item("master", address.makeAddrNone(), files);
+        _Branches["main"] = Item("main", address.makeAddrNone(), files);
     }
 
     function deployNewSnapshot(string name, string branch, string diff) private {
