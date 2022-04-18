@@ -35,13 +35,13 @@ PAYLOAD=$($TONOS_CLI body --abi $GOSH_ABI deployRepository "{\"pubkey\":\"$OWNER
           | sed -n '/Message body:/ s/Message body: // p')
 
 THREE_EVERS=3000000000
-SEVENTY_EVERS=70000000000
+THIRTY_EVERS=30000000000
 VALUE=$THREE_EVERS
 
 CALLED="submitTransaction {\"dest\":\"$GOSH_ADDR\",\"value\":$VALUE,\"bounce\":false,\"allBalance\":false,\"payload\":\"$PAYLOAD\"}"
 $TONOS_CLI -u $NETWORK call $WALLET_ADDR $CALLED --abi $WALLET_ABI --sign $WALLET_KEYS > /dev/null || exit 1
 REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"pubkey\":\"$OWNER_PUBKEY\",\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
-./giver.sh $REPO_ADDR $SEVENTY_EVERS
+./giver.sh $REPO_ADDR $THIRTY_EVERS
 
 echo ===================== REPO =====================
 echo name: $1

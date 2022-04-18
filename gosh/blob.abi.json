@@ -46,6 +46,14 @@
 				{"name":"commit","type":"address"},
 				{"name":"content","type":"string"}
 			]
+		},
+		{
+			"name": "getVersion",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
 		}
 	],
 	"data": [

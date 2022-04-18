@@ -8,7 +8,10 @@
 			"inputs": [
 				{"name":"value0","type":"uint256"},
 				{"name":"rootrepo","type":"address"},
-				{"name":"nameBranch","type":"string"}
+				{"name":"codeSnapshot","type":"cell"},
+				{"name":"dataSnapshot","type":"cell"},
+				{"name":"branch","type":"string"},
+				{"name":"name","type":"string"}
 			],
 			"outputs": [
 			]
@@ -16,7 +19,7 @@
 		{
 			"name": "deployNewSnapshot",
 			"inputs": [
-				{"name":"name","type":"string"}
+				{"name":"newbranch","type":"string"}
 			],
 			"outputs": [
 			]
@@ -30,10 +33,10 @@
 			]
 		},
 		{
-			"name": "setSnapshotCode",
+			"name": "setSnapshotSelf",
 			"inputs": [
-				{"name":"code","type":"cell"},
-				{"name":"data","type":"cell"}
+				{"name":"snaphot","type":"string"},
+				{"name":"branch","type":"string"}
 			],
 			"outputs": [
 			]
@@ -47,7 +50,7 @@
 			]
 		},
 		{
-			"name": "getNameBranch",
+			"name": "getName",
 			"inputs": [
 			],
 			"outputs": [
@@ -63,15 +66,16 @@
 			]
 		},
 		{
-			"name": "upgrade",
+			"name": "getVersion",
 			"inputs": [
-				{"name":"state","type":"cell"}
 			],
 			"outputs": [
+				{"name":"value0","type":"string"}
 			]
 		}
 	],
 	"data": [
+		{"key":1,"name":"NameOfFile","type":"string"}
 	],
 	"events": [
 	],
@@ -83,8 +87,10 @@
 		{"name":"pubkey","type":"uint256"},
 		{"name":"_rootRepo","type":"address"},
 		{"name":"_snapshot","type":"string"},
-		{"name":"_nameBranch","type":"string"},
 		{"name":"m_codeSnapshot","type":"cell"},
-		{"name":"m_dataSnapshot","type":"cell"}
+		{"name":"m_dataSnapshot","type":"cell"},
+		{"name":"NameOfFile","type":"string"},
+		{"name":"_name","type":"string"},
+		{"name":"_branch","type":"string"}
 	]
 }

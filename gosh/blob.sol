@@ -12,7 +12,7 @@ pragma AbiHeader pubkey;
 
 /* Root contract of Blob */
 contract Blob{
-    string version = "0.0.1";
+    string version = "0.1.0";
     address _rootCommit;
     string static _nameBlob;
     string _nameBranch;
@@ -35,6 +35,12 @@ contract Blob{
         _nameBranch = nameBranch;
         _blob = blob;
     }    
+
+/*    
+    function destroy(address addr) public onlyOwner {
+        selfdestruct(addr);
+    }
+*/
     
     //Setters
     
@@ -53,5 +59,9 @@ contract Blob{
     
     function getBlob() external view returns(string sha, address commit, string content) {
         return (_nameBlob, _rootCommit, _blob);
+    }
+
+    function getVersion() external view returns(string) {
+        return version;
     }
 }
