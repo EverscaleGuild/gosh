@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { MetaDecorator, Overlay, Icon } from "../components";
 import Button from '@mui/material/Button'
 import { DockerClient } from "../client";
@@ -31,7 +31,7 @@ import Logo from "../assets/images/logo.png";
 
 import {
   DataColumn,
-  Status,
+  Validation,
   Image as ImageType,
   Container as ContainerType
 } from "../interfaces";
@@ -230,7 +230,21 @@ function EnhancedTableHead<T>(
   );
 }
 
-function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: DataColumn<T>[]}) {
+function EnhancedTable<T extends {id: string}>({
+  data,
+  columns,
+  actionFunction,
+  actionEndFunction,
+  actionCaption,
+  actionActive
+}: {
+  data: T[],
+  columns: DataColumn<T>[],
+  actionFunction: (element: T, index: number) => void,
+  actionEndFunction?: () => void,
+  actionCaption: string,
+  actionActive: boolean | Validation
+}) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof T>('validated' as keyof T);
   const [page, setPage] = React.useState(0);
@@ -267,20 +281,52 @@ function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: D
               ? stableSort<T>(data, getComparator<T>(order, orderBy))
                 .map((row, index) => {
                   return (
-                    <TableRow
+                    <Fragment 
                       key={index}
-                    > 
-                      {columns.map((column, index) => column.id === "validated" ? <TableCell key={String(column.id)}><StatusDot status={String(row[column.id])}/></TableCell> :  <TableCell key={String(column.id)}><>{row[column.id]}</></TableCell>)}
-                      <TableCell
-                        className="cell-button"
-                      >
-                        <Button
-                          color="inherit"
-                          variant="contained"
-                          size="small"
-                        >Validate</Button>
-                      </TableCell>
-                    </TableRow>
+                    >
+                      <TableRow
+                        key={index}
+                        className={cn({"table-row-noborder": actionActive && actionActive !== true && actionActive.id === row.id!})}
+                      > 
+                        {columns.map((column, i) => column.id === "validated" ? <TableCell key={String(column.id)}><StatusDot status={String(row[column.id])}/></TableCell> :  <TableCell key={String(column.id)}><>{row[column.id]}</></TableCell>)}
+                        <TableCell
+                          className="cell-button"
+                        >
+                          {actionActive && actionActive !== true && actionActive.id === row.id! && !actionActive.active
+                            ? <Button
+                                color="inherit"
+                                variant="contained"
+                                size="small"
+                                onClick={() => {
+                                  actionEndFunction && actionEndFunction();
+                                }}
+                              >Close</Button>
+                            : <Button
+                              color="inherit"
+                              variant="contained"
+                              size="small"
+                              disabled={Boolean(actionActive)}
+                              onClick={() => {
+                                actionFunction(row, index);
+                              }}
+                            >{actionCaption}</Button>
+                          }
+                        </TableCell>
+                      </TableRow>
+                      {actionActive && actionActive !== true && actionActive.id === row.id! && <TableRow
+                        key={index}
+                      > 
+                        <TableCell
+                          colSpan={10}
+                        >
+                          <pre>
+                            <code>
+                              {actionActive.stdout || "Initialising validation..."}
+                            </code>
+                          </pre>
+                        </TableCell>
+                      </TableRow>}
+                    </Fragment>
                   );
                 })
               : 
@@ -299,21 +345,12 @@ function EnhancedTable<T extends object>({data, columns}: {data: T[], columns: D
 }
 
 const Main = () => {
+  const [validation, setValidation] = useState<boolean | Validation>(false);
   const [containers, setContainers] = useState<Array<ContainerType>>([]);
   const [images, setImages] = useState<Array<ImageType>>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showModalNewGosh, setShowModalNewGosh] = useState<boolean>(false);
   const [showModalNewBuild, setShowModalNewBuild] = useState<boolean>(false);
-
-  // function createData<T>(props: keyof T): T {
-  //   return {
-  //     name,
-  //     calories,
-  //     fat,
-  //     carbs,
-  //     protein,
-  //   };
-  // }
 
   const columns: DataColumn<ContainerType>[] = React.useMemo(
     () => [
@@ -418,6 +455,7 @@ const Main = () => {
   );
   const data = React.useMemo<ContainerType[]>(() => ([{
     validated: "success",
+    id: "05deec074512993...",
     containerHash: "05deec074512993...",
     containerName: "/exciting_brahrnag...",
     imageHash: "sha256:137444141...",
@@ -425,6 +463,7 @@ const Main = () => {
     goshRootAddress: ""
   },{
     validated: "success",
+    id: "85b26c7366d42e...",
     containerHash: "85b26c7366d42e...",
     containerName: "/blissful_gates",
     imageHash: "sha256:3954a180f...",
@@ -432,6 +471,7 @@ const Main = () => {
     goshRootAddress: ""
   },{
     validated: "error",
+    id: "0c9039aa990d70... ",
     containerHash: "0c9039aa990d70... ",
     containerName: "/docker-beautifu...",
     imageHash: "sha256:b5ec650b2...",
@@ -441,11 +481,13 @@ const Main = () => {
 
   const dataImage = React.useMemo<ImageType[]>(() => ([{
     validated: "success",
+    id: "sha256:3954a180f...",
     imageHash: "sha256:3954a180f...",
     buildProvider: "95c06aa743d1f90...",
     goshRootAddress: ""
   },{
     validated: "success",
+    id: "sha256:137444141...",
     imageHash: "sha256:137444141...",
     buildProvider: "-",
     goshRootAddress: ""
@@ -457,7 +499,7 @@ const Main = () => {
     DockerClient.getContainers()
     .then((value) => {
       console.log(value);
-      setContainers(value || []);
+      setContainers(value.map((container: ContainerType) => ({...container, id: container.containerHash})) || []);
       //do stuff
     });
   }, []);
@@ -466,6 +508,7 @@ const Main = () => {
     DockerClient.getImages()
     .then((value) => {
       console.log(value);
+      setImages(value.map((image: ImageType) => ({...image, id: image.imageHash})) || []);
       setImages(value || []);
       //do stuff
     });
@@ -487,6 +530,52 @@ const Main = () => {
       //do stuff
     });
   }
+
+  function validateContainer(element: ContainerType, index: number): void {
+    setValidation({
+      id: element.containerHash,
+      type: "container",
+      active: true,
+      stdout: ""
+    });
+
+    setTimeout(() => setValidation({
+      id: element.containerHash,
+      type: "container",
+      active: true,
+      stdout: `Validation \nInit \nid: ${element.containerHash}`
+    }), 1500);
+
+    setTimeout(() => setValidation({
+      id: element.containerHash,
+      type: "container",
+      active: false,
+      stdout: `Validation \nInit \nid: ${element.containerHash}\nFinished!`
+    }), 3000);
+    // to update stdout call
+    // DockerClient.getValidationLog()
+    // .then((value) => {
+    //   console.log(value);
+    //   setContainerValidation({
+    //     id: containerValidation.id,
+    //     stdout: <newValue>
+    //   });
+    // });
+  }
+
+  function validateImage(element: ImageType, index: number): void {
+    setValidation({
+      id: element.imageHash,
+      type: "image",
+      active: true,
+      stdout: ""
+    });
+  }
+
+  function closeValidation(): void {
+    setValidation(false);
+  }
+
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
@@ -531,7 +620,7 @@ const Main = () => {
         <Tab>Containers</Tab>
       </TabsList>
       <TabPanel value={0}>
-        <div className="button-block-top">
+        {/* <div className="button-block-top">
           <Button
             color="inherit"
             variant="contained"
@@ -549,11 +638,11 @@ const Main = () => {
             size="medium"
             onClick={handleClick}
           ><Icon icon="import"/>Import</Button>
-        </div>
+        </div> */}
         <Loading />
       </TabPanel>
       <TabPanel value={1}>
-        <div className="button-block-top">
+        {/* <div className="button-block-top">
           <Button
             color="inherit"
             variant="contained"
@@ -571,11 +660,11 @@ const Main = () => {
             size="medium"
             onClick={handleClick}
           ><Icon icon="download"/>Clone</Button>
-        </div>
+        </div> */}
         <Loading />
       </TabPanel>
       <TabPanel value={2}>
-        <div className="button-block-top">
+        {/* <div className="button-block-top">
           <Button
             color="inherit"
             variant="contained"
@@ -593,12 +682,26 @@ const Main = () => {
             size="medium"
             onClick={handleClick}
           ><Icon icon="check"/>Verify</Button>
-        </div>
+        </div> */}
         <div className="content-container">
           <Typography variant="h6">Containers</Typography>
-          <EnhancedTable<ContainerType> data={containers} columns={columns} />
+          <EnhancedTable<ContainerType>
+            data={data}
+            columns={columns}
+            actionFunction={validateContainer}
+            actionEndFunction={closeValidation}
+            actionCaption={"Validate"}
+            actionActive={validation ? (validation !== true && validation.type === "container" ? validation : true) : validation}
+          />
           <Typography variant="h6">Images</Typography>
-          <EnhancedTable<ImageType> data={images} columns={columnsImage} />
+          <EnhancedTable<ImageType>
+            data={dataImage}
+            columns={columnsImage}
+            actionFunction={validateImage}
+            actionEndFunction={closeValidation}
+            actionCaption={"Validate"}
+            actionActive={validation ? (validation !== true && validation.type === "image" ? validation : true) : validation}
+          />
         </div>
       </TabPanel>
     </Tabs>
