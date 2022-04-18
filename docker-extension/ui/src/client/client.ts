@@ -124,37 +124,32 @@ export class DockerClient {
   }
 
   static async getBuildProvider(container: any): Promise<[boolean, string]> {
-    const metadata = container.Labels || {};
-    if (METADATA_KEY_BUILD_PROVIDER in metadata) {
-      return [true, metadata[METADATA_KEY_BUILD_PROVIDER]];
-    } else {
-      return [false, "-"];
-    }
+    return readContainerImageMetadata(container, METADATA_KEY_BUILD_PROVIDER, "-");
   }
 
   static async validateContainerImage(appendValidationLog: any, closeValidationLog:any):  Promise<boolean> {
-    //TODO: Make sure it's not in the final release. 
-    // goshRepositoryAddress should be taken from the image metadata
-    const goshRepositoryAddress = "demo-1";
+    const goshRepositoryAddress = readContainerImageMetadata();
     try {
       const result = await window.ddClient.extension.vm.cli.exec(
         COMMAND_REBUILD_IMAGE,
         [goshRepositoryAddress, "gosh-repository"],
         {
-          onOutput(data: any): void {
-            if (!!data.stdout) {
-              appendValidationLog(data.stdout);
-            }
-            if (!!data.stdout) {
-              appendValidationLog("Error: " + data.stderr);
-            }
-          },
-          onError(error: any): void {
-            console.error(error);
-          },
-          onClose(exitCode: number): void {
-            console.log("onClose with exit code " + exitCode);
-          },
+          stream: {
+            onOutput(data: any): void {
+              if (!!data.stdout) {
+                appendValidationLog(data.stdout);
+              }
+              if (!!data.stderr) {
+                appendValidationLog(data.stderr);
+              }
+            },
+            onError(error: any): void {
+              console.error(error);
+            },
+            onClose(exitCode: number): void {
+              console.log("onClose with exit code " + exitCode);
+            },
+          }
         }
       );
       return result == 0;
@@ -169,7 +164,7 @@ export class DockerClient {
 
     return false;
   }
-  static readMetadata(container: any, key: string, default: string): [boolean, string] {
+  static readContainerImageMetadata(container: any, key: string, default: string): [boolean, string] {
     const metadata = container.Labels || {};
     if (key in metadata) {
       return [true, metadata[key]];
