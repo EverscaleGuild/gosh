@@ -1,23 +1,33 @@
-IMAGE?=teamgosh/docker-extension
-#IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.3
+#IMAGE?=teamgosh/docker-extension
+IMAGE?=teamgosh-docker-extension
+TAG?=1.0.0-alpha.4
 LOCAL_TEMP_DIR=./.tmp/
 
 .DEFAULT_GOAL := debug
+
+rm: ## Remove previous extension installations
+	docker extension rm teamgosh-docker-extension || true
+	docker extension rm teamgosh/docker-extension || true
+	
 
 build: ## Build service image to be deployed as a desktop extension
 	-rm -rf $(LOCAL_TEMP_DIR)
 	-mkdir $(LOCAL_TEMP_DIR)
 	-cp -r ../content-signature $(LOCAL_TEMP_DIR)
+	-cp -r ../git-remote-gosh $(LOCAL_TEMP_DIR)
+	-mkdir $(LOCAL_TEMP_DIR)/gosh
+	-cp -r ../gosh/*.abi.json $(LOCAL_TEMP_DIR)/gosh/
 	docker buildx build \
 	  --tag=$(IMAGE):$(TAG) \
 	  --tag=$(IMAGE):latest \
-	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)" \
+	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)/content-signature" \
+	  --build-arg git_remote_gosh_local_dir="$(LOCAL_TEMP_DIR)/git-remote-gosh" \
+	  --build-arg gosh_abi_local_dir="$(LOCAL_TEMP_DIR)/gosh" \
 	  --output=type=docker \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
 
-install: build ## Install the extension
+install: rm build ## Install the extension
 	docker extension install $(IMAGE):$(TAG)
 
 update: build ## Update the extension

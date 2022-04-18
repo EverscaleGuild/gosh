@@ -570,6 +570,23 @@ const Main = () => {
       active: true,
       stdout: ""
     });
+    DockerClient.validateContainerImage(
+      element.imageHash,
+      (status: string) => {
+        setValidation({ 
+          id: element.imageHash,
+          type: "image",
+          active: true,
+          stdout: status
+        });
+      }, 
+      () => setValidation({
+          id: element.imageHash,
+          type: "image",
+          active: false,
+          stdout: ""
+      })
+    );
   }
 
   function closeValidation(): void {

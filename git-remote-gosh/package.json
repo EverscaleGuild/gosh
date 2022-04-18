@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/tonlabs/git-remote-gosh#readme",
   "dependencies": {
-    "@eversdk/core": "^1.30.2",
-    "@eversdk/lib-node": "^1.30.2"
+    "@eversdk/core": "^1.32.0",
+    "@eversdk/lib-node": "^1.32.0"
   }
 }

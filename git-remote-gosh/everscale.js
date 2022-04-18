@@ -10,6 +10,7 @@ const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
 
 let ES_CLIENT
+let CURRENT_REPO_NAME
 let CURRENT_REPO
 let Gosh, Repository, Snapshot, Commit, Blob
 let UserWallet = {}
@@ -27,14 +28,17 @@ const fatal = (...data) => {
 }
 async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
-        network: { endpoints: [network || 'main.ton.dev'] },
+        network: {
+            endpoints: [network || 'main.ton.dev'],
+            queries_protocol: 'WS',
+        },
         defaultWorkchain: 0,
         log_verbose: false,
     }
 
     ES_CLIENT = new TonClient(config)
     GOSH_ADDR = goshAddress
-    CURRENT_REPO = repo
+    CURRENT_REPO_NAME = repo
     
     const promises = ['gosh', 'repository', 'snapshot', 'commit', 'blob'].map(name => loadContract(name))
     promises.push(loadContract('SurfMultisigWallet', './abi'))
@@ -151,11 +155,13 @@ async function callWithWallet(wallet, calledContract, calledFn, calledArgs, valu
 
 // Gosh contract
 async function getRepoAddress(repoName) {
+    if (CURRENT_REPO && CURRENT_REPO.address) return CURRENT_REPO.address
     const result = await runLocal(Gosh, 'getAddrRepository', { name: repoName })
     return result.decoded.output.value0
 }
 
-async function getRepo(repoName = CURRENT_REPO) {
+async function getRepo(repoName = CURRENT_REPO_NAME) {
+    if (CURRENT_REPO) return CURRENT_REPO
     const repo = {
         ...Repository,
         name: repoName,
@@ -174,7 +180,8 @@ async function getRepo(repoName = CURRENT_REPO) {
         repo.balance = +result[0].balance
     }
 
-    return repo
+    CURRENT_REPO = repo
+    return CURRENT_REPO
 }
 
 function createRepo(name) {
@@ -182,7 +189,7 @@ function createRepo(name) {
 }
 
 // Repo contract
-async function createBranch(name, from, repo = CURRENT_REPO) {
+async function createBranch(name, from, repo = CURRENT_REPO_NAME) {
     const repoContract = await getRepo(repo)
     return callWithWallet(
         UserWallet,
@@ -193,7 +200,7 @@ async function createBranch(name, from, repo = CURRENT_REPO) {
     )
 }
 
-async function deleteBranch(name, repo = CURRENT_REPO) {
+async function deleteBranch(name, repo = CURRENT_REPO_NAME) {
     const repoContract = await getRepo(repo)
     return callWithWallet(
         UserWallet,
@@ -204,7 +211,7 @@ async function deleteBranch(name, repo = CURRENT_REPO) {
     )
 }
 
-async function branchList(repo = CURRENT_REPO) {
+async function branchList(repo = CURRENT_REPO_NAME) {
     const repoContract = await getRepo(repo)
     const rawList = (await runLocal(repoContract, 'getAllAddress')).decoded.output.value0
     const list = rawList.filter(({ value }) => value)
@@ -223,17 +230,17 @@ async function branchList(repo = CURRENT_REPO) {
 }
 
 
-function getRemoteHead(repo = CURRENT_REPO) {
+function getRemoteHead(repo = CURRENT_REPO_NAME) {
     return 'refs/heads/master'
 }
 
 async function createCommit(branch, sha, content) {
-    const repoContract = await getRepo(CURRENT_REPO)
+    const repoContract = await getRepo(CURRENT_REPO_NAME)
     return call(repoContract, 'deployCommit', { nameBranch: branch, nameCommit: sha, fullCommit: content })
 }
 
 async function getCommitAddr(sha, branch = 'master') {
-    const repoContract = await getRepo(CURRENT_REPO)
+    const repoContract = await getRepo(CURRENT_REPO_NAME)
     const result = await runLocal(repoContract, 'getCommitAddr', { nameBranch: branch, nameCommit: sha })
     return result.decoded.output.value0
 }
@@ -284,7 +291,7 @@ async function getBlob(sha, type, commitAddr) {
 
 // other
 async function createTree(commit, id, content) {
-    const repoContract = await getRepo(CURRENT_REPO)
+    const repoContract = await getRepo(CURRENT_REPO_NAME)
 
 }
 
@@ -318,16 +325,14 @@ function sha1(data, type = 'blob') {
     return hash.digest('hex')
 }
 
-function createBlobObject() {}
 // global vars wrappers
 const goshContract = () => Gosh
-const currentRepo = () => CURRENT_REPO
+const currentRepo = () => CURRENT_REPO_NAME
 const userWallet = () => UserWallet
 
 module.exports = {
     init,
     sha1,
-
     createRepo,
     getRepoAddress,
     getRepo,
@@ -343,9 +348,6 @@ module.exports = {
     getBlobAddr,
     listBlobs,
     getBlob,
-
-    calcCommitAddress,
-
     // global vars
     goshContract,
     currentRepo,
