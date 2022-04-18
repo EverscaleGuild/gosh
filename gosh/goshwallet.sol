@@ -30,7 +30,7 @@ contract GoshWallet {
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
 
-    string public version;
+    string version = "0.0.1";
     uint256 static _rootRepoPubkey;
     address static _rootgosh;
     address static _goshdao;
