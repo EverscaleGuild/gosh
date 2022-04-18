@@ -1,6 +1,6 @@
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-// import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -27,6 +27,9 @@ export const Footer = () => {
         </Grid>
         <Grid item>
           <Link variant="body1" href="mailto:welcome@gosh.sh">welcome@gosh.sh</Link>
+        </Grid>
+        <Grid item>
+          <span style={{opacity: 0.2}}>{useLocation().pathname}</span>
         </Grid>
       </Grid>
       </Container>
