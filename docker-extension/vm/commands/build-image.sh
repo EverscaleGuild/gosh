@@ -37,7 +37,5 @@ if [[ -z "$TARGET_IMAGE_SHA" ]]; then
     exit 2
 fi
 
-source "./gosh-image-sha.sh"
-
-GOSH_SHA=$(get_gosh_image_sha "$TARGET_IMAGE")
+GOSH_SHA=$(./gosh-image-sha "$TARGET_IMAGE")
 echo "$GOSH_SHA"

@@ -1,21 +1,24 @@
 #!/bin/bash
 
-get_gosh_image_sha() {
-    local TARGET_IMAGE=$1
+if [[ -z "$1" ]]; then
+    echo "Usage: $0 target_image"
+    exit 1
+fi
 
-    {
-        CONTAINER_ID=$(docker create "$TARGET_IMAGE" /bin/sh 2>/dev/null)
+TARGET_IMAGE=$1
 
-        mkdir -p "$CONTAINER_ID"
+{
+    CONTAINER_ID=$(docker create "$TARGET_IMAGE" /bin/sh)
 
-        cd "$CONTAINER_ID" || exit 1
-        docker export "$CONTAINER_ID" | tar --exclude=etc/mtab --exclude=proc --exclude=dev -xf -
-        GOSH_SHA256=$(find . -type f -exec sha256sum {} + | LC_ALL=C sort | sha256sum | awk '{ print $1 }')
-        cd .. || exit 1
+    mkdir -p "$CONTAINER_ID"
 
-        docker rm -fv "$CONTAINER_ID" >/dev/null
-        rm -rf "$CONTAINER_ID"
-    } > /dev/null 2>&1
+    cd "$CONTAINER_ID" || exit 1
+    docker export "$CONTAINER_ID" | tar --exclude=etc/mtab --exclude=proc --exclude=dev -xf -
+    GOSH_SHA256=$(find . -type f -exec sha256sum -b {} + | LC_ALL=C sort | sha256sum | awk '{ print $1 }')
+    cd .. || exit 1
 
-    echo "$GOSH_SHA256"
-}
+    docker rm -fv "$CONTAINER_ID" >/dev/null
+    rm -rf "$CONTAINER_ID"
+} > /dev/null 2>&1
+
+echo sha256:"$GOSH_SHA256"
