@@ -571,6 +571,7 @@ const Main = () => {
       stdout: ""
     });
     DockerClient.validateContainerImage(
+      element.imageHash,
       (status: string) => {
         setValidation({ 
           id: element.imageHash,
