@@ -132,29 +132,39 @@ export class DockerClient {
     }
   }
 
-  static async validateContainerImage(appendValidationLog: any):  Promise<boolean> {
-    const goshRepositoryAddress = "demo-1";  
-    const result = window.ddClient.extension.vm.cli.exec(
-      COMMAND_REBUILD_IMAGE,
-      [goshRepositoryAddress, "gosh-repository"],
-      {
-        onOutput(data: any): void {
-          if (!!data.stdout) {
-            appendValidationLog(data.stdout);
-          }
-          if (!!data.stdout) {
-            appendValidationLog("Error: " + data.stderr);
-          }
-        },
-        onError(error: any): void {
-          console.error(error);
-        },
-        onClose(exitCode: number): void {
-          console.log("onClose with exit code " + exitCode);
-        },
-      }
-    );
-    return result == 0;
+  static async validateContainerImage(appendValidationLog: any, closeValidationLog:any):  Promise<boolean> {
+    //TODO: Make sure it's not in the final release. 
+    // goshRepositoryAddress should be taken from the image metadata
+    const goshRepositoryAddress = "demo-1";
+    try {
+      const result = await window.ddClient.extension.vm.cli.exec(
+        COMMAND_REBUILD_IMAGE,
+        [goshRepositoryAddress, "gosh-repository"],
+        {
+          onOutput(data: any): void {
+            if (!!data.stdout) {
+              appendValidationLog(data.stdout);
+            }
+            if (!!data.stdout) {
+              appendValidationLog("Error: " + data.stderr);
+            }
+          },
+          onError(error: any): void {
+            console.error(error);
+          },
+          onClose(exitCode: number): void {
+            console.log("onClose with exit code " + exitCode);
+          },
+        }
+      );
+      return result == 0;
+
+    } catch(error:any) {
+      console.error(error);
+      closeValidationLog();
+    }
+
+    return false;
   }
 }
 
