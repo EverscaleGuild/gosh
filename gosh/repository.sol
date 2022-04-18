@@ -120,6 +120,7 @@ contract Repository {
     function copySnapshot(uint32 index, string fromname, string newname)  public view {
         require(msg.sender == address(this));
         require(index <= _Branches[fromname].snapshot.length - 1);
+        tvm.accept();
         Snapshot(_Branches[fromname].snapshot[index]).deployNewSnapshot{value: 1.4 ton, bounce: true, flag: 1}(newname);
         this.copySnapshot(index + 1, fromname, newname);
     }
