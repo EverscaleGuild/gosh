@@ -19,7 +19,7 @@ function onCodeUpgrade (uint256 _platform_id, uint128 amountToLock, TvmCell stat
 function getLockedAmount () virtual external view  responsible returns(uint128);
  */
 
-abstract contract SMVProposalBase is LockableBase, ISMVProposal {
+abstract contract SMVProposalBase is LockableBase, ISMVProposal , IVotingResultRecipient {
 
 uint256 public propId;
 uint32   creationTime;
@@ -132,7 +132,7 @@ function do_action() private
     leftBro.reset();
     rightBro.reset();
 
-    if (currentHead.hasValue()) {
+    if ((currentHead.hasValue()) && (currentHead.get()!=address(this))) {
         uint128 extra = _reserve (SMVConstants.PROPOSAL_MIN_BALANCE, SMVConstants.ACTION_FEE);
         LockableBase(currentHead.get()).insertClient {value:extra, flag:1} (platform_id, address(this), amount_locked());
     }
@@ -152,7 +152,7 @@ function performAction (uint128 amountToLock, uint128 total_votes, TvmCell /* in
     require(address(this).balance >= SMVConstants.PROPOSAL_MIN_BALANCE +
                                      SMVConstants.VOTING_FEE+
                                      SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
-    require(amountToLock + amount_locked() <= total_votes, SMVErrors.error_not_enough_votes);                                 
+    require(amountToLock <= total_votes, SMVErrors.error_not_enough_votes);                                 
     tvm.accept();
 
     proposalPerformed = true;
@@ -227,7 +227,7 @@ function onContinueVoting(uint128 t) external check_token_root
     currentAmount = 0;
 }
 
-function vote (address _locker, uint256 _platform_id, bool choice, uint128 amount) external override responsible check_external_client(_locker,_platform_id) returns(bool)
+function vote (address _locker, uint256 _platform_id, bool choice, uint128 amount) external override check_external_client(_locker,_platform_id) 
 {
     require(msg.value >= SMVConstants.PROPOSAL_VOTING_FEE, SMVErrors.error_balance_too_low);
     //require(!proposalBusy, SMVErrors.proposal_is_busy);
@@ -235,13 +235,17 @@ function vote (address _locker, uint256 _platform_id, bool choice, uint128 amoun
     tvm.accept();
 
     if ((proposalBusy) || (now < startTime) || (now >= finishTime) || (votingResult.hasValue()) )
-        return {value:0, flag: 64} false;
-
-    proposalBusy = true;
-    currentCaller = msg.sender;
-    currentAmount = amount;
-    currentChoice = choice;
-    ITokenRoot(tokenRoot).totalSupply {value: 0, flag: 64, callback:SMVProposalBase.onContinueVoting} ();
+        //return {value:0, flag: 64} false; 
+        ISMVClient(msg.sender).onProposalVoted {value:0, flag: 64} (false);
+    else {    
+        proposalBusy = true;
+        currentCaller = msg.sender;
+        currentAmount = amount;
+        currentChoice = choice;
+        ITokenRoot(tokenRoot).totalSupply {value: 0, flag: 64, callback:SMVProposalBase.onContinueVoting} ();
+        /* tvm.commit();
+        tvm.exit(); */
+    }
 }
 
 function completeVoting (uint128 t) external check_token_root
@@ -257,7 +261,7 @@ function completeVoting (uint128 t) external check_token_root
 
     if (!currentCaller.isStdZero())
     {
-        IVotingResultRecipient(currentCaller).isCompletedCallback {value:0, flag: 64} (votingResult);
+        IVotingResultRecipient(currentCaller).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
     }
 
     currentCaller = address.makeAddrNone();
@@ -269,27 +273,36 @@ uint128 currentAmount;
 bool currentChoice;
 
 
-function isCompleted () override external responsible returns (optional (bool))
+function isCompleted () override external /* responsible */ /* returns (optional (bool)) */
 {
-    //require (msg.value > SMVConstants.VOTING_COMPLETION_FEE, SMVErrors.error_balance_too_low);
+    require (msg.value > SMVConstants.EPSILON_FEE, SMVErrors.error_balance_too_low);
     //require(!proposalBusy, SMVErrors.proposal_is_busy);
 
     if ((msg.value <= SMVConstants.VOTING_COMPLETION_FEE) || (proposalBusy))
-        return {value:0, flag: 64} votingResult;
-
-    optional (bool) empty;
-
-    if (now < startTime)
-        return {value:0, flag: 64} empty;
-
-    if (!votingResult.hasValue())
+        //return {value:0, flag: 64} votingResult;
+        IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
+    else
     {
-        currentCaller = msg.sender;
-        proposalBusy = true;
-        ITokenRoot(tokenRoot).totalSupply {value: 0, flag: 64, callback: SMVProposalBase.completeVoting} ();
-    }
-    else {
-        return {value:0, flag: 64} votingResult;
+        optional (bool) empty;
+
+        if (now < startTime)
+            //return {value:0, flag: 64} empty;
+            IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (empty, propData);
+        else    
+        {
+            if (!votingResult.hasValue())
+            {
+                currentCaller = msg.sender;
+                proposalBusy = true;
+                ITokenRoot(tokenRoot).totalSupply {value: 0, flag: 64, callback: SMVProposalBase.completeVoting} ();
+                /* tvm.commit();
+                tvm.exit(); */
+            }
+            else {
+                //return {value:0, flag: 64} votingResult;
+                IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
+            }
+        }
     }
 }
 
@@ -313,13 +326,15 @@ function continueUpdateHead (uint256 _platform_id) external override check_clien
     leftBro.reset();
     uint128 extra = _reserve (SMVConstants.PROPOSAL_MIN_BALANCE , SMVConstants.ACTION_FEE);
 
-    ISMVProposal(address(this)).isCompleted {value: extra, 
-                                              flag: 1 + 2, 
-                                              callback: SMVProposalBase.onProposalCompletedWhileUpdateHead} ();
+    if (extra > SMVConstants.VOTING_COMPLETION_FEE)
+        ISMVProposal(address(this)).isCompleted {value: extra, flag: 1+2} ();
+    else
+        ISMVTokenLocker(tokenLocker).onHeadUpdated {value:SMVConstants.EPSILON_FEE, flag:1} (platform_id, address(this));
 }
 
 
-function onProposalCompletedWhileUpdateHead (optional (bool) completed) external check_myself
+/* function onProposalCompletedWhileUpdateHead (optional (bool) completed) external check_myself */
+function isCompletedCallback (optional (bool) completed, TvmCell /* data */ ) external override check_myself
 {   
     if (completed.hasValue())
     {
@@ -348,12 +363,12 @@ function updateHead() external override check_locker()
     require(isHead(), SMVErrors.error_i_am_not_head);
     require(address(this).balance >= SMVConstants.PROPOSAL_MIN_BALANCE +
                                      SMVConstants.VOTING_COMPLETION_FEE +                               
-                                     3*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+                                     2*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     require(!proposalBusy, SMVErrors.error_proposal_is_busy);
 
     SMVProposalBase(address(this)).isCompleted {value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.ACTION_FEE, 
-                                                 flag: 1, 
-                                                 callback: SMVProposalBase.onProposalCompletedWhileUpdateHead} ();
+                                                 flag: 1/* , 
+                                                 callback: SMVProposalBase.onProposalCompletedWhileUpdateHead */} ();
 
 }
 

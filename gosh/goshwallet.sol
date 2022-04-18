@@ -16,8 +16,11 @@ import "commit.sol";
 import "tag.sol";
 import "./libraries/GoshLib.sol";
 
+import "../smv/SMVAccount.sol";
+import "../smv/Libraries/SMVConstants.sol";
+
 /* Root contract of gosh */
-contract GoshWallet {
+contract GoshWallet is SMVAccount , IVotingResultRecipient {
     uint constant ERR_NO_SALT = 100;
     uint constant ERR_SENDER_NOT_DAO = 102;
     uint constant ERR_ZERO_ROOT_KEY = 103;
@@ -40,6 +43,10 @@ contract GoshWallet {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+
+    TvmCell m_SMVPlatformCode;
+    TvmCell m_SMVClientCode;
+    TvmCell m_SMVProposalCode;
 
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -72,14 +79,26 @@ contract GoshWallet {
         TvmCell blobCode,
         TvmCell blobData,
         TvmCell repositoryCode,
-        TvmCell repositoryData
-    ) public {
+        TvmCell repositoryData,
+        //added for SMV
+        TvmCell lockerCode, 
+        TvmCell platformCode,
+        TvmCell clientCode,
+        TvmCell proposalCode,
+        address _tip3Root)
+     public SMVAccount (lockerCode, tvm.hash(platformCode), platformCode.depth(),
+                         tvm.hash(clientCode), clientCode.depth(), tvm.hash(proposalCode),
+                         proposalCode.depth(), _tip3Root) {
         m_CommitCode = commitCode;
         m_BlobCode = blobCode;
         m_RepositoryCode = repositoryCode;
         m_CommitData = commitData;
         m_BlobData = blobData;
         m_RepositoryData = repositoryData;
+        ///////////////////
+        m_SMVPlatformCode = platformCode;
+        m_SMVClientCode = clientCode;
+        m_SMVProposalCode = proposalCode;
     }
 
     function deployRepository(
@@ -98,10 +117,58 @@ contract GoshWallet {
         address parent1,
         address parent2
     ) public view onlyOwner accept {
+        if ((branchName == "main") || (branchName == "master")) {
+            TvmBuilder b;
+            uint256 proposalKind = 0;
+            b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
+            uint256 id = tvm.hash(b.toCell()); 
+            uint32 startTime = now + 5*60;
+            uint32 finishTime = now + 5*60 + 7*24*60*60;
+            startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
+                           id, b.toCell(), startTime, finishTime);
+        } else {
+            _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+        }
+    }
+
+    function _deployCommit(
+        string repoName,
+        string branchName,
+        string commitName,
+        string fullCommit,
+        address parent1,
+        address parent2) internal view
+    {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
         }(tvm.pubkey(), branchName, commitName, fullCommit, parent1, parent2);
+    }
+
+
+    function tryProposalResult (address proposal) public view onlyOwner accept
+    {
+        ISMVProposal(proposal).isCompleted{
+            value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.EPSILON_FEE} ();    
+    }
+
+    function isCompletedCallback(optional(bool) res, TvmCell propData) external override {
+        //for tests
+        lastVoteResult = res;
+        //
+
+        if (res.hasValue()) {
+            if (res.get()) {
+                TvmSlice s = propData.toSlice();
+                uint256 kind = s.decode(uint256);
+                if (kind == 0)
+                {
+                    (string repoName, string branchName, string commitName, string fullCommit, address parent1, address parent2) =
+                        s.decode(string, string, string, string, address, address);
+                    _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+                }
+            }
+        }
     }
     
     function deployBranch(

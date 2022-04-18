@@ -144,9 +144,9 @@ function insertClient (uint256 _platform_id, address newClient, uint128 amount) 
         }
         else
         {
-            leftBro.set(newClient);
             uint128 extra = _reserve (SMVConstants.CLIENT_MIN_BALANCE, SMVConstants.ACTION_FEE);
             LockableBase(leftBro.get()).onRightClientInserted {value:extra, flag:1} (platform_id, newClient);
+            leftBro.set(newClient);
         }
     }
 }

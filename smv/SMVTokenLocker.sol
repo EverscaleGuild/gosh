@@ -21,8 +21,7 @@ contract SMVTokenLocker is ISMVTokenLocker , IAcceptTokensTransferCallback {
 
 address public static smvAccount;
 address public static tokenRoot;
-
-uint256 public static nonce;
+/* uint256 public static nonce; */
 
 bool public lockerBusy;
 optional (address) public clientHead;
@@ -185,7 +184,7 @@ function unlockVoting (uint128 amount) external override check_account
     require(address(this).balance >= SMVConstants.LOCKER_MIN_BALANCE +
                                      3*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     require(!lockerBusy, SMVErrors.error_locker_busy);
-    require(amount + votes_locked < total_votes, SMVErrors.error_not_enough_votes);
+    require(amount + votes_locked <= total_votes, SMVErrors.error_not_enough_votes);
     require(tip3Wallet.hasValue());
     tvm.accept();
 
@@ -194,8 +193,9 @@ function unlockVoting (uint128 amount) external override check_account
 
     total_votes -= amount;
     //(amount, tip3VotingLocker, 0, address(this), true, empty)
-    ITokenWallet(tip3Wallet.get()).transfer  {value: 2*SMVConstants.ACTION_FEE, flag: 1}
-                                             (amount, msg.sender, 0, address(this), true, empty);
+    if (amount > 0)
+        ITokenWallet(tip3Wallet.get()).transfer {value: 2*SMVConstants.ACTION_FEE, flag: 1}
+                                                (amount, msg.sender, 0, address(this), true, empty);
 }
 
 function onHeadUpdated (uint256 _platform_id, optional (address) newClientHead) external
@@ -258,15 +258,17 @@ function onLockAmountUpdate(uint128 amount) external  check_head
 
 function updateHead() external override check_account
 {
-    require(msg.value > SMVConstants.CLIENT_MIN_BALANCE + 
-                                     SMVConstants.VOTING_COMPLETION_FEE +                              
-                                     4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+    require(msg.value > 5*SMVConstants.VOTING_COMPLETION_FEE +                              
+                        4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+    require(!lockerBusy, SMVErrors.error_locker_busy); 
+
+    lockerBusy = true;                                    
 
     if (clientHead.hasValue())
     {   
-        LockableBase(clientHead.get()).updateHead {value: SMVConstants.CLIENT_MIN_BALANCE + 
-                                     SMVConstants.VOTING_COMPLETION_FEE +                              
-                                     4*SMVConstants.ACTION_FEE, flag: 1} ();
+        LockableBase(clientHead.get()).updateHead {value: 
+                                     5*SMVConstants.VOTING_COMPLETION_FEE +                              
+                                     3*SMVConstants.ACTION_FEE, flag: 1} ();
     }
 }
 

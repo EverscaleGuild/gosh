@@ -9,11 +9,12 @@ import "Libraries/SMVConstants.sol";
 import "Interfaces/ISMVTokenLocker.sol";
 import "Interfaces/ISMVClient.sol";
 import "Interfaces/ISMVProposal.sol";
+import "Interfaces/IVotingResultRecipient.sol";
 
 import "LockerPlatform.sol";
 import "LockableBase.sol";
 
-contract SMVClient is LockableBase, ISMVClient {
+contract SMVClient is LockableBase, ISMVClient , IVotingResultRecipient {
 
 mapping (bool => uint128) votes;
 uint32 propFinishTime;
@@ -119,7 +120,7 @@ function vote (bool choice, uint128 amount) private
 
 function sendVote () internal view
 {
-    ISMVProposal(smvProposal).vote {value: SMVConstants.PROPOSAL_VOTING_FEE, flag: 1, callback: SMVClient.onProposalVoted }
+    ISMVProposal(smvProposal).vote {value: SMVConstants.PROPOSAL_VOTING_FEE, flag: 1 }
                                    (tokenLocker, platform_id, currentChoice, currentAmount) ;
 }
 
@@ -133,7 +134,7 @@ function onProposalVoted (bool success) external override check_proposal
       rightBro.reset();
       votes[currentChoice] += currentAmount;
 
-      if (currentHead.hasValue()) {
+      if ((currentHead.hasValue()) && (currentHead.get()!=address(this))) {
             uint128 extra = _reserve (SMVConstants.CLIENT_MIN_BALANCE, SMVConstants.ACTION_FEE);
             LockableBase(currentHead.get()).insertClient {value:extra, flag:1} (platform_id, address(this), amount_locked());
       }
@@ -161,13 +162,15 @@ function continueUpdateHead (uint256 _platform_id) external override check_clien
 {
     leftBro.reset();
     uint128 extra = _reserve (SMVConstants.CLIENT_MIN_BALANCE , SMVConstants.ACTION_FEE);
-    ISMVProposal(smvProposal).isCompleted {value: extra, 
-                                           flag: 1+2, 
-                                           callback: SMVClient.onProposalCompletedWhileUpdateHead} ();
+    if (extra > SMVConstants.VOTING_COMPLETION_FEE)
+        ISMVProposal(smvProposal).isCompleted {value: extra, 
+                                               flag: 1+2/* , callback: SMVClient.onProposalCompletedWhileUpdateHead */} ();
+    else
+        ISMVTokenLocker(tokenLocker).onHeadUpdated {value:SMVConstants.EPSILON_FEE, flag:1} (platform_id, address(this));                                         
 }
 
 
-function onProposalCompletedWhileUpdateHead (optional (bool) completed) external check_proposal
+function isCompletedCallback (optional (bool) completed, TvmCell /* data */ ) external override check_proposal
 {   
     if (completed.hasValue())
     {
@@ -196,10 +199,10 @@ function updateHead() external override check_locker()
     require(isHead(), SMVErrors.error_i_am_not_head);
     require(address(this).balance >= SMVConstants.CLIENT_MIN_BALANCE + 
                                      SMVConstants.VOTING_COMPLETION_FEE +                              
-                                     3*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+                                     2*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     ISMVProposal(smvProposal).isCompleted {value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.ACTION_FEE, 
-                                           flag: 1, 
-                                           callback: SMVClient.onProposalCompletedWhileUpdateHead} ();
+                                           flag: 1/* , 
+                                           callback: SMVClient.onProposalCompletedWhileUpdateHead */} ();
 
 }
 

@@ -19,10 +19,9 @@ import "External/tip3/interfaces/IAcceptTokensMintCallback.sol";
 
 import "SMVTokenLocker.sol";
 
-contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback,
-                       IAcceptTokensMintCallback , IVotingResultRecipient{
+contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback, IAcceptTokensMintCallback {
 
-address static tip3Root;
+address /* static */ tip3Root;
 uint256 static nonce;
 
 address public tip3Wallet;
@@ -57,7 +56,8 @@ modifier check_locker {
 
 constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeDepth,
                                 uint256 _clientCodeHash, uint16 _clientCodeDepth,
-                                uint256 _proposalCodeHash, uint16 _proposalCodeDepth) public check_owner
+                                uint256 _proposalCodeHash, uint16 _proposalCodeDepth,
+                                address _tip3Root) public check_owner
 {
     require(address(this).balance >= 2*SMVConstants.TIP3_WALLET_DEPLOY_VALUE +
                                      2*SMVConstants.TIP3_WALLET_INIT_VALUE +
@@ -66,15 +66,16 @@ constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeD
                                      SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     tvm.accept();
     initialized = false;
-    tvm.commit();
+    tip3Root = _tip3Root;
+   /*  tvm.commit(); */
     tip3Wallet = ITokenRoot(tip3Root).deployWallet {value: SMVConstants.TIP3_WALLET_DEPLOY_VALUE + SMVConstants.TIP3_WALLET_INIT_VALUE,
                                                     flag: 1}
                                                    (address(this), SMVConstants.TIP3_WALLET_INIT_VALUE).await;
 
     TvmCell _dataInitCell = tvm.buildDataInit ( {contr: SMVTokenLocker,
                                                  varInit: { smvAccount : address(this) ,
-                                                            tokenRoot : tip3Root,
-                                                            nonce: 0 } } );
+                                                            tokenRoot : tip3Root/* ,
+                                                            nonce: 0 */ } } );
     TvmCell _stateInit = tvm.buildStateInit(lockerCode, _dataInitCell);
 
     platformCodeHash = _platformCodeHash;
@@ -101,15 +102,16 @@ function proposalIsCompleted(address proposal) external check_owner {
     tvm.accept();
 
     ISMVProposal(proposal).isCompleted{
-      value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.EPSILON_FEE,
-      callback: SMVAccount.isCompletedCallback
+      value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.EPSILON_FEE
+      /* callback: SMVAccount.isCompletedCallback */
     }();
 }
 
 optional(bool) public lastVoteResult;
-function isCompletedCallback(optional(bool) res) external override {
+
+/* function isCompletedCallback (optional(bool) res, TvmCell ) external override {
   lastVoteResult = res;
-}
+} */
 
 function onLockerDeployed() external override check_locker()
 {
@@ -185,9 +187,8 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
                                     SMVConstants.PROP_INITIALIZE_FEE + 5*SMVConstants.ACTION_FEE);
 }
 
-
 function startProposal (TvmCell platformCode, TvmCell proposalCode, uint256 propId, TvmCell propData,
-                        uint32 startTime, uint32 finishTime) external view check_owner returns (address)
+                        uint32 startTime, uint32 finishTime) public view check_owner returns (address)
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
@@ -241,12 +242,12 @@ function proposalAddress(
   return address.makeAddrStd(address(this).wid, addr_std);
 }
 
-function proposalAddressByAccount(address acc, uint256 nonce, uint256 propId) public view returns(address)
+function proposalAddressByAccount(address acc, /* uint256 nonce, */ uint256 propId) public view returns(address)
 {
     TvmCell dc = tvm.buildDataInit ( {contr: SMVTokenLocker,
                                                  varInit: { smvAccount : acc ,
-                                                            tokenRoot : tip3Root,
-                                                            nonce: nonce } } );
+                                                            tokenRoot : tip3Root
+                                                            /* nonce: nonce */ } } );
     uint256 addr_std_locker = tvm.stateInitHash (lockerCodeHash, tvm.hash(dc) , lockerCodeDepth, dc.depth());
     address locker_addr = address.makeAddrStd(address(this).wid, addr_std_locker);
     return proposalAddress(locker_addr, propId);
@@ -295,15 +296,13 @@ function updateHead() public check_owner
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+
-                          SMVConstants.CLIENT_MIN_BALANCE + 
-                          SMVConstants.VOTING_COMPLETION_FEE +                              
-                          6*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+                                    5*SMVConstants.VOTING_COMPLETION_FEE +                              
+                                    6*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
 
     tvm.accept();
 
-    ISMVTokenLocker(tip3VotingLocker).updateHead {value: SMVConstants.CLIENT_MIN_BALANCE + 
-                                              SMVConstants.VOTING_COMPLETION_FEE +                              
-                                              5*SMVConstants.ACTION_FEE, flag: 1} ();
+    ISMVTokenLocker(tip3VotingLocker).updateHead {value: 5*SMVConstants.VOTING_COMPLETION_FEE +                              
+                                                         5*SMVConstants.ACTION_FEE, flag: 1} ();
 }
 
 function onAcceptTokensTransfer (address tokenRoot,
@@ -327,9 +326,9 @@ uint128 public LockerWalletBalance;
 
 function getWalletBalance ()  public   check_owner /* returns (uint128, uint128) */
 {
-tvm.accept();
-WalletBalance = ITokenWallet(tip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
-LockerWalletBalance = ITokenWallet(lockerTip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
+  tvm.accept();
+  WalletBalance = ITokenWallet(tip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
+  LockerWalletBalance = ITokenWallet(lockerTip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
 /*
 return (WalletBalance, LockerWalletBalance); */
 }

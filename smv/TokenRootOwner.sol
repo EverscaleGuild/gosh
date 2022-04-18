@@ -115,7 +115,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
 
     address public lastWalletDeployed;
 
-    function deployWallet(
+    function deployTokenWallet(
         address tokenRoot,
         address walletOwner,
         uint128 deployWalletValue
@@ -124,10 +124,10 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         require(msg.pubkey() == tvm.pubkey(), 101);
         tvm.accept();
 
-        lastWalletDeployed = _deployWallet(tokenRoot, walletOwner, deployWalletValue);
+        lastWalletDeployed = _deployTokenWallet(tokenRoot, walletOwner, deployWalletValue);
     }
 
-    function _deployWallet(
+    function _deployTokenWallet(
         address tokenRoot,
         address walletOwner,
         uint128 deployWalletValue
