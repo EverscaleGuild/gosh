@@ -46,7 +46,7 @@ export class DockerClient {
       const verificationStatus = isSigned ? 
         await DockerClient.getImageStatus(buildProvider, container.ImageID)
         : UNSIGNED_STATUS;
-      const [hasRepositoryAddress, goshRepositoryAddress] = DockerClient.readContainerImageMetadata(image, METADATA_KEY.GOSH_ADDRESS, "-");
+      const [hasRepositoryAddress, goshRepositoryAddress] = DockerClient.readContainerImageMetadata(container, METADATA_KEY.GOSH_ADDRESS, "-");
       containersViewModel.push({
         validated: verificationStatus,
         id: container.Id,
