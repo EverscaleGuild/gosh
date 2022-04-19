@@ -108,16 +108,16 @@ export class DockerClient {
         COMMAND.VALIDATE_IMAGE_SIGNATURE,
         [buildProviderPublicKey, imageHash]
       );
+      if (!!result.code) {
+        return "error";
+      }
       const resultText = result.stdout.trim(); 
       logger.log(`Result: <${resultText}>\n`);
-      // Note: 
-      // There was a check for result.code == 0 that didn't work
-      // For some reason it is not working as expected and returns undefined 
       const verificationStatus =  resultText == "true";
       return verificationStatus ? "success" : "error";
     } 
     catch (e) {
-        console.log("image validaton failed", e); 
+        logger.log(`image validaton failed ${JSON.stringify(e)}`); 
         return "warning";
     }
   }
@@ -174,12 +174,12 @@ export class DockerClient {
               console.error(error);
             },
             onClose(exitCode: number): void {
-              console.log("onClose with exit code " + exitCode);
+              logger.log(`onClose with exit code ${exitCode}`);
             },
           }
         }
       );
-      if (result.exitCode != 0) {
+      if (!!result.code) {
         appendValidationLog("Failed to build an image.");
         return false;
       }
@@ -207,14 +207,14 @@ export class DockerClient {
         COMMAND.CALCULATE_IMAGE_SHA,
         [imageId]
       );
-      if (result.exitCode != 0) {
-        console.log("Failed to calculate image sha. " + result.stderr);
+      if (!!result.code) {
+        logger.log(`Failed to calculate image sha. ${JSON.stringify(result)}`);
         return [false, defaultValue];
       }
       const imageHash = result.stdout.trim();
       return [true, imageHash]; 
     } catch(error: any) {
-      console.log("Error:" + error);
+      logger.log(`Error: ${JSON.stringify(error)}`);
       return [false, defaultValue];
     }
   }

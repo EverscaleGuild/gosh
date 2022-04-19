@@ -37,7 +37,7 @@ RUN ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2 \
     && cd /command/tools/content-signature/ && npm install --production \
     && cd /command/tools/git-remote-gosh && rm -rf node_modules && npm install --production \
     && ln -s /command/tools/git-remote-gosh/git-remote-gosh.js  /usr/local/bin/git-remote-gosh \
-    && apk add git docker
+    && apk add git docker bash
 
 COPY icon.svg /
 
