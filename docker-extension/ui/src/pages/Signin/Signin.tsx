@@ -20,7 +20,7 @@ export const SigninPage = () => {
     const setUserState = useSetRecoilState(userStateAtom);
 
     const onFormSubmit = async (values: TFormValues, helpers: FormikHelpers<TFormValues>) => {
-        debugger;
+
         const result = await everClient.crypto.mnemonic_verify({ phrase: values.phrase });
         if (!result.valid) {
             helpers.setFieldError('phrase', 'Phrase is invalid');
