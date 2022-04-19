@@ -108,7 +108,7 @@ export class DockerClient {
         COMMAND.VALIDATE_IMAGE_SIGNATURE,
         [buildProviderPublicKey, imageHash]
       );
-      if (!!result.code) {
+      if ('code' in result && !!result.code) {
         return "error";
       }
       const resultText = result.stdout.trim(); 
@@ -148,6 +148,8 @@ export class DockerClient {
       closeValidationLog();
       return false;
     }
+    
+    const goshRepositoryName = goshRepositoryAddress.slice(WELL_KNOWN_ROOT_CONTRACT_ADDRESS.length);
 
     try {
       const [isImageShaCalculated, imageSha] = await DockerClient.calculateImageSha(imageId, "");
@@ -157,14 +159,18 @@ export class DockerClient {
       }
       appendValidationLog("Image sha: " + imageSha);
 
-      const result = await window.ddClient.extension.vm.cli.exec(
+      let result = {
+        code: -1,
+        stdout: ""
+      };
+      await window.ddClient.extension.vm.cli.exec(
         COMMAND.VALIDATE_IMAGE_SHA,
-        [goshRepositoryAddress, goshCommitHash],
+        [goshRepositoryName, goshCommitHash],
         {
           stream: {
             onOutput(data: any): void {
               if (!!data.stdout) {
-                appendValidationLog(data.stdout);
+                result.stdout += data.stdout + "\n";
               }
               if (!!data.stderr) {
                 appendValidationLog(data.stderr);
@@ -175,6 +181,7 @@ export class DockerClient {
             },
             onClose(exitCode: number): void {
               logger.log(`onClose with exit code ${exitCode}`);
+              result.code = exitCode;
             },
           }
         }
@@ -207,7 +214,7 @@ export class DockerClient {
         COMMAND.CALCULATE_IMAGE_SHA,
         [imageId]
       );
-      if (!!result.code) {
+      if ('code' in result && !!result.code) {
         logger.log(`Failed to calculate image sha. ${JSON.stringify(result)}`);
         return [false, defaultValue];
       }
