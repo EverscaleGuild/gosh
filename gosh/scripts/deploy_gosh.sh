@@ -38,7 +38,8 @@ export NETWORK=${1:-localhost}
 
 echo "[deploy $fn]"
 
-./deploy_contract.sh $fn 20000000000 || exit 1
+CTOR_PARAMS={}
+./deploy_contract.sh $fn $CTOR_PARAMS 20000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
 
 echo "load \`repo\`-contract"
@@ -60,6 +61,21 @@ echo "load \`snapshot\`-contract"
 SNAPSHOT_CODE=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/code:/ s/ code: // p')
 SNAPSHOT_DATA=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/data:/ s/ data: // p')
 $TONOS_CLI -u $NETWORK call $GOSH_ADDR setSnapshot "{\"code\":\"$SNAPSHOT_CODE\",\"data\":\"$SNAPSHOT_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
+
+echo "load \`wallet\`-contract"
+WALLET_CODE=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/code:/ s/ code: // p')
+WALLET_DATA=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/data:/ s/ data: // p')
+$TONOS_CLI -u $NETWORK call $GOSH_ADDR setWallet "{\"code\":\"$WALLET_CODE\",\"data\":\"$WALLET_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
+
+echo "load \`dao\`-contract"
+DAO_CODE=$($TVM_LINKER decode --tvc ../goshdao.tvc | sed -n '/code:/ s/ code: // p')
+DAO_DATA=$($TVM_LINKER decode --tvc ../goshdao.tvc | sed -n '/data:/ s/ data: // p')
+$TONOS_CLI -u $NETWORK call $GOSH_ADDR setDao "{\"code\":\"$DAO_CODE\",\"data\":\"$DAO_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
+
+echo "load \`tag\`-contract"
+TAG_CODE=$($TVM_LINKER decode --tvc ../tag.tvc | sed -n '/code:/ s/ code: // p')
+TAG_DATA=$($TVM_LINKER decode --tvc ../tag.tvc | sed -n '/data:/ s/ data: // p')
+$TONOS_CLI -u $NETWORK call $GOSH_ADDR setTag "{\"code\":\"$TAG_CODE\",\"data\":\"$TAG_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
 
 echo ===================== GOSH =====================
 echo addr: $GOSH_ADDR
