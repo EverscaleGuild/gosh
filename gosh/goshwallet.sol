@@ -76,6 +76,10 @@ contract GoshWallet {
 
     modifier accept() {
         tvm.accept();
+        _;
+    }
+
+    modifier saveMsg() {
         m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
         _;
     }
@@ -83,6 +87,11 @@ contract GoshWallet {
     modifier clean() {
         _;
         gc();
+    }
+
+    modifier minBalance(uint128 val) {
+        require(address(this).balance > val + 1 ton, ERR_LOW_BALANCE);
+        _;
     }
 
     constructor(
@@ -103,7 +112,7 @@ contract GoshWallet {
 
     function deployRepository(
         string nameRepo
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -116,7 +125,7 @@ contract GoshWallet {
         string fullCommit,
         address parent1,
         address parent2
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
@@ -128,7 +137,7 @@ contract GoshWallet {
         string newName,
         string fromName,
         uint128 amountFiles
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
             value: amountFiles * 1.5 ton + 1 ton, bounce: true, flag: 2 
@@ -138,7 +147,7 @@ contract GoshWallet {
     function deleteBranch(
         string repoName,
         string Name
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deleteBranch{
             value: 1 ton, bounce: true, flag: 2
@@ -150,7 +159,7 @@ contract GoshWallet {
         string name,
         string branch,
         string diff
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployDiff{
             value: 2 ton, bounce: true, flag: 2 
@@ -162,9 +171,7 @@ contract GoshWallet {
         string repoName,
         string commit,
         uint128 value
-    ) public onlyOwner clean {
-        require(address(this).balance > value + 1 ton, ERR_LOW_BALANCE);
-        tvm.accept();
+    ) public onlyOwner minBalance(value) accept saveMsg clean {
         address commitAddr = _buildCommitAddr(repoName, commit);
         commitAddr.transfer(value, true, 3);
     }
@@ -174,7 +181,7 @@ contract GoshWallet {
         string commit,
         string blobName,
         string fullBlob
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address commitAddr = _buildCommitAddr(repoName, commit);
         Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob);
     }
@@ -184,7 +191,7 @@ contract GoshWallet {
         string nametag,
         string nameCommit,
         address commit
-    ) public onlyOwner accept clean {
+    ) public onlyOwner accept saveMsg clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
