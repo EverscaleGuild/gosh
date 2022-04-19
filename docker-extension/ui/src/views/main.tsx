@@ -534,6 +534,7 @@ const Main = () => {
   }
 
   function validateContainer(element: ContainerType, index: number): void {
+    let logs: string[]  = [];
     setValidation({
       id: element.containerHash,
       type: "container",
@@ -543,23 +544,25 @@ const Main = () => {
     DockerClient.validateContainerImage(
       element.imageHash,
       (status: string) => {
+        logs.push(status);
         setValidation({
           id: element.containerHash,
           type: "container",
           active: true,
-          stdout: status
+          stdout: logs.join("\n")
         });
       },
       () => setValidation({
           id: element.containerHash,
           type: "container",
           active: false,
-          stdout: ""
+          stdout: logs.join("\n")
       })
     );
   }
 
   function validateImage(element: ImageType, index: number): void {
+    let logs: string[] = [];
     setValidation({
       id: element.imageHash,
       type: "image",
@@ -569,18 +572,19 @@ const Main = () => {
     DockerClient.validateContainerImage(
       element.imageHash,
       (status: string) => {
+        logs.push(status);
         setValidation({ 
           id: element.imageHash,
           type: "image",
           active: true,
-          stdout: status
+          stdout: logs.join("\n")
         });
       }, 
       () => setValidation({
           id: element.imageHash,
           type: "image",
           active: false,
-          stdout: ""
+          stdout: logs.join("\n")
       })
     );
   }
@@ -597,7 +601,6 @@ const Main = () => {
 
   const handleCloseNewBuild = () => setShowModalNewBuild(false);
   const handleShowNewBuild = () => setShowModalNewBuild(true);
-
 
   return (
     <>
