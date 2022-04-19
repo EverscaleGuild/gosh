@@ -161,6 +161,6 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
-		{"name":"m_messages","type":"map(uint256,uint64)"}
+		{"name":"m_messages","type":"map(uint256,uint32)"}
 	]
 }

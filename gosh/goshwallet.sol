@@ -26,6 +26,7 @@ contract GoshWallet {
     uint constant ERR_NOT_ROOT_REPO = 105;
     uint constant ERR_INVALID_SENDER = 107;
     uint constant ERR_LOW_BALANCE = 108;
+    uint constant ERR_DOUBLE_MSG = 109;
 
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
@@ -42,7 +43,9 @@ contract GoshWallet {
     TvmCell m_BlobData;
     
     // mapping to store hashes of inbound messages;
-    mapping(uint256 => uint64) m_messages;
+    mapping(uint256 => uint32) m_messages;
+    // Each transaction is limited by gas, so we must limit count of iteration in loop.
+    uint8 constant MAX_CLEANUP_MSGS = 30;
 
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -204,26 +207,26 @@ contract GoshWallet {
     function afterSignatureCheck(TvmSlice body, TvmCell message) private inline
     returns (TvmSlice)
     {
-        // owner check
-        require(msg.pubkey() == tvm.pubkey(), 101);
         // load and drop message timestamp (uint64)
-        (, uint64 expireAt) = body.decode(uint64, uint32);
+        (, uint32 expireAt) = body.decode(uint64, uint32);
         require(expireAt > now, 57);
         uint256 msgHash = tvm.hash(message);
-        require(!m_messages.exists(msgHash), 102);
-
-        tvm.accept();
+        require(!m_messages.exists(msgHash), ERR_DOUBLE_MSG);
         m_messages[msgHash] = expireAt;
-
         return body;
     }
 
     /// @notice Allows to delete expired messages from dict.
-    function gc() private inline {
-        for ((uint256 msgHash, uint64 expireAt) : m_messages) {
-        if (expireAt <= now) {
-        delete m_messages[msgHash];
-        }
+    function gc() private {
+        uint counter = 0;
+        for ((uint256 msgHash, uint32 expireAt) : m_messages) {
+            if (counter >= MAX_CLEANUP_MSGS) {
+                break;
+            }
+            counter++;
+            if (expireAt <= now) {
+                delete m_messages[msgHash];
+            }
         }
     }
 
