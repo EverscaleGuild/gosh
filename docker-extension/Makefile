@@ -1,6 +1,6 @@
 #IMAGE?=teamgosh/docker-extension
 IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.4
+TAG?=1.0.0-alpha.5
 LOCAL_TEMP_DIR=./.tmp/
 
 .DEFAULT_GOAL := debug

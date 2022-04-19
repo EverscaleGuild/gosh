@@ -46,6 +46,7 @@ export class DockerClient {
       const verificationStatus = isSigned ? 
         await DockerClient.getImageStatus(buildProvider, container.ImageID)
         : UNSIGNED_STATUS;
+      const [hasRepositoryAddress, goshRepositoryAddress] = DockerClient.readContainerImageMetadata(image, METADATA_KEY.GOSH_ADDRESS, "-");
       containersViewModel.push({
         validated: verificationStatus,
         id: container.Id,
@@ -53,7 +54,7 @@ export class DockerClient {
         containerName: containerName,
         imageHash: container.ImageID,
         buildProvider: buildProvider,
-        goshRootAddress: ""
+        goshRootAddress: goshRepositoryAddress 
       });
     }
     return containersViewModel;
@@ -71,12 +72,13 @@ export class DockerClient {
       const verificationStatus = isSigned ? 
         await DockerClient.getImageStatus(buildProvider, image.Id)
         : UNSIGNED_STATUS;
+      const [hasRepositoryAddress, goshRepositoryAddress] = DockerClient.readContainerImageMetadata(image, METADATA_KEY.GOSH_ADDRESS, "-");
       imagesViewModel.push({
         validated: verificationStatus,
         id: image.Id,
         imageHash: image.Id,
         buildProvider: buildProvider,
-        goshRootAddress: ""
+        goshRootAddress: goshRepositoryAddress
       });
     }
     return imagesViewModel;
