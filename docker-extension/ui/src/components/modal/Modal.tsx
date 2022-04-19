@@ -43,7 +43,46 @@ export const Overlay = ({
   open={show}
   onClose={onHide}
   TransitionComponent={Transition}
-  className={cnb(className)}
+  className={cnb(className, "modal-fullscreen")}
+  closeAfterTransition
+>
+
+  <IconButton
+    edge="start"
+    color="inherit"
+    onClick={onHide}
+    aria-label="close"
+    className={cnb("close")}
+  >
+    <CloseIcon />
+  </IconButton>
+  <>{children}</>
+</Dialog>}</>
+  );
+};
+
+export const Modal = ({
+  show,
+  onHide,
+  className,
+  children
+}: ModalProps & {children: ReactNode}) => {
+  const Transition = forwardRef(function Transition(
+    props: TransitionProps & {
+      children: React.ReactElement;
+    },
+    ref: React.Ref<unknown>,
+  ) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
+  return (
+<>
+{show && <Dialog
+  keepMounted={false}
+  open={show}
+  onClose={onHide}
+  TransitionComponent={Transition}
+  className={cnb(className, "modal")}
   closeAfterTransition
 >
 
