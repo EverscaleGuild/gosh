@@ -783,3 +783,18 @@ pre {
     stroke-width: 0.15rem;
   }
 }
+
+
+.button-block {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  position: fixed !important;
+  bottom: .875rem;
+  right: 1.5rem;
+  z-index: 1010;
+
+  & > * {
+    margin-left: .5rem;
+  }
+}

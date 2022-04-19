@@ -5,9 +5,9 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { DockerClient } from "../../client";
 import { Overlay } from "../../components";
 import { Content } from "../../pages";
+import { useLocation } from "react-router-dom";
 
 import styles from "./Footer.module.scss";
 import classnames from "classnames/bind";
@@ -35,15 +35,6 @@ export const Footer = () => {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
-  const handleClick = () => {
-    DockerClient.getContainers()
-    .then((value) => {
-      console.log(value);
-      //setContainers(value || []);
-      //TODO
-    });
-  }
-
   return (<>
     <Help
       showModal={showModal}
@@ -64,13 +55,13 @@ export const Footer = () => {
           // iconPosition="after"
           onClick={handleShow}
         >Help <></></Button>
-        <Button
+        {useLocation().pathname.split('/').filter(Boolean)[0] === "containers" && <Button
           disableElevation
           color="primary"
           variant="contained"
           size="medium"
-          onClick={handleClick}
-        >Update data</Button>
+          onClick={() => {}}
+        >Update data</Button>}
       </div>
       <Container maxWidth={false}>
       <Grid
