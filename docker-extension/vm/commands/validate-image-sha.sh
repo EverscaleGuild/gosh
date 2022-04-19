@@ -44,7 +44,7 @@ GOSH_REMOTE_URL=gosh::${GOSH_NETWORK}://${GOSH_ROOT_CONTRACT_ADDRESS}/"$REPOSITO
         exit 1
     fi
 
-    GOSH_SHA=$(./gosh-image-sha "$TARGET_IMAGE")
+    GOSH_SHA=$(/command/gosh-image-sha "$TARGET_IMAGE")
     docker rmi "$TARGET_IMAGE" || true
 
     cd "$LAST_PWD"
