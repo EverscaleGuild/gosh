@@ -103,15 +103,16 @@ export class DockerClient {
       if (!isImageHashCalculated) {
         return "warning";
       }
+      logger.log("Ensuring image has a signature: "+imageHash);
       const result = await window.ddClient.extension.vm.cli.exec(
         COMMAND.VALIDATE_IMAGE_SIGNATURE,
         [buildProviderPublicKey, imageHash]
       );
-      if ('code' in result && !!result.code) {
+      logger.log(`Result: <${JSON.stringify(result)}>\n`);
+      if ('code' in result && result.code != 0) {
         return "error";
       }
       const resultText = result.stdout.trim(); 
-      logger.log(`Result: <${resultText}>\n`);
       const verificationStatus =  resultText == "true";
       return verificationStatus ? "success" : "error";
     } 
