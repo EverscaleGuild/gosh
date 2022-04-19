@@ -60,21 +60,49 @@ step 4. Get image GOSH_HASH
 GOSH_IMAGE_SHA=$(../../../docker-extension/vm/commands/gosh-image-sha.sh "$TARGET_IMAGE")
 echo GOSH_IMAGE_SHA "$GOSH_IMAGE_SHA"
 
+# same for alpine bash
+GOSH_IMAGE_SHA_ALPINE=$(docker run --rm -ti \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    teamgosh/alpine-hash \
+    /command/gosh-image-sha.sh "$TARGET_IMAGE")
+echo GOSH_IMAGE_SHA_ALPINE "$GOSH_IMAGE_SHA_ALPINE"
+
 step 5. Sign the image
 
+echo "Signing GOSH_IMAGE_SHA"
 check=$(docker run --rm teamgosh/sign-cli check \
     -n "$NETWORKS" \
     "$WALLET_PUBLIC" \
     "$GOSH_IMAGE_SHA")
 
 if [[ "$check" = "true"* ]]; then
-    echo GOSH_HASH is already signed. Nothing to do.
-    exit 0
+    echo GOSH_IMAGE_SHA is already signed. Nothing to do.
+else
+    docker run --rm teamgosh/sign-cli sign \
+        -n "$NETWORKS" \
+        -g "$WALLET" \
+        -s "$WALLET_SECRET" \
+        "$WALLET_SECRET" \
+        "$GOSH_IMAGE_SHA"
 fi
 
-docker run --rm teamgosh/sign-cli sign \
+# same for alpine bash
+echo "Signing GOSH_IMAGE_SHA_ALPINE"
+check=$(docker run --rm teamgosh/sign-cli check \
     -n "$NETWORKS" \
-    -g "$WALLET" \
-    -s "$WALLET_SECRET" \
-    "$WALLET_SECRET" \
-    "$GOSH_IMAGE_SHA"
+    "$WALLET_PUBLIC" \
+    "$GOSH_IMAGE_SHA_ALPINE")
+
+if [[ "$check" = "true"* ]]; then
+    echo GOSH_IMAGE_SHA_ALPINE is already signed. Nothing to do.
+else
+    docker run --rm teamgosh/sign-cli sign \
+        -n "$NETWORKS" \
+        -g "$WALLET" \
+        -s "$WALLET_SECRET" \
+        "$WALLET_SECRET" \
+        "$GOSH_IMAGE_SHA_ALPINE"
+fi
+
+step 6. Cleanup
+rm -rf "$REPO_NAME"
