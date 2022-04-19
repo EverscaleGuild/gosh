@@ -10,7 +10,7 @@ REPOSITORY_NAME=$1
 COMMIT_HASH=$2
 
 GOSH_NETWORK="net.ton.dev"
-GOSH_ROOT_CONTRACT_ADDRESS="0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f"
+GOSH_ROOT_CONTRACT_ADDRESS="0:2f4ade4a98f916f47b1b2ff7abe1ee8a096d8443754b01b092d5043aa8ba1c8e"
 
 NETWORKS="${NETWORKS:-https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev}"
 
