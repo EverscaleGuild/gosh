@@ -1,8 +1,8 @@
 import React from "react";
 import { Field } from "formik";
 import { Link } from "react-router-dom";
-import { classNames } from "../../utils";
-import { Loader } from "../../components";
+import { classNames } from "./../../utils";
+import { Loader } from "./../../components";
 
 
 type TFormCommitBlockProps = {

@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import CopyClipboard from "../../components/CopyClipboard";
-import { IGoshRepository } from "../../types/types";
-import { shortString } from "../../utils";
+import CopyClipboard from "./../../components/CopyClipboard";
+import { IGoshRepository } from "./../../types/types";
+import { shortString } from "./../../utils";
 
 
 type TRepositoryListItemProps = {

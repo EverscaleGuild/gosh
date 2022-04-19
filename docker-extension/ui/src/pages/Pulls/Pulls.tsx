@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import BranchSelect from "../../components/BranchSelect";
-import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
-import { TGoshBranch } from "../../types/types";
+import BranchSelect from "./../../components/BranchSelect";
+import { goshBranchesAtom, goshCurrBranchSelector } from "./../../store/gosh.state";
+import { TGoshBranch } from "./../../types/types";
 
 
 const PullsPage = () => {

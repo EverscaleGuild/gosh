@@ -1,5 +1,5 @@
 
-import { FlexContainer, Flex } from "../../components";
+import { FlexContainer, Flex } from "./../../components";
 import { EmojiHappyIcon } from '@heroicons/react/outline';
 
 export const Settings = () => {

@@ -1,9 +1,9 @@
 import React from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
-import { Loader } from "../components";
-import { useGoshDao } from "../hooks/gosh.hooks";
-import { IGoshDao } from "../types/types";
-import { classNames } from "../utils";
+import { Loader } from "./../components";
+import { useGoshDao } from "./../hooks/gosh.hooks";
+import { IGoshDao } from "./../types/types";
+import { classNames } from "./../utils";
 
 
 export type TDaoLayoutOutletContext = {
@@ -15,7 +15,7 @@ const DaoLayout = () => {
     const goshDao = useGoshDao(daoName);
     const tabs = [
         { to: `/organizations/${goshDao?.meta?.name}`, title: 'Overview' },
-        { to: `/organizations/${goshDao?.meta?.name}/repos`, title: 'Repositories' }
+        { to: `/organizations/${goshDao?.meta?.name}/repositories`, title: 'Repositories' }
     ];
 
     return (

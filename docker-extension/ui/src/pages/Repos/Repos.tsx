@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useOutletContext, useParams } from "react-router-dom";
-import { useGoshRoot } from "../../hooks/gosh.hooks";
-import { GoshRepository } from "../../types/classes";
-import { IGoshRepository } from "../../types/types";
+import { useGoshRoot } from "./../../hooks/gosh.hooks";
+import { GoshRepository } from "./../../types/classes";
+import { IGoshRepository } from "./../../types/types";
 import { useQuery } from "react-query";
 import RepoListItem from "./RepoListItem";
-import { TDaoLayoutOutletContext } from "../DaoLayout";
+import { TDaoLayoutOutletContext } from "./../DaoLayout";
 
 
 const RepositoriesPage = () => {

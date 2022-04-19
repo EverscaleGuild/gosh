@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Listbox } from "@headlessui/react";
-import { TGoshBranch } from "../../types/types";
+import { TGoshBranch } from "./../../types/types";
 
 
 type TBranchSelectProps = {

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Form, Formik, Field } from "formik";
 import * as Yup from "yup";
-import { useEverClient } from "../../hooks/ever.hooks";
+import { useEverClient } from "./../../hooks/ever.hooks";
 import { useSetRecoilState } from "recoil";
-import { userStateAtom } from "../../store/user.state";
+import { userStateAtom } from "./../../store/user.state";
 import { useNavigate } from "react-router-dom";
-import { Loader } from "../../components";
+import { Loader } from "./../../components";
 import { TonClient } from "@eversdk/core";
 
 import Button from '@mui/material/Button'

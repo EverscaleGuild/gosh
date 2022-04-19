@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import BranchSelect from "../../components/BranchSelect";
-import CopyClipboard from "../../components/CopyClipboard";
-import { Loader } from "../../components";
-import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
-import { GoshCommit } from "../../types/classes";
-import { TGoshBranch, IGoshCommit, IGoshRepository } from "../../types/types";
-import { shortString } from "../../utils";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
+import BranchSelect from "./../../components/BranchSelect";
+import CopyClipboard from "./../../components/CopyClipboard";
+import { Loader } from "./../../components";
+import { goshBranchesAtom, goshCurrBranchSelector } from "./../../store/gosh.state";
+import { GoshCommit } from "./../../types/classes";
+import { TGoshBranch, IGoshCommit, IGoshRepository } from "./../../types/types";
+import { shortString } from "./../../utils";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
 
 
 const CommitsPage = () => {

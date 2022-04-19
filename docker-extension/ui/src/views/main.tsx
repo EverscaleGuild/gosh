@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { useNavigate } from 'react-router-dom';
-import { MetaDecorator, Overlay } from "../components";
+import { MetaDecorator, Overlay } from "./../components";
 import Button from '@mui/material/Button'
-import { DockerClient } from "../client";
+import { DockerClient } from "./../client";
 import Container from '@mui/material/Container';
 import cn from "classnames";
 
@@ -27,14 +27,14 @@ import { styled } from '@mui/system';
 
 import { SigninPage, SignupPage } from '../pages';
 
-import Logo from "../assets/images/logo.png";
+import Logo from "./../assets/images/logo.png";
 
 import {
   DataColumn,
   Validation,
   Image as ImageType,
   Container as ContainerType
-} from "../interfaces";
+} from "./../interfaces";
 
 const Tab = styled(TabUnstyled)`
   background-color: transparent;

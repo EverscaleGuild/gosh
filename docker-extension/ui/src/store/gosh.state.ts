@@ -1,6 +1,6 @@
 import { atom, selectorFamily } from "recoil";
-import { TGoshBranch } from "../types/types";
-import { Container, Image } from "../interfaces";
+import { TGoshBranch } from "./../types/types";
+import { Container, Image } from "./../interfaces";
 
 export const goshImages = atom<Image[]>({
     key: 'GoshImages',

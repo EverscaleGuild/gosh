@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
-import { Loader } from "../components";
-import { useGoshRepo, useGoshWallet, useGoshRepoBranches } from "../hooks/gosh.hooks";
-import { IGoshRepository, IGoshWallet } from "../types/types";
-import { classNames } from "../utils";
+import { Loader } from "./../components";
+import { useGoshRepo, useGoshWallet, useGoshRepoBranches } from "./../hooks/gosh.hooks";
+import { IGoshRepository, IGoshWallet } from "./../types/types";
+import { classNames } from "./../utils";
 
 
 export type TRepoLayoutOutletContext = {

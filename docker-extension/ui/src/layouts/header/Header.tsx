@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import Box from '@mui/material/Box';
-import { ReactComponent as Logo } from "../../assets/images/logo.svg";
+import { ReactComponent as Logo } from "./../../assets/images/logo.svg";
 import { Link } from "react-router-dom";
 import styles from "./Header.module.scss";
 import classnames from "classnames/bind";

@@ -1,10 +1,10 @@
 import { KeyPair } from "@eversdk/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { goshBranchesAtom } from "../store/gosh.state";
-import { userStateAtom } from "../store/user.state";
-import { GoshDao, GoshRoot, GoshWallet, GoshRepository } from "../types/classes";
-import { IGoshDao, IGoshRepository, IGoshRoot, IGoshWallet } from "../types/types";
+import { goshBranchesAtom } from "./../store/gosh.state";
+import { userStateAtom } from "./../store/user.state";
+import { GoshDao, GoshRoot, GoshWallet, GoshRepository } from "./../types/classes";
+import { IGoshDao, IGoshRepository, IGoshRoot, IGoshWallet } from "./../types/types";
 import { useEverClient } from "./ever.hooks";
 
 

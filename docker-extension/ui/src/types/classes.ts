@@ -1,14 +1,14 @@
 import { Account } from "@eversdk/appkit";
 import { KeyPair, signerKeys, signerNone, TonClient } from "@eversdk/core";
-import GoshDaoCreatorABI from "../contracts/daocreater.abi.json";
-import GoshABI from "../contracts/gosh.abi.json";
-import GoshDaoABI from "../contracts/goshdao.abi.json";
-import GoshWalletABI from "../contracts/goshwallet.abi.json";
-import GoshRepositoryABI from "../contracts/repository.abi.json";
-import GoshSnapshotABI from "../contracts/snapshot.abi.json";
-import GoshCommitABI from "../contracts/commit.abi.json";
-import GoshBlobABI from "../contracts/blob.abi.json";
-import { fromEvers, getGoshDaoCreator } from "../utils";
+import GoshDaoCreatorABI from "./../contracts/daocreater.abi.json";
+import GoshABI from "./../contracts/gosh.abi.json";
+import GoshDaoABI from "./../contracts/goshdao.abi.json";
+import GoshWalletABI from "./../contracts/goshwallet.abi.json";
+import GoshRepositoryABI from "./../contracts/repository.abi.json";
+import GoshSnapshotABI from "./../contracts/snapshot.abi.json";
+import GoshCommitABI from "./../contracts/commit.abi.json";
+import GoshBlobABI from "./../contracts/blob.abi.json";
+import { fromEvers, getGoshDaoCreator } from "./../utils";
 import {
     IGoshBlob,
     TGoshBranch,

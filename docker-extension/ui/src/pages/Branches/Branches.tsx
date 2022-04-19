@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Field, Form, Formik, FormikHelpers } from "formik";
 import { useMutation } from "react-query";
 import { Link, useOutletContext, useParams } from "react-router-dom";
-import BranchSelect from "../../components/BranchSelect";
-import { Loader } from "../../components";
-import { TGoshBranch } from "../../types/types";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
+import BranchSelect from "./../../components/BranchSelect";
+import { Loader } from "./../../components";
+import { TGoshBranch } from "./../../types/types";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
 import * as Yup from "yup";
 import { useRecoilValue } from "recoil";
-import { goshCurrBranchSelector } from "../../store/gosh.state";
-import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+import { goshCurrBranchSelector } from "./../../store/gosh.state";
+import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
 
 
 type TCreateBranchFormValues = {

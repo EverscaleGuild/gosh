@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Field, Form, Formik } from "formik";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
 import { useMonaco } from "@monaco-editor/react";
-import { generateDiff, getCodeLanguageFromFilename, sha1 } from "../../utils";
+import { generateDiff, getCodeLanguageFromFilename, sha1 } from "./../../utils";
 import * as Yup from "yup";
 import { Tab } from "@headlessui/react";
-import BlobEditor from "../../components/Blob/Editor";
-import BlobPreview from "../../components/Blob/Preview";
+import BlobEditor from "./../../components/Blob/Editor";
+import BlobPreview from "./../../components/Blob/Preview";
 import FormCommitBlock from "./FormCommitBlock";
 import { useRecoilValue } from "recoil";
-import { goshCurrBranchSelector } from "../../store/gosh.state";
-import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+import { goshCurrBranchSelector } from "./../../store/gosh.state";
+import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
 
 
 

@@ -2,8 +2,8 @@
 import React from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { toast } from "react-toastify";
-import { ToastOptionsShortcuts } from "../../utils";
-import { classNames } from "../../utils";
+import { ToastOptionsShortcuts } from "./../../utils";
+import { classNames } from "./../../utils";
 
 
 type TCopyClipboardProps = {

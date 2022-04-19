@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { IGoshRepository, IGoshSnapshot, TGoshBranch } from "../../types/types";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
-import BranchSelect from "../../components/BranchSelect";
-import { GoshSnapshot } from "../../types/classes";
+import { IGoshRepository, IGoshSnapshot, TGoshBranch } from "./../../types/types";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
+import BranchSelect from "./../../components/BranchSelect";
+import { GoshSnapshot } from "./../../types/classes";
 import { useRecoilValue } from "recoil";
-import { goshCurrBranchSelector } from "../../store/gosh.state";
-import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
-import { Loader } from "../../components";
+import { goshCurrBranchSelector } from "./../../store/gosh.state";
+import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
+import { Loader } from "./../../components";
 
 
 const RepoPage = () => {

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import BranchSelect from "../../components/BranchSelect";
-import { IGoshRepository, IGoshSnapshot } from "../../types/types";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
+import BranchSelect from "./../../components/BranchSelect";
+import { IGoshRepository, IGoshSnapshot } from "./../../types/types";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
 import { useMonaco } from "@monaco-editor/react";
-import { getCodeLanguageFromFilename } from "../../utils";
-import BlobPreview from "../../components/Blob/Preview";
+import { getCodeLanguageFromFilename } from "./../../utils";
+import BlobPreview from "./../../components/Blob/Preview";
 
-import CopyClipboard from "../../components/CopyClipboard";
-import { GoshSnapshot } from "../../types/classes";
-import { Loader } from "../../components";
+import CopyClipboard from "./../../components/CopyClipboard";
+import { GoshSnapshot } from "./../../types/classes";
+import { Loader } from "./../../components";
 import { useRecoilValue } from "recoil";
-import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
+import { goshBranchesAtom, goshCurrBranchSelector } from "./../../store/gosh.state";
 import { AccountType } from "@eversdk/appkit";
 
 

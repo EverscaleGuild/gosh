@@ -3,18 +3,18 @@ import { Field, Form, Formik } from "formik";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import { Tab } from "@headlessui/react";
-import { classNames } from "../../utils";
-import BlobEditor from "../../components/Blob/Editor";
-import FormCommitBlock from "../BlobCreate/FormCommitBlock";
+import { classNames } from "./../../utils";
+import BlobEditor from "./../../components/Blob/Editor";
+import FormCommitBlock from "./../BlobCreate/FormCommitBlock";
 import { useMonaco } from "@monaco-editor/react";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
-import { IGoshRepository, IGoshSnapshot } from "../../types/types";
-import { generateDiff, getCodeLanguageFromFilename, sha1 } from "../../utils";
-import BlobDiffPreview from "../../components/Blob/DiffPreview";
-import { GoshSnapshot } from "../../types/classes";
-import { goshCurrBranchSelector } from "../../store/gosh.state";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
+import { IGoshRepository, IGoshSnapshot } from "./../../types/types";
+import { generateDiff, getCodeLanguageFromFilename, sha1 } from "./../../utils";
+import BlobDiffPreview from "./../../components/Blob/DiffPreview";
+import { GoshSnapshot } from "./../../types/classes";
+import { goshCurrBranchSelector } from "./../../store/gosh.state";
 import { useRecoilValue } from "recoil";
-import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
 
 
 type TFormValues = {

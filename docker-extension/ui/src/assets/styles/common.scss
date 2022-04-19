@@ -686,7 +686,7 @@ pre {
   // border: 1px dashed #e9eaee;
   // padding: .375rem 1rem;
   // border-radius: .375rem;
-  color: $tertiary;
+  color: darken($tertiary, 20);
 
   svg {
     vertical-align: middle;

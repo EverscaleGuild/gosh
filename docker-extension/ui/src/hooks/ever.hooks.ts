@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { TonClient } from "@eversdk/core";
 import { useRecoilValue } from "recoil";
-import { everStateAtom } from "../store/ever.state";
+import { everStateAtom } from "./../store/ever.state";
 
 
 export const useEverClient = () => {

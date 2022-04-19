@@ -2,8 +2,8 @@ import { TonClient } from "@eversdk/core";
 import { toast } from "react-toastify";
 import { SHA1 } from "crypto-js";
 import { Buffer } from "buffer";
-import { GoshDaoCreator } from "../types/classes";
-import { IGoshDaoCreator, IGoshRepository, TDiffData, TGoshBranch } from "../types/types";
+import { GoshDaoCreator } from "./../types/classes";
+import { IGoshDaoCreator, IGoshRepository, TDiffData, TGoshBranch } from "./../types/types";
 
 
 export const getEndpoints = (): string[] => {

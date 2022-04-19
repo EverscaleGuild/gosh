@@ -64,6 +64,7 @@ export const Account = () => {
 
         {tabs.map((item, index) => (
           <ListItem
+            key={index}
             className={"menu-list-item"}
           >
             <NavLink

@@ -1,9 +1,9 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
-import CopyClipboard from "../../components/CopyClipboard";
-import { shortString } from "../../utils";
-import { TDaoLayoutOutletContext } from "../DaoLayout";
-import ReposPage from "../Repos";
+import CopyClipboard from "./../../components/CopyClipboard";
+import { shortString } from "./../../utils";
+import { TDaoLayoutOutletContext } from "./../DaoLayout";
+import ReposPage from "./../Repos";
 
 
 const DaoPage = () => {

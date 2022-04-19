@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Modal } from "../../components";
+import { Modal } from "./../../components";
 import Button from '@mui/material/Button'
 
 import Typography from '@mui/material/Typography';
 
 import { SigninPage, SignupPage } from '../../pages';
 
-import Logo from "../../assets/images/logo.png";
+import Logo from "./../../assets/images/logo.png";
 import { Container } from "@mui/material";
 import styles from './Home.module.scss';
 import classnames from "classnames/bind";
 import { useRecoilValue } from "recoil";
-import { userStateAtom } from "../../store/user.state";
+import { userStateAtom } from "./../../store/user.state";
 
 const cnb = classnames.bind(styles);
 
@@ -25,19 +25,19 @@ export const Home = ({action}: {action?: string}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-useEffect(() => {
-    switch (action) {
-    case "signin":
-        setShowSigninModal(true);
-        break;
-    case "signup":
-        setShowSignupModal(true);
-        break;
+    useEffect(() => {
+        switch (action) {
+        case "signin":
+            setShowSigninModal(true);
+            break;
+        case "signup":
+            setShowSignupModal(true);
+            break;
 
-    default:
-        break;
-    }
-}, [action])
+        default:
+            break;
+        }
+    }, [action])
   
   const SigninModal = ({showModal, handleClose}: {
     showModal: boolean,

@@ -15,7 +15,7 @@ module.exports = function override(config, env) {
     { 
       patterns: [{
         from: './node_modules/@eversdk/lib-web/eversdk.wasm',
-        to: "assets/eversdk.wasm"
+        to: "eversdk.wasm"
       }],
     })
   );

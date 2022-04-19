@@ -1,7 +1,7 @@
 import {
   Image,
   Container
- } from "../interfaces";
+ } from "./../interfaces";
 
 const logger = console;
 

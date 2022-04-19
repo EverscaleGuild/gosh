@@ -8,32 +8,32 @@ import {
 
 import Main from "./main";
 import Content from "./content";
-import { Header, Footer } from "../layouts";
+import { Header, Footer } from "./../layouts";
 
 
-import { useEverClient } from "../hooks/ever.hooks";
+import { useEverClient } from "./../hooks/ever.hooks";
 
-import ProtectedLayout from "../pages/ProtectedLayout";
-import { Account } from "../pages";
-import Containers from "../pages/Containers";
-import DaoLayout from "../pages/DaoLayout";
-import RepoLayout from "../pages/RepoLayout";
-import HomePage from "../pages/Home";
-import DaosPage from "../pages/Daos";
-import DaoPage from "../pages/Dao";
-import DaoCreatePage from "../pages/DaoCreate";
-import ReposPage from "../pages/Repos";
-import RepoCreatePage from "../pages/RepoCreate";
-import RepoPage from "../pages/Repo";
-import BranchesPage from "../pages/Branches";
-import BlobCreatePage from "../pages/BlobCreate";
-import BlobUpdatePage from "../pages/BlobUpdate";
-import BlobPage from "../pages/Blob";
-import Settings from "../pages/Settings";
-import CommitsPage from "../pages/Commits";
-import CommitPage from "../pages/Commit";
-import PullsPage from "../pages/Pulls";
-import PullCreatePage from "../pages/PullCreate";
+import ProtectedLayout from "./../pages/ProtectedLayout";
+import { Account } from "./../pages";
+import Containers from "./../pages/Containers";
+import DaoLayout from "./../pages/DaoLayout";
+import RepoLayout from "./../pages/RepoLayout";
+import HomePage from "./../pages/Home";
+import DaosPage from "./../pages/Daos";
+import DaoPage from "./../pages/Dao";
+import DaoCreatePage from "./../pages/DaoCreate";
+import ReposPage from "./../pages/Repos";
+import RepoCreatePage from "./../pages/RepoCreate";
+import RepoPage from "./../pages/Repo";
+import BranchesPage from "./../pages/Branches";
+import BlobCreatePage from "./../pages/BlobCreate";
+import BlobUpdatePage from "./../pages/BlobUpdate";
+import BlobPage from "./../pages/Blob";
+import Settings from "./../pages/Settings";
+import CommitsPage from "./../pages/Commits";
+import CommitPage from "./../pages/Commit";
+import PullsPage from "./../pages/Pulls";
+import PullCreatePage from "./../pages/PullCreate";
 
 const Router = () => {
   const client = useEverClient();
@@ -67,10 +67,12 @@ const Router = () => {
           <Route path="/account/signin" element={<HomePage action={"signin"} />} />
           <Route path="/account/signup" element={<HomePage action={"signup"} />} />
           <Route path="/account" element={<ProtectedLayout />}>
-              <Route path="organizations/create" element={<DaoCreatePage />} />
               <Route element={<Account />}>
                   <Route index element={null} />
-                  <Route path="organizations" element={<DaosPage />} />
+                  <Route path="organizations" element={<DaosPage />}>
+                    <Route index element={null} />
+                    <Route path="create" element={<DaoCreatePage />} />
+                  </Route>
                   <Route path="settings" element={<Settings />} />
               </Route>
           </Route>

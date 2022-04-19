@@ -1,9 +1,9 @@
 import React from "react";
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import { useGoshWallet } from "../../hooks/gosh.hooks";
+import { useGoshWallet } from "./../../hooks/gosh.hooks";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader } from "../../components";
+import { Loader } from "./../../components";
 
 
 type TFormValues = {

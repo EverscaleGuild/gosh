@@ -1,13 +1,13 @@
 import React from "react";
 import { Field, FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";
-import { useGoshRoot } from "../../hooks/gosh.hooks";
+import { useGoshRoot } from "./../../hooks/gosh.hooks";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import { userStateAtom } from "../../store/user.state";
-import { Loader } from "../../components";
-import { GoshDao } from "../../types/classes";
-import { fromEvers } from "../../utils";
+import { userStateAtom } from "./../../store/user.state";
+import { Loader, Modal } from "./../../components";
+import { GoshDao } from "./../../types/classes";
+import { fromEvers } from "./../../utils";
 
 
 type TFormValues = {
@@ -49,6 +49,13 @@ const DaoCreatePage = () => {
     }
 
     return (
+        <Modal
+          show={true}
+          onHide={() => {
+            navigate('/account/organizations');
+          }}
+        >
+
         <div className="container mt-12 mb-5">
             <div className="bordered-block max-w-lg px-7 py-8 mx-auto">
                 <h1 className="font-semibold text-2xl text-center mb-8">Create new organization</h1>
@@ -71,10 +78,8 @@ const DaoCreatePage = () => {
                             <div>
                                 <Field
                                     name="name"
-                                    inputProps={{
-                                        placeholder: 'New organization name',
-                                        autoComplete: 'off'
-                                    }}
+                                    placeholder={'New organization name'}
+                                        autoComplete={'off'}
                                 />
                             </div>
 
@@ -89,12 +94,10 @@ const DaoCreatePage = () => {
                                                     <div className="grow">
                                                         <Field
                                                             name={`participants.${index}`}
-                                                            inputProps={{
-                                                                className: 'w-full',
-                                                                placeholder: 'Participant public key',
-                                                                autoComplete: 'off',
-                                                                disabled: index === 0
-                                                            }}
+                                                                className={'w-full'}
+                                                                placeholder={'Participant public key'}
+                                                                autoComplete={'off'}
+                                                                disabled={index === 0}
                                                         />
                                                     </div>
                                                     {index > 0 && (
@@ -139,6 +142,7 @@ const DaoCreatePage = () => {
                 </Formik>
             </div>
         </div>
+        </Modal>
     );
 }
 

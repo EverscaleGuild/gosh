@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Fragment } from "react";
 
-import { MetaDecorator } from "../../components";
+import { MetaDecorator } from "./../../components";
 import Button from '@mui/material/Button'
-import { DockerClient } from "../../client";
+import { DockerClient } from "./../../client";
 import Container from '@mui/material/Container';
 import cn from "classnames";
 
@@ -28,7 +28,7 @@ import {
   Validation,
   Image as ImageType,
   Container as ContainerType
-} from "../../interfaces";
+} from "./../../interfaces";
 
 const Tab = styled(TabUnstyled)`
   background-color: transparent;

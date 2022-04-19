@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
-// import { GoshBlob, GoshCommit } from "../../types/classes";
-import { IGoshBlob, IGoshCommit, IGoshRepository } from "../../types/types";
-import { TRepoLayoutOutletContext } from "../RepoLayout";
+// import { GoshBlob, GoshCommit } from "./../../types/classes";
+import { IGoshBlob, IGoshCommit, IGoshRepository } from "./../../types/types";
+import { TRepoLayoutOutletContext } from "./../RepoLayout";
 import { useMonaco } from "@monaco-editor/react";
-import { getCodeLanguageFromFilename, restoreFromDiff } from "../../utils";
-import BlobDiffPreview from "../../components/Blob/DiffPreview";
-import { GoshBlob, GoshCommit } from "../../types/classes";
+import { getCodeLanguageFromFilename, restoreFromDiff } from "./../../utils";
+import BlobDiffPreview from "./../../components/Blob/DiffPreview";
+import { GoshBlob, GoshCommit } from "./../../types/classes";
 
 
 const CommitPage = () => {
