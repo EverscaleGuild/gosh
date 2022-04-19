@@ -40,6 +40,9 @@ contract GoshWallet {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+    
+    // mapping to store hashes of inbound messages;
+    mapping(uint256 => uint64) m_messages;
 
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -84,7 +87,8 @@ contract GoshWallet {
 
     function deployRepository(
         string nameRepo
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -97,7 +101,8 @@ contract GoshWallet {
         string fullCommit,
         address parent1,
         address parent2
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
@@ -109,7 +114,8 @@ contract GoshWallet {
         string newName,
         string fromName,
         uint128 amountFiles
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
             value: amountFiles * 1.5 ton + 1 ton, bounce: true, flag: 2 
@@ -119,7 +125,8 @@ contract GoshWallet {
     function deleteBranch(
         string repoName,
         string Name
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deleteBranch{
             value: 1 ton, bounce: true, flag: 2
@@ -131,7 +138,8 @@ contract GoshWallet {
         string name,
         string branch,
         string diff
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployDiff{
             value: 2 ton, bounce: true, flag: 2 
@@ -143,9 +151,10 @@ contract GoshWallet {
         string repoName,
         string commit,
         uint128 value
-    ) public view onlyOwner {
+    ) public onlyOwner {
         require(address(this).balance > value + 1 ton, ERR_LOW_BALANCE);
         tvm.accept();
+        gc();
         address commitAddr = _buildCommitAddr(repoName, commit);
         commitAddr.transfer(value, true, 3);
     }
@@ -155,7 +164,8 @@ contract GoshWallet {
         string commit,
         string blobName,
         string fullBlob
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address commitAddr = _buildCommitAddr(repoName, commit);
         Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob);
     }
@@ -165,7 +175,8 @@ contract GoshWallet {
         string nametag,
         string nameCommit,
         address commit
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept {
+        gc();
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
@@ -188,6 +199,32 @@ contract GoshWallet {
 
     function getWalletPubkey() external view returns(uint256) {
         return tvm.pubkey();
+    }
+    
+    function afterSignatureCheck(TvmSlice body, TvmCell message) private inline
+    returns (TvmSlice)
+    {
+        // owner check
+        require(msg.pubkey() == tvm.pubkey(), 101);
+        // load and drop message timestamp (uint64)
+        (, uint64 expireAt) = body.decode(uint64, uint32);
+        require(expireAt > now, 57);
+        uint256 msgHash = tvm.hash(message);
+        require(!m_messages.exists(msgHash), 102);
+
+        tvm.accept();
+        m_messages[msgHash] = expireAt;
+
+        return body;
+    }
+
+    /// @notice Allows to delete expired messages from dict.
+    function gc() private inline {
+        for ((uint256 msgHash, uint64 expireAt) : m_messages) {
+        if (expireAt <= now) {
+        delete m_messages[msgHash];
+        }
+        }
     }
 
     //
