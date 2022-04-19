@@ -1,2 +1,8 @@
 @import '../../assets/styles/colors.scss';
 @import '../../assets/styles/mixins.scss';
+
+.close {
+    position: absolute !important;
+    right: 22px !important;
+    top: 18px !important;
+}

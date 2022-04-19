@@ -5,8 +5,18 @@ import {
 
 const logger = console;
 
-const METADATA_KEY_BUILD_PROVIDER = "WALLET_PUBLIC";
-const COMMAND_VALIDATE_IMAGE_SIGNATURE = "/command/ensure-image-signature.sh" 
+const WELL_KNOWN_ROOT_CONTRACT_ADDRESS = "gosh::net.ton.dev://0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/"
+
+const METADATA_KEY = {
+  BUILD_PROVIDER: "WALLET_PUBLIC",
+  GOSH_ADDRESS: "GOSH_ADDRESS", 
+  GOSH_COMMIT_HASH: "GOSH_COMMIT_HASH"
+};
+const COMMAND = {
+  CALCULATE_IMAGE_SHA: "/command/gosh-image-sha.sh",
+  VALIDATE_IMAGE_SIGNATURE: "/command/ensure-image-signature.sh",
+  VALIDATE_IMAGE_SHA: "/command/validate-image-sha.sh"
+};
 const UNSIGNED_STATUS = "error";
 
 declare global {
@@ -28,7 +38,6 @@ export class DockerClient {
    * Get containers list
    **/
   static async getContainers(): Promise<Array<Container>> {
-    logger.log(`Calling getContainers...\n`);
     const containers = await window.ddClient.docker.listContainers();
     const containersViewModel:Array<Container> = [];
     for (var i=0; i < containers.length; i++) {
@@ -40,6 +49,7 @@ export class DockerClient {
         : UNSIGNED_STATUS;
       containersViewModel.push({
         validated: verificationStatus,
+        id: container.Id,
         containerHash: container.Id,
         containerName: containerName,
         imageHash: container.ImageID,
@@ -54,9 +64,8 @@ export class DockerClient {
    * Get containers list
    **/
   static async getImages(): Promise<Array<Image>> {
-    logger.log(`Calling getImages...\n`);
     const images = await window.ddClient.docker.listImages();
-    const imagesViewModel = [];
+    const imagesViewModel: Array<Image> = [];
     for (var i=0; i < images.length; i++) {
       const image = images[i];
       const [isSigned, buildProvider] = await DockerClient.getBuildProvider(image);
@@ -65,6 +74,7 @@ export class DockerClient {
         : UNSIGNED_STATUS;
       imagesViewModel.push({
         validated: verificationStatus,
+        id: image.Id,
         imageHash: image.Id,
         buildProvider: buildProvider,
         goshRootAddress: ""
@@ -73,36 +83,148 @@ export class DockerClient {
     return imagesViewModel;
   }
 
+  static async _findImage(imageId: string): Promise<[boolean, any]> {
+    const images = await window.ddClient.docker.listImages();
+    for (var i=0; i < images.length; i++) {
+      const image = images[i];
+      if (image.Id == imageId) {
+        return [true, image];
+      }
+    }
+    return [false, {}];
+  }
+
   /**
    * Get image state
    **/
-  static async getImageStatus(buildProviderPublicKey: string, imageHash: string): Promise<any> {
-    logger.log(`Calling getImageStatus...\n`);
+  static async getImageStatus(buildProviderPublicKey: string, imageId: string): Promise<any> {
+    logger.log(`Calling getImageStatus: pubkey - ${buildProviderPublicKey}  id: ${imageId}...\n`);
     try {
+      const [isImageHashCalculated, imageHash] = await DockerClient.calculateImageSha(imageId, "");
+      if (!isImageHashCalculated) {
+        return "warning";
+      }
       const result = await window.ddClient.extension.vm.cli.exec(
-        COMMAND_VALIDATE_IMAGE_SIGNATURE,
+        COMMAND.VALIDATE_IMAGE_SIGNATURE,
         [buildProviderPublicKey, imageHash]
       );
+      if (!!result.code) {
+        return "error";
+      }
       const resultText = result.stdout.trim(); 
       logger.log(`Result: <${resultText}>\n`);
-      // Note: 
-      // There was a check for result.code == 0 that didn't work
-      // For some reason it is not working as expected and returns undefined 
       const verificationStatus =  resultText == "true";
       return verificationStatus ? "success" : "error";
     } 
     catch (e) {
-        console.log("image validaton failed", e); 
+        logger.log(`image validaton failed ${JSON.stringify(e)}`); 
         return "warning";
     }
   }
 
   static async getBuildProvider(container: any): Promise<[boolean, string]> {
+    return DockerClient.readContainerImageMetadata(container, METADATA_KEY.BUILD_PROVIDER, "-");
+  }
+
+  static async validateContainerImage(imageId: string, appendValidationLog: any, closeValidationLog:any):  Promise<boolean> {
+    const [imageExists, image] = await DockerClient._findImage(imageId);
+    if (!imageExists) {
+      appendValidationLog("Error: image does not exist any more.");
+      closeValidationLog();
+      return false;
+    }
+    const [hasRepositoryAddress, goshRepositoryAddress] = DockerClient.readContainerImageMetadata(image, METADATA_KEY.GOSH_ADDRESS, "-");
+    const [hasCommitHash, goshCommitHash] = DockerClient.readContainerImageMetadata(image, METADATA_KEY.GOSH_COMMIT_HASH, "-");
+     
+    if  (!hasRepositoryAddress || !hasCommitHash) {
+      appendValidationLog("Error: The image was not build from Gosh");
+      closeValidationLog();
+      return false;
+    }
+
+    // Note: Not safe. improve
+    if (!goshRepositoryAddress.startsWith(WELL_KNOWN_ROOT_CONTRACT_ADDRESS)) {
+      appendValidationLog("Error: unknown gosh root address.");
+      closeValidationLog();
+      return false;
+    }
+
+    try {
+      const [isImageShaCalculated, imageSha] = await DockerClient.calculateImageSha(imageId, "");
+      if (!isImageShaCalculated) {
+        appendValidationLog("Failed to calculate image sha.");
+        return false;
+      }
+      appendValidationLog("Image sha: " + imageSha);
+
+      const result = await window.ddClient.extension.vm.cli.exec(
+        COMMAND.VALIDATE_IMAGE_SHA,
+        [goshRepositoryAddress, goshCommitHash],
+        {
+          stream: {
+            onOutput(data: any): void {
+              if (!!data.stdout) {
+                appendValidationLog(data.stdout);
+              }
+              if (!!data.stderr) {
+                appendValidationLog(data.stderr);
+              }
+            },
+            onError(error: any): void {
+              console.error(error);
+            },
+            onClose(exitCode: number): void {
+              logger.log(`onClose with exit code ${exitCode}`);
+            },
+          }
+        }
+      );
+      if (!!result.code) {
+        appendValidationLog("Failed to build an image.");
+        return false;
+      }
+      const calculatedImageSha = result.stdout.trim();
+      appendValidationLog("Calculated image sha from gosh: " + calculatedImageSha);
+      if (calculatedImageSha != imageSha) {
+        appendValidationLog("Failed: sha does not match.");
+        return false;
+      }
+      appendValidationLog("Success.");
+      return true;
+    } 
+    catch(error:any) {
+      console.error(error);
+      return false;
+    } 
+    finally {
+      closeValidationLog();
+    }
+  }
+
+  static async calculateImageSha(imageId: string, defaultValue: string): Promise<[boolean, string]> {
+    try {
+      const result = await window.ddClient.extension.vm.cli.exec(
+        COMMAND.CALCULATE_IMAGE_SHA,
+        [imageId]
+      );
+      if (!!result.code) {
+        logger.log(`Failed to calculate image sha. ${JSON.stringify(result)}`);
+        return [false, defaultValue];
+      }
+      const imageHash = result.stdout.trim();
+      return [true, imageHash]; 
+    } catch(error: any) {
+      logger.log(`Error: ${JSON.stringify(error)}`);
+      return [false, defaultValue];
+    }
+  }
+
+  static readContainerImageMetadata(container: any, key: string, defaultValue: string): [boolean, string] {
     const metadata = container.Labels || {};
-    if (METADATA_KEY_BUILD_PROVIDER in metadata) {
-      return [true, metadata[METADATA_KEY_BUILD_PROVIDER]];
+    if (key in metadata) {
+      return [true, metadata[key]];
     } else {
-      return [false, "-"];
+      return [false, defaultValue];
     }
   }
 }

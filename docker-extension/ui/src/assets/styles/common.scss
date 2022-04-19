@@ -18,17 +18,22 @@ body {
   color: $dark
 }
 
+table {
+  background-color: $white;;
+}
+
 a {
   color: $main;
+
   @include transition(0.15s);
 
   &:hover {
-    color: lighten($main, 5);
+    color: saturate(darken($main, 9), 20);
     @include transition(0.3s);
   }
 
   &, &:focus, &:active, &:hover {
-    text-decoration: none;
+    text-decoration: none !important;
   }
   &:focus, &:active, &:hover {
     @include transition(0.35s);
@@ -106,6 +111,12 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+
+  h6 {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
 }
 
 .modal-body {
@@ -120,12 +131,53 @@ main {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    position: absolute !important;
-    top: 1rem;
-    right: 2rem;
+    position: fixed !important;
+    bottom: .875rem;
+    right: 1.5rem;
+    z-index: 101;
 
     & > * {
       margin-left: .5rem;
+    }
+  }
+
+  .button-block-top {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: nowrap;
+    position: absolute !important;
+    top: 1.0625rem;
+    right: 1.5rem;
+
+    & > * {
+      background-color: #ebebef;
+      border-radius: 1rem;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: -.025rem;
+      // padding-top: 0;
+      // padding-bottom: 0;
+      margin-left: .75rem;
+
+      svg {
+        color: #007BFF;
+        height: 18px;
+        width: 18px;
+        vertical-align: middle;
+        transform: translateX(-4px) translateY(0px);
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+      }
+
+      &:hover {
+        color: #ffffff;
+        background-color: #007BFF;
+
+        svg {
+          color: #003772;
+        }
+      }
     }
   }
 
@@ -194,5 +246,151 @@ main {
         }
       }
     }
+  }
+}
+
+th span {
+  font-weight: 600 !important;
+}
+
+.status-dot {
+  width: .6rem;
+  height: .6rem;
+  border-radius: .3rem;
+  margin: .5rem .5rem;
+  display: block;
+
+  &.success {
+    background: #05d105;
+    box-shadow1:#05d10588 0px 8px 14px 0px;
+  }
+
+  &.warning {
+    background: #ffdb4d;
+    box-shadow1:rgba(255, 204, 0, 0.25) 0px 8px 14px 0px;
+  }
+
+  &.error {
+    background: #fc3f1d;
+    box-shadow1:#fc3f1d80 0px 8px 14px 0px;
+  }
+
+  &.loading {
+    background: #c5c7d8;
+    box-shadow1:#9299bb52 0px 8px 14px 0px;
+    -webkit-animation: blink 1.25s -0.24s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
+            animation: blink 1.25s -0.24s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
+  }
+
+  @-webkit-keyframes blink {
+    0% {
+      opacity: 1; }
+    45% {
+      opacity: 0.3; }
+    80% {
+      opacity: 1; } }
+  @keyframes blink {
+    0% {
+      opacity: 1; }
+    45% {
+      opacity: 0.3; }
+    80% {
+      opacity: 1; } }
+}
+
+.loading {
+  opacity: 0.7;
+}
+
+.modal-overlay {
+  & > div:first-child {
+    background-color: #ffffff;
+  }
+
+  .close-button {
+    position: absolute;
+    right: 22px;
+    top: 18px;
+  }
+}
+.cell-button {
+  padding: 12px 16px !important;
+  text-align: right;
+
+  button {
+    float: right;
+    background-color: #ebebef;
+    border-radius: 1rem;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+table {
+  tr {  
+    &:last-child {
+      td {
+        border-bottom: none !important;
+      }
+    }
+  }
+  td {
+    button:disabled {
+      background-color: rgba(0, 0, 40, 0.1) !important;
+    }
+  }
+}
+.table-wrapper {
+  margin-bottom: 24px !important;
+}
+
+.loading-preview {
+  color: $gray-light;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100% - 3rem);
+  padding-bottom: 3rem;
+
+  img {
+    width: 176px;
+    height: auto;
+  }
+
+  p {
+    margin-top: -15px;
+    text-indent: 15px;
+  }
+}
+
+button {
+  cursor: pointer !important;
+}
+
+.table-row-noborder {
+  td, th {
+    border-bottom: none !important;
+  }
+
+  & + tr {
+    td, th {
+      padding-top: 0;
+    }
+  }
+}
+
+pre {
+  font-family: 'Noto Sans Mono', 'Courier New', Courier, monospace;
+  font-family: 'Red Hat Mono', 'Courier New', Courier, monospace;
+  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  font-weight: 400;
+  background-color: darken($surf-gray-background, 1);
+  margin: 0;
+  border-radius: .5rem;
+  padding: 1rem 1rem;
+  font-size: 13px;
+
+  code {
+    font-family: inherit;
   }
 }
