@@ -203,7 +203,7 @@ export class DockerClient {
           }
         }
       );
-
+      return true;
     } 
     catch(error:any) {
       console.error(error);
