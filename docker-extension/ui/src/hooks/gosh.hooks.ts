@@ -12,7 +12,7 @@ import { useEverClient } from "./ever.hooks";
 export const useGoshRoot = () => {
     const client = useEverClient();
     const userState = useRecoilValue(userStateAtom);
-debugger;
+
     return useMemo<IGoshRoot | undefined>(() => {
         const address = process.env.REACT_APP_GOSH_ADDR;
         if (client && userState.keys?.public && address) {

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { Link, useOutletContext, useParams } from "react-router-dom";
+import { Link, useOutletContext, useParams, Outlet } from "react-router-dom";
 import { useGoshRoot } from "./../../hooks/gosh.hooks";
 import { GoshRepository } from "./../../types/classes";
 import { IGoshRepository } from "./../../types/types";
 import { useQuery } from "react-query";
 import RepoListItem from "./RepoListItem";
 import { TDaoLayoutOutletContext } from "./../DaoLayout";
+import { Loader, LoaderDotsText, FlexContainer, Flex, Modal } from "./../../components";
+import Button from '@mui/material/Button'
+import { PlusIcon, CollectionIcon, UsersIcon, ArrowRightIcon, EmojiSadIcon } from '@heroicons/react/outline';
+import InputBase from '@mui/material/InputBase';
 
 
 const RepositoriesPage = () => {
@@ -52,45 +56,114 @@ const RepositoriesPage = () => {
     );
 
     return (
-        <div className="bordered-block px-7 py-8">
-            <h3 className="font-semibold text-base mb-4">Repositories</h3>
-            <div className="flex flex-wrap gap-4 justify-between">
-                <div className="input grow">
-                    <input
-                        type={'text'}
-                        autoComplete={'off'}
-                        placeholder={'Find repository...'}
-                        className="element !py-1.5 !text-sm"
-                        onChange={(event) => setSearch(event.target.value)}
-                    />
-                </div>
+        <>
 
+      {/* <CreateDaoModal
+        showModal={showModal}
+        handleClose={() => {
+          setShowModal(false);
+          navigate("/account/organizations");
+        }}
+      /> */}
+      <Outlet/>
+      <div className="page-header">
+        <FlexContainer
+            direction="row"
+            justify="space-between"
+            align="flex-start"
+        >
+          <Flex>
+              <h2>Repositories</h2>
+          </Flex>
+          <Flex>
                 <Link
                     className="btn btn--body px-4 py-1.5 text-sm !font-normal"
-                    to={`/organizations/${goshDao.meta?.name}/repositories/create`}
+                    to={`/organizations/repositories/create`}
                 >
-                    New repository
-                </Link>
-            </div>
+                  <Button
+                      color="primary"
+                      variant="contained"
+                      size="medium"
+                      className={"btn-icon"}
+                      disableElevation
+                      // icon={<Icon icon={"arrow-up-right"}/>}
+                      // iconAnimation="right"
+                      // iconPosition="after"
+                  ><PlusIcon/> Create</Button>
+              </Link>
+          </Flex>
+      </FlexContainer>
+      <InputBase
+        className="search-field"
+        type="text"
+        placeholder="Search repositories"
+        autoComplete={'off'}
+        onChange={(event) => setSearch(event.target.value)}
+      />
 
-            <div className="mt-5 divide-y divide-gray-c4c4c4">
-                {(repoListQuery.isIdle || repoListQuery.isLoading) && (
-                    <p className="text-sm text-gray-500 text-center py-3">
-                        Loading repositories...
-                    </p>
-                )}
+    </div>
+      <div className="divider"></div>
+      <div className="mt-8">
+        {(repoListQuery.isIdle || repoListQuery.isLoading) && (
+            <p className="text-sm text-gray-500 text-center py-3">
+                Loading repositories...
+            </p>
+        )}
 
-                {repoListQuery.isFetched && !repoListQuery.data?.length && (
-                    <p className="text-sm text-gray-500 text-center py-3">
-                        There are no repositories
-                    </p>
-                )}
+        {repoListQuery.isFetched && !repoListQuery.data?.length && (
+            <p className="text-sm text-gray-500 text-center py-3">
+                There are no repositories
+            </p>
+        )}
 
-                {repoListQuery.data?.map((repository, index) => (
-                    daoName && <RepoListItem key={index} daoName={daoName} repository={repository} />
-                ))}
-            </div>
-        </div>
+        {repoListQuery.data?.map((repository, index) => (
+            daoName && <RepoListItem key={index} daoName={daoName} repository={repository} />
+        ))}
+{/* 
+        <div className="divide-y divide-gray-c4c4c4">
+            {goshDaos?.map((item, index) => (
+              <Link
+                key={index}
+                to={`/organizations/${item.meta?.name}`}
+                className="text-xl font-semibold hover:underline"
+              >
+                <FlexContainer
+                  className="organization"
+                  direction="column"
+                  justify="space-between"
+                  align="flex-start"
+                >
+                  <Flex>
+                    <div className="arrow"><ArrowRightIcon/></div>
+                    <div className="organization-title">
+                      {item.meta?.name}
+                    </div>
+                    <div className="organization-description">
+                      Organization description
+                    </div>
+                  </Flex>
+                  <Flex
+                    className="organization-footer"
+                  >
+                    <FlexContainer
+                      direction="row"
+                      justify="flex-start"
+                      align="center"
+                    >
+                      <Flex>
+                        <div className="badge"><CollectionIcon/> <LoaderDotsText className={"badge-loader"}/> repositories</div>
+                      </Flex>
+                      <Flex>
+                        <div className="badge"><UsersIcon/> <LoaderDotsText className={"badge-loader"}/> members</div>
+                      </Flex>
+                    </FlexContainer>
+                  </Flex>
+                </FlexContainer>
+              </Link>
+            ))}
+        </div> */}
+      </div>
+    </>
     );
 }
 

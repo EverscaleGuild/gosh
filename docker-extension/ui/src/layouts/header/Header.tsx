@@ -29,12 +29,6 @@ export const Header = ({location, ...props}: {location: string}) => {
             // icon={<Icon icon={"arrow-up-right"}/>}
             // iconAnimation="right"
             // iconPosition="after"
-          >Account</Button></Link>
-          <Link to="/repositories"><Button
-            disableElevation
-            color="primary"
-            variant="contained"
-            size="medium"
           >Repositories</Button></Link>
           <Link to="/containers"><Button
             disableElevation

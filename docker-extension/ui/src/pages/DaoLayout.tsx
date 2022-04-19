@@ -4,6 +4,17 @@ import { Loader } from "./../components";
 import { useGoshDao } from "./../hooks/gosh.hooks";
 import { IGoshDao } from "./../types/types";
 import { classNames } from "./../utils";
+import CopyClipboard from "./../components/CopyClipboard";
+import { shortString } from "./../utils";
+
+import Container from '@mui/material/Container';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import DaoPage from "./Dao";
+import ReposPage from "./Repos";
 
 
 export type TDaoLayoutOutletContext = {
@@ -19,42 +30,11 @@ const DaoLayout = () => {
     ];
 
     return (
-        <div className="container my-10">
-            {!goshDao && (
-                <>
-                    <Loader/>
-                    Loading organization
-                </>
-            )}
-
-            {goshDao && (
-                <>
-                    <h1 className="mb-6">
-                        <Link to={`/organizations/${goshDao.meta?.name}`} className="font-semibold text-2xl">
-                            {goshDao.meta?.name}
-                        </Link>
-                    </h1>
-
-                    <div className="flex gap-x-6 mb-6">
-                        {tabs.map((item, index) => (
-                            <NavLink
-                                key={index}
-                                to={item.to}
-                                end
-                                className={({ isActive }) => classNames(
-                                    'text-base text-gray-050a15/50 hover:text-gray-050a15 py-1.5 px-2',
-                                    isActive ? '!text-gray-050a15 border-b border-b-gray-050a15' : null
-                                )}
-                            >
-                                {item.title}
-                            </NavLink>
-                        ))}
-                    </div>
-
-                    <Outlet context={{ goshDao }} />
-                </>
-            )}
-        </div>
+        <Container
+            className={"content-container"}
+        >
+            <Outlet context={{ goshDao }} />
+      </Container>
     );
 }
 

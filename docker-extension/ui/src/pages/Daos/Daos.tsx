@@ -6,7 +6,7 @@ import { useGoshRoot } from "./../../hooks/gosh.hooks";
 import { userStateAtom } from "./../../store/user.state";
 import { GoshDao, GoshWallet } from "./../../types/classes";
 import { IGoshDao, IGoshRoot } from "./../../types/types";
-import Button from '@mui/material/Button'
+import Button from '@mui/material/Button';
 import { PlusIcon, CollectionIcon, UsersIcon, ArrowRightIcon, EmojiSadIcon } from '@heroicons/react/outline';
 import InputBase from '@mui/material/InputBase';
 import DaoCreatePage from '../../pages/DaoCreate';
