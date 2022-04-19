@@ -31,6 +31,14 @@ contract GoshWallet {
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
 
+    // Each transaction is limited by gas, so we must limit count of iteration in loop.
+    uint8 constant MAX_CLEANUP_MSGS = 20;
+
+    struct LastMsg {
+        uint32 expireAt;
+        uint256 msgHash;
+    }
+
     string version = "0.1.0";
     uint256 static _rootRepoPubkey;
     address static _rootgosh;
@@ -41,11 +49,10 @@ contract GoshWallet {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
-    
+    LastMsg m_lastMsg;
     // mapping to store hashes of inbound messages;
     mapping(uint256 => uint32) m_messages;
-    // Each transaction is limited by gas, so we must limit count of iteration in loop.
-    uint8 constant MAX_CLEANUP_MSGS = 30;
+    
 
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -69,7 +76,13 @@ contract GoshWallet {
 
     modifier accept() {
         tvm.accept();
+        m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
         _;
+    }
+
+    modifier clean() {
+        _;
+        gc();
     }
 
     constructor(
@@ -90,8 +103,7 @@ contract GoshWallet {
 
     function deployRepository(
         string nameRepo
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -104,8 +116,7 @@ contract GoshWallet {
         string fullCommit,
         address parent1,
         address parent2
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{
             value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
@@ -117,8 +128,7 @@ contract GoshWallet {
         string newName,
         string fromName,
         uint128 amountFiles
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
             value: amountFiles * 1.5 ton + 1 ton, bounce: true, flag: 2 
@@ -128,8 +138,7 @@ contract GoshWallet {
     function deleteBranch(
         string repoName,
         string Name
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deleteBranch{
             value: 1 ton, bounce: true, flag: 2
@@ -141,8 +150,7 @@ contract GoshWallet {
         string name,
         string branch,
         string diff
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployDiff{
             value: 2 ton, bounce: true, flag: 2 
@@ -154,10 +162,9 @@ contract GoshWallet {
         string repoName,
         string commit,
         uint128 value
-    ) public onlyOwner {
+    ) public onlyOwner clean {
         require(address(this).balance > value + 1 ton, ERR_LOW_BALANCE);
         tvm.accept();
-        gc();
         address commitAddr = _buildCommitAddr(repoName, commit);
         commitAddr.transfer(value, true, 3);
     }
@@ -167,8 +174,7 @@ contract GoshWallet {
         string commit,
         string blobName,
         string fullBlob
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address commitAddr = _buildCommitAddr(repoName, commit);
         Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob);
     }
@@ -178,8 +184,7 @@ contract GoshWallet {
         string nametag,
         string nameCommit,
         address commit
-    ) public onlyOwner accept {
-        gc();
+    ) public onlyOwner accept clean {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
@@ -212,7 +217,7 @@ contract GoshWallet {
         require(expireAt > now, 57);
         uint256 msgHash = tvm.hash(message);
         require(!m_messages.exists(msgHash), ERR_DOUBLE_MSG);
-        m_messages[msgHash] = expireAt;
+        m_lastMsg = LastMsg(expireAt, msgHash);
         return body;
     }
 
