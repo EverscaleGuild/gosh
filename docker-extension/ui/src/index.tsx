@@ -13,9 +13,9 @@ libWebSetup({ binaryURL: 'https://buy.ton.surf/eversdk.wasm' });
 
 const queryClient = new QueryClient({
   defaultOptions: {
-      queries: {
-          refetchOnWindowFocus: false
-      }
+    queries: {
+        refetchOnWindowFocus: false
+    }
   }
 });
 

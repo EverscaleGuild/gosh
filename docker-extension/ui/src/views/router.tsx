@@ -49,8 +49,8 @@ const Router = () => {
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
-    // navigate("/");
-    // location.pathname = "/";
+    navigate("/");
+    location.pathname = "/";
     return () => {}
   }, [])
   
