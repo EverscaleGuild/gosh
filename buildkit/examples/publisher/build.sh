@@ -55,6 +55,16 @@ echo GOSH_IMAGE_SHA "$GOSH_IMAGE_SHA"
 
 step 5. Sign the image
 
+check=$(docker run --rm teamgosh/sign-cli check \
+    -n "$NETWORKS" \
+    "$WALLET_PUBLIC" \
+    "$GOSH_IMAGE_SHA")
+
+if [[ "$check" = "true"* ]]; then
+    echo GOSH_HASH is already signed. Nothing to do.
+    exit 0
+fi
+
 docker run --rm teamgosh/sign-cli sign \
     -n "$NETWORKS" \
     -g "$WALLET" \
