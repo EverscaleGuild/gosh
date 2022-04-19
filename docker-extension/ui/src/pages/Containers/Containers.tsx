@@ -475,38 +475,35 @@ const Main = () => {
   }
 
   function validateContainer(element: ContainerType, index: number): void {
+    let logs: string[]  = [];
     setValidation({
       id: element.containerHash,
       type: "container",
       active: true,
       stdout: ""
     });
-
-    setTimeout(() => setValidation({
-      id: element.containerHash,
-      type: "container",
-      active: true,
-      stdout: `Validation \nInit \nid: ${element.containerHash}`
-    }), 1500);
-
-    setTimeout(() => setValidation({
-      id: element.containerHash,
-      type: "container",
-      active: false,
-      stdout: `Validation \nInit \nid: ${element.containerHash}\nFinished!`
-    }), 3000);
-    // to update stdout call
-    // DockerClient.getValidationLog()
-    // .then((value) => {
-    //   console.log(value);
-    //   setContainerValidation({
-    //     id: containerValidation.id,
-    //     stdout: <newValue>
-    //   });
-    // });
+    DockerClient.validateContainerImage(
+      element.imageHash,
+      (status: string) => {
+        logs.push(status);
+        setValidation({
+          id: element.containerHash,
+          type: "container",
+          active: true,
+          stdout: logs.join("\n")
+        });
+      },
+      () => setValidation({
+          id: element.containerHash,
+          type: "container",
+          active: false,
+          stdout: logs.join("\n")
+      })
+    );
   }
 
   function validateImage(element: ImageType, index: number): void {
+    let logs: string[] = [];
     setValidation({
       id: element.imageHash,
       type: "image",
@@ -516,18 +513,19 @@ const Main = () => {
     DockerClient.validateContainerImage(
       element.imageHash,
       (status: string) => {
+        logs.push(status);
         setValidation({ 
           id: element.imageHash,
           type: "image",
           active: true,
-          stdout: status
+          stdout: logs.join("\n")
         });
       }, 
       () => setValidation({
           id: element.imageHash,
           type: "image",
           active: false,
-          stdout: ""
+          stdout: logs.join("\n")
       })
     );
   }
@@ -553,16 +551,7 @@ const Main = () => {
       description="Git On-chain Source Holder Docker extension for Secure Software Supply BlockChain"
       keywords="docker, gosh, extension, sssb, sssp"
     />
-    {/* <div className="button-block">
-      <Button
-        color="primary"
-        size="medium"
-        disableElevation
-        // icon={<Icon icon={"arrow-up-right"}/>}
-        // iconAnimation="right"
-        // iconPosition="after"
-        onClick={handleShow}
-      >Help <></></Button>
+    <div className="button-block">
       <Button
         disableElevation
         color="primary"
@@ -570,7 +559,7 @@ const Main = () => {
         size="medium"
         onClick={handleClick}
       >Update data</Button>
-    </div> */}
+    </div>
 
     <Container className="content-container-transparent">
       <Typography variant="h6">Containers</Typography>
