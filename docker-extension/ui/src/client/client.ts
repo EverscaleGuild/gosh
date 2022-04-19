@@ -31,7 +31,6 @@ declare global {
   }
 }
 
-
 export class DockerClient {
 
   /**

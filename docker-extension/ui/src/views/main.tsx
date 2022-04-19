@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { MetaDecorator, Overlay, Icon } from "../components";
+import { useNavigate } from 'react-router-dom';
+import { MetaDecorator, Overlay } from "../components";
 import Button from '@mui/material/Button'
 import { DockerClient } from "../client";
 import Container from '@mui/material/Container';
@@ -7,17 +8,14 @@ import cn from "classnames";
 
 import Content from "./content";
 
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { TabsUnstyled, TabPanelUnstyled, TabsListUnstyled, TabUnstyled } from '@mui/base';
@@ -27,6 +25,8 @@ import { buttonUnstyledClasses } from '@mui/base/ButtonUnstyled';
 import { visuallyHidden } from '@mui/utils';
 import { styled } from '@mui/system';
 
+import { SigninPage, SignupPage } from '../pages';
+
 import Logo from "../assets/images/logo.png";
 
 import {
@@ -35,12 +35,6 @@ import {
   Image as ImageType,
   Container as ContainerType
 } from "../interfaces";
-
-
-const Loading = () => (<div className={"loading-preview"}>
-  <img src={Logo}/>
-  <Typography>Coming soon...</Typography>
-</div>);
 
 const Tab = styled(TabUnstyled)`
   background-color: transparent;
@@ -352,6 +346,14 @@ const Main = () => {
   const [showModalNewGosh, setShowModalNewGosh] = useState<boolean>(false);
   const [showModalNewBuild, setShowModalNewBuild] = useState<boolean>(false);
 
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate("/");
+  
+    return () => {}
+  }, [])
+  
+
   const columns: DataColumn<ContainerType>[] = React.useMemo(
     () => [
       {
@@ -655,7 +657,7 @@ const Main = () => {
             onClick={handleClick}
           ><Icon icon="import"/>Import</Button>
         </div> */}
-        <Loading />
+        {/* <SigninPage/> */}
       </TabPanel>
       <TabPanel value={1}>
         {/* <div className="button-block-top">
@@ -677,7 +679,6 @@ const Main = () => {
             onClick={handleClick}
           ><Icon icon="download"/>Clone</Button>
         </div> */}
-        <Loading />
       </TabPanel>
       <TabPanel value={2}>
         {/* <div className="button-block-top">
@@ -702,7 +703,7 @@ const Main = () => {
         <div className="content-container">
           <Typography variant="h6">Containers</Typography>
           <EnhancedTable<ContainerType>
-            data={data}
+            data={containers}
             columns={columns}
             actionFunction={validateContainer}
             actionEndFunction={closeValidation}
@@ -711,7 +712,7 @@ const Main = () => {
           />
           <Typography variant="h6">Images</Typography>
           <EnhancedTable<ImageType>
-            data={dataImage}
+            data={images}
             columns={columnsImage}
             actionFunction={validateImage}
             actionEndFunction={closeValidation}
