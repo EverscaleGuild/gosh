@@ -30,7 +30,6 @@ async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
         network: {
             endpoints: [network || 'main.ton.dev'],
-            queries_protocol: 'WS',
         },
         defaultWorkchain: 0,
         log_verbose: false,
