@@ -1,3 +1,4 @@
 /.tmp/
 .yarnrc.yml
 yarn.lock
+*.swp

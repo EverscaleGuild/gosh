@@ -453,6 +453,9 @@ const Main = () => {
     ],
     []
   );
+  const data = containers;
+  const dataImage = images;
+/*
   const data = React.useMemo<ContainerType[]>(() => ([{
     validated: "success",
     id: "05deec074512993...",
@@ -478,7 +481,6 @@ const Main = () => {
     buildProvider: "84a595396a47a6c...",
     goshRootAddress: ""
   }]), undefined);
-
   const dataImage = React.useMemo<ImageType[]>(() => ([{
     validated: "success",
     id: "sha256:3954a180f...",
@@ -492,14 +494,14 @@ const Main = () => {
     buildProvider: "-",
     goshRootAddress: ""
   }]), undefined);
-
-  
+*/
 
   useEffect(() => {
     DockerClient.getContainers()
     .then((value) => {
       console.log(value);
-      setContainers(value.map((container: ContainerType) => ({...container, id: container.containerHash})) || []);
+//      setContainers(value.map((container: ContainerType) => ({...container, id: container.containerHash})) || []);
+      setContainers(value || []);
       //do stuff
     });
   }, []);
@@ -508,7 +510,7 @@ const Main = () => {
     DockerClient.getImages()
     .then((value) => {
       console.log(value);
-      setImages(value.map((image: ImageType) => ({...image, id: image.imageHash})) || []);
+//      setImages(value.map((image: ImageType) => ({...image, id: image.imageHash})) || []);
       setImages(value || []);
       //do stuff
     });
@@ -538,29 +540,23 @@ const Main = () => {
       active: true,
       stdout: ""
     });
-
-    setTimeout(() => setValidation({
-      id: element.containerHash,
-      type: "container",
-      active: true,
-      stdout: `Validation \nInit \nid: ${element.containerHash}`
-    }), 1500);
-
-    setTimeout(() => setValidation({
-      id: element.containerHash,
-      type: "container",
-      active: false,
-      stdout: `Validation \nInit \nid: ${element.containerHash}\nFinished!`
-    }), 3000);
-    // to update stdout call
-    // DockerClient.getValidationLog()
-    // .then((value) => {
-    //   console.log(value);
-    //   setContainerValidation({
-    //     id: containerValidation.id,
-    //     stdout: <newValue>
-    //   });
-    // });
+    DockerClient.validateContainerImage(
+      element.imageHash,
+      (status: string) => {
+        setValidation({
+          id: element.containerHash,
+          type: "container",
+          active: true,
+          stdout: status
+        });
+      },
+      () => setValidation({
+          id: element.containerHash,
+          type: "container",
+          active: false,
+          stdout: ""
+      })
+    );
   }
 
   function validateImage(element: ImageType, index: number): void {
