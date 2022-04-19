@@ -1,4 +1,4 @@
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import "../assets/styles/index.scss";
 import Router from "./router";
 import { HelmetProvider } from 'react-helmet-async';
@@ -8,9 +8,9 @@ const App = () => {
   return (
     <DockerMuiThemeProvider>
       <HelmetProvider>
-        <BrowserRouter>
+        <MemoryRouter>
           <Router />
-        </BrowserRouter>
+        </MemoryRouter>
       </HelmetProvider>
     </DockerMuiThemeProvider>
   );
