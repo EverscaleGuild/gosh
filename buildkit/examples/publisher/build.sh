@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-NETWORKS="${NETWORKS:-https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev}"
+NETWORKS="${NETWORKS:-https://gra01.net.everos.dev}"
 TARGET_IMAGE=teamgosh/sample-target-image
 REPO_NAME=demo-100
 GOSH_NETWORK=net.ton.dev
@@ -23,15 +23,33 @@ step() {
     echo
 }
 
+
+
+###
 step 1. Clone GOSH repo
 
-docker run --rm -ti \
-    -v "$(pwd)":/root \
-    teamgosh/git-remote-gosh \
-    clone \
-    "$GOSH_ADDRESS" \
-    "$REPO_NAME"
 
+if [[ -d "$REPO_NAME" ]]; then
+
+    cd "$REPO_NAME"
+    # git
+    docker run --rm -ti -v "$(pwd)":/root teamgosh/git-remote-gosh \
+        pull
+    cd ..
+
+else
+
+    # git
+    docker run --rm -ti -v "$(pwd)":/root teamgosh/git-remote-gosh \
+        clone \
+        "$GOSH_ADDRESS" \
+        "$REPO_NAME"
+
+fi
+
+
+
+###
 step 2. Get current commit hash
 
 cd "$REPO_NAME"
@@ -40,6 +58,8 @@ cd ..
 
 echo Current commit hash: "$GOSH_COMMIT_HASH"
 
+
+###
 step 3. Build the image from GOSH repo
 
 cd "$REPO_NAME"
@@ -51,10 +71,16 @@ docker buildx build \
     --label GOSH_ADDRESS="$GOSH_ADDRESS" \
     --label GOSH_COMMIT_HASH="$GOSH_COMMIT_HASH" \
     --push \
+    --no-cache \
     .
 
 cd ..
 
+docker pull "$TARGET_IMAGE"
+
+
+
+###
 step 4. Get image GOSH_HASH
 
 GOSH_IMAGE_SHA=$(../../../docker-extension/vm/commands/gosh-image-sha.sh "$TARGET_IMAGE")
@@ -64,9 +90,12 @@ echo GOSH_IMAGE_SHA "$GOSH_IMAGE_SHA"
 GOSH_IMAGE_SHA_ALPINE=$(docker run --rm -ti \
     -v /var/run/docker.sock:/var/run/docker.sock \
     teamgosh/alpine-hash \
-    /command/gosh-image-sha.sh "$TARGET_IMAGE")
+    /command/gosh-image-sha.sh "$TARGET_IMAGE" | tr -d '\r\n')
 echo GOSH_IMAGE_SHA_ALPINE "$GOSH_IMAGE_SHA_ALPINE"
 
+
+
+###
 step 5. Sign the image
 
 echo "Signing GOSH_IMAGE_SHA"
@@ -103,6 +132,3 @@ else
         "$WALLET_SECRET" \
         "$GOSH_IMAGE_SHA_ALPINE"
 fi
-
-step 6. Cleanup
-rm -rf "$REPO_NAME"
