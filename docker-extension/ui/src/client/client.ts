@@ -171,41 +171,44 @@ export class DockerClient {
             onOutput(data: any): void {
               if (!!data.stdout) {
                 result.stdout += data.stdout + "\n";
+                appendValidationLog(data.stdout);
               }
               if (!!data.stderr) {
                 appendValidationLog(data.stderr);
               }
             },
             onError(error: any): void {
-              console.error(error);
+              console.error(JSON.stringify(error));
+              appendValidationLog(JSON.stringify(error));
+              closeValidationLog();
             },
             onClose(exitCode: number): void {
               logger.log(`onClose with exit code ${exitCode}`);
               result.code = exitCode;
+              if ('code' in result && result.code != 0) {
+                appendValidationLog("Failed to build an image.");
+                closeValidationLog();
+                return;
+              }
+              const calculatedImageSha = result.stdout.trim();
+              appendValidationLog("Calculated image sha from gosh: " + calculatedImageSha);
+              if (calculatedImageSha != imageSha) {
+                appendValidationLog("Failed: sha does not match.");
+                closeValidationLog();
+                return;
+              }
+              appendValidationLog("Success.");
+              closeValidationLog();
             },
           }
         }
       );
-      if (!!result.code) {
-        appendValidationLog("Failed to build an image.");
-        return false;
-      }
-      const calculatedImageSha = result.stdout.trim();
-      appendValidationLog("Calculated image sha from gosh: " + calculatedImageSha);
-      if (calculatedImageSha != imageSha) {
-        appendValidationLog("Failed: sha does not match.");
-        return false;
-      }
-      appendValidationLog("Success.");
-      return true;
+
     } 
     catch(error:any) {
       console.error(error);
       return false;
     } 
-    finally {
-      closeValidationLog();
-    }
   }
 
   static async calculateImageSha(imageId: string, defaultValue: string): Promise<[boolean, string]> {
