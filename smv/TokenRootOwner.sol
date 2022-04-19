@@ -11,7 +11,7 @@ import "./External/tip3/TokenRoot.sol";
     @title Fungible token root's owner contract
 */
 contract TokenRootOwner is IAcceptTokensTransferCallback {
-    uint256 static nonce;
+    /* uint256 static nonce; */
     TvmCell tokenRootCode;
     TvmCell tokenWalletCode;
 
@@ -46,9 +46,9 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         TvmCell _tokenRootCode,
         TvmCell _tokenWalletCode
     ) public {
-        require(tvm.pubkey() != 0, 100);
+        /* require(tvm.pubkey() != 0, 100);
         require(msg.pubkey() == tvm.pubkey(), 101);
-        tvm.accept();
+        tvm.accept(); */
 
         tokenRootCode = _tokenRootCode;
         tokenWalletCode = _tokenWalletCode;
@@ -115,7 +115,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
 
     address public lastWalletDeployed;
 
-    function deployTokenWallet(
+    /* function deployTokenWallet(
         address tokenRoot,
         address walletOwner,
         uint128 deployWalletValue
@@ -136,7 +136,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
             walletOwner,
             deployWalletValue
         ).await;
-    }
+    } */
 
     function callback(address res) public {
         lastWalletDeployed = res;

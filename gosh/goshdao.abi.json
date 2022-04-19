@@ -164,7 +164,6 @@
 		}
 	],
 	"data": [
-		{"key":1,"name":"nonce","type":"uint256"}
 	],
 	"events": [
 	],
@@ -173,7 +172,6 @@
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"_await","type":"optional(cell)"},
-		{"name":"nonce","type":"uint256"},
 		{"name":"tokenRootCode","type":"cell"},
 		{"name":"tokenWalletCode","type":"cell"},
 		{"components":[{"name":"ProjectTokenRoot","type":"address"},{"name":"ReverueTokenRoot","type":"address"},{"name":"RevenueTokenWallet","type":"address"}],"name":"projectTokens","type":"map(address,tuple)"},

@@ -22,7 +22,7 @@ import "SMVTokenLocker.sol";
 contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback, IAcceptTokensMintCallback {
 
 address /* static */ tip3Root;
-uint256 static nonce;
+uint256 /* static */ nonce;
 
 address public tip3Wallet;
 address public tip3VotingLocker;
@@ -54,6 +54,11 @@ modifier check_locker {
   _ ;
 }
 
+modifier check_token_root {
+  require ( msg.sender == tip3Root, SMVErrors.error_not_my_locker) ;
+  _ ;
+}
+
 constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeDepth,
                                 uint256 _clientCodeHash, uint16 _clientCodeDepth,
                                 uint256 _proposalCodeHash, uint16 _proposalCodeDepth,
@@ -65,17 +70,16 @@ constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeD
                                      SMVConstants.LOCKER_INIT_VALUE +
                                      SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     tvm.accept();
+
     initialized = false;
     tip3Root = _tip3Root;
-   /*  tvm.commit(); */
-    tip3Wallet = ITokenRoot(tip3Root).deployWallet {value: SMVConstants.TIP3_WALLET_DEPLOY_VALUE + SMVConstants.TIP3_WALLET_INIT_VALUE,
-                                                    flag: 1}
-                                                   (address(this), SMVConstants.TIP3_WALLET_INIT_VALUE).await;
+    ITokenRoot(tip3Root).deployWallet {value: SMVConstants.TIP3_WALLET_DEPLOY_VALUE + SMVConstants.TIP3_WALLET_INIT_VALUE,
+                                       flag: 1,
+                                       callback: SMVAccount.onTokenWalletDeployed} (address(this), SMVConstants.TIP3_WALLET_INIT_VALUE);
 
     TvmCell _dataInitCell = tvm.buildDataInit ( {contr: SMVTokenLocker,
                                                  varInit: { smvAccount : address(this) ,
-                                                            tokenRoot : tip3Root/* ,
-                                                            nonce: 0 */ } } );
+                                                            tokenRoot : tip3Root } } );
     TvmCell _stateInit = tvm.buildStateInit(lockerCode, _dataInitCell);
 
     platformCodeHash = _platformCodeHash;
@@ -90,13 +94,16 @@ constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeD
     lockerCodeHash = tvm.hash(lockerCode);
     lockerCodeDepth = lockerCode.depth();
 
-    tip3VotingLocker = new SMVTokenLocker {/* bounce: false, */
-                                           value: SMVConstants.LOCKER_INIT_VALUE +
-                                            /*       SMVConstants.TIP3_WALLET_DEPLOY_VALUE +
-                                                  SMVConstants.TIP3_WALLET_INIT_VALUE + */
-                                                  SMVConstants.ACTION_FEE,
-                                           stateInit:_stateInit } (platformCodeHash, platformCodeDepth);
+    tip3VotingLocker = new SMVTokenLocker { value: SMVConstants.LOCKER_INIT_VALUE +
+                                                   SMVConstants.ACTION_FEE,
+                                            stateInit:_stateInit } (platformCodeHash, platformCodeDepth);
 }
+
+function onTokenWalletDeployed (address wallet) external check_token_root
+{
+      tip3Wallet = wallet;
+}
+
 
 function proposalIsCompleted(address proposal) external check_owner {
     tvm.accept();
@@ -109,10 +116,6 @@ function proposalIsCompleted(address proposal) external check_owner {
 
 optional(bool) public lastVoteResult;
 
-/* function isCompletedCallback (optional(bool) res, TvmCell ) external override {
-  lastVoteResult = res;
-} */
-
 function onLockerDeployed() external override check_locker()
 {
     require(!initialized, SMVErrors.error_already_initialized);
@@ -120,27 +123,44 @@ function onLockerDeployed() external override check_locker()
 
     initialized = true;
 
-    lockerTip3Wallet = ITokenRoot(tip3Root).deployWallet {value: SMVConstants.TIP3_WALLET_DEPLOY_VALUE + SMVConstants.TIP3_WALLET_INIT_VALUE,
-                                                    flag: 1}
-                                                   (tip3VotingLocker, SMVConstants.TIP3_WALLET_INIT_VALUE).await;
+    /* lockerTip3Wallet =  */
+    ITokenRoot(tip3Root).deployWallet {value: SMVConstants.TIP3_WALLET_DEPLOY_VALUE + SMVConstants.TIP3_WALLET_INIT_VALUE,
+                                       flag: 1, 
+                                       callback: SMVAccount.onLockerTokenWalletDeployed} (tip3VotingLocker, SMVConstants.TIP3_WALLET_INIT_VALUE);
 }
 
-function lockVoting (uint128 amount) external view check_owner
+function onLockerTokenWalletDeployed (address wallet) external check_token_root
+{
+      lockerTip3Wallet = wallet;
+}
+
+function onTokenBalanceUpdateWhileLockVoting (uint128 balance) external check_wallet
+{
+    if (lockingAmount == 0) {lockingAmount = balance;}
+
+    if ((lockingAmount > 0) && (lockingAmount <= balance))
+    {
+        TvmCell empty;
+        ITokenWallet(tip3Wallet).transfer {value: 2*SMVConstants.ACTION_FEE, flag: 1}
+                                          (lockingAmount, tip3VotingLocker, 0, address(this), true, empty) ;
+    }
+}
+
+uint128 lockingAmount;
+
+function lockVoting (uint128 amount) external check_owner
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
                                     4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     tvm.accept();
 
-    uint128 balance = ITokenWallet(tip3Wallet).balance {value: SMVConstants.ACTION_FEE, flag:1}().await;
-    if (amount == 0) {amount = balance;}
+    ITokenWallet(tip3Wallet).balance {value: SMVConstants.ACTION_FEE, 
+                                      flag:1, 
+                                      callback: SMVAccount.onTokenBalanceUpdateWhileLockVoting} ();
 
-    if ((amount > 0) && (amount <= balance))
-    {
-        TvmCell empty;
-        ITokenWallet(tip3Wallet).transfer {value: 2*SMVConstants.ACTION_FEE, flag: 1}
-                                          (amount, tip3VotingLocker, 0, address(this), true, empty) ;
-    }
+    lockingAmount = amount;
+    
 }
 
 function unlockVoting (uint128 amount) external view check_owner
@@ -275,14 +295,11 @@ function killAccount (address address_to, address tokens_to) external check_owne
 {
     require(!initialized);
     tvm.accept();
-    //withdrawTokens(tokens_to, all)
-
-    //kill locker?
-    /* uint128 foo = ISMVClient(address(this)).getVoteAmount {value: SMVConstants.ACTION_FEE, flag: 1}(true).await; */
+    
     selfdestruct(address_to);
 }
 
-function withdrawTokens (address address_to, uint128 amount) public check_owner
+function withdrawTokens (address address_to, uint128 amount) public view check_owner
 {
      require(initialized, SMVErrors.error_not_initialized);
      require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
@@ -292,7 +309,7 @@ function withdrawTokens (address address_to, uint128 amount) public check_owner
                                           (amount, address_to, 0, address(this), true, empty) ;
 }
 
-function updateHead() public check_owner
+function updateHead() public view  check_owner
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+
@@ -321,16 +338,6 @@ function onAcceptTokensMint (address tokenRoot,
 {
 /* ... */
 }
-uint128 public WalletBalance;
-uint128 public LockerWalletBalance;
 
-function getWalletBalance ()  public   check_owner /* returns (uint128, uint128) */
-{
-  tvm.accept();
-  WalletBalance = ITokenWallet(tip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
-  LockerWalletBalance = ITokenWallet(lockerTip3Wallet).balance{value: SMVConstants.ACTION_FEE, flag: 1}().await;
-/*
-return (WalletBalance, LockerWalletBalance); */
-}
 
 }

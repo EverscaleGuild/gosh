@@ -15,6 +15,7 @@ import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
 contract DaoCreater {
+    uint256 static nonce;
     string version = "0.0.1";
     address _gosh;
     TvmCell m_WalletCode;
@@ -22,7 +23,7 @@ contract DaoCreater {
     TvmCell m_codeDao;
     TvmCell m_dataDao;
 
-    uint128 constant FEE_DEPLOY_DAO = 4 ton;
+    uint128 constant FEE_DEPLOY_DAO = 100 ton;
 
     modifier accept() {
         tvm.accept();
