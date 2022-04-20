@@ -21,7 +21,7 @@ const git = require('./git')
 
 // TODO: remove hardcode
 const GOSH = '0:36765cc695d7bd410a976666d666aee15373205a7c5b9d15a83c301b9c0d7ad7'
-const CAPABILITIES_LIST = ['list', 'push', 'fetch']
+const CAPABILITIES_LIST = ['list', 'push', 'fetch', 'option']
 
 let firstPush
 const _remoteRefs = {} // remote refs: ref_name => sha1, addr
@@ -260,7 +260,7 @@ async function doFetch(input) {
         verbose(`> ${input}`)
         if (input === 'capabilities') {
             doCapabilities()
-        } else if (input === 'option') {
+        } else if (input.startsWith('option')) {
             // list of possible options: https://git-scm.com/docs/gitremote-helpers#_options
             doOption(input)
         } else if(input === 'list') {
