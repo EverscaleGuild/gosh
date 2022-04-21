@@ -6,6 +6,8 @@
 #	
 #	Copyright 2019-2022 (c) EverX
 
+source utils.sh
+
 fn=../gosh
 fn_src=$fn.sol
 fn_abi=$fn.abi.json
@@ -78,5 +80,6 @@ TAG_DATA=$($TVM_LINKER decode --tvc ../tag.tvc | sed -n '/data:/ s/ data: // p')
 $TONOS_CLI -u $NETWORK call $GOSH_ADDR setTag "{\"code\":\"$TAG_CODE\",\"data\":\"$TAG_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
 
 echo ===================== GOSH =====================
-echo addr: $GOSH_ADDR
-echo keys: $(cat $fn_keys)
+echo "   addr:" $GOSH_ADDR
+echo "   keys:" $(cat $fn_keys)
+echo balance: $(account_balance $NETWORK $GOSH_ADDR)

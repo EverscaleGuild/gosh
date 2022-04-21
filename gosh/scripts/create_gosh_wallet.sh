@@ -6,6 +6,8 @@
 #	
 #	Copyright 2019-2022 (c) EverX
 
+source utils.sh
+
 if [ -z $1 ]; then
     echo "Usage: $0 DAO_NAME <NETWORK>"
     exit
@@ -31,16 +33,19 @@ $TONOS_CLI getkeypair $WALLET_KEYS "$WALLET_SEED_PHRASE" > /dev/null
 DAO_PUBKEY=$(cat $DAO_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 WALLET_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 
-# NINETY_EVERS=90000000000
+NINETY_EVERS=90000000000
 
 CALLED="deployWallet {\"pubkeyroot\":\"$DAO_PUBKEY\",\"pubkey\":\"$WALLET_PUBKEY\"}"
-echo $CALLED
-# $TONOS_CLI -u $NETWORK call $DAO_ADDR $CALLED --abi $DAO_ABI > /dev/null || exit 1
-# WALLET_ADDR=$($TONOS_CLI -j -u $NETWORK run $DAO_ADDR getAddrWallet "{\"pubkeyroot\":\"$DAO_PUBKEY\",\"pubkey\":\"$WALLET_PUBKEY\"}" --abi $CONTRACT_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
-# ./giver.sh $WALLET_ADDR $NINETY_EVERS
+$TONOS_CLI -u $NETWORK call $DAO_ADDR $CALLED --abi $DAO_ABI > /dev/null || exit 1
+WALLET_ADDR=$($TONOS_CLI -j -u $NETWORK run $DAO_ADDR getAddrWallet "{\"pubkeyroot\":\"$DAO_PUBKEY\",\"pubkey\":\"$WALLET_PUBKEY\"}" --abi $DAO_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+echo -n $WALLET_ADDR > $WALLET.addr
+./giver.sh $WALLET_ADDR $NINETY_EVERS
 
 echo ===================== GOSH WALLET =====================
-echo Gosh root: $GOSH_ADDR
+echo "Gosh root:" $GOSH_ADDR
 echo " DAO name:" $1
 echo " DAO addr:" $DAO_ADDR
-# echo "   wallet:" $WALLET_ADDR
+echo wallet
+echo "  address:" $WALLET_ADDR
+echo "     keys:" $(cat $WALLET_KEYS)
+echo "  balance:" $(account_balance $NETWORK $WALLET_ADDR)

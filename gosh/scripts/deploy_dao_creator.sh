@@ -6,6 +6,8 @@
 #	
 #	Copyright 2019-2022 (c) EverX
 
+source utils.sh
+
 fn=../daocreater
 fn_src=$fn.sol
 fn_abi=$fn.abi.json
@@ -52,5 +54,8 @@ CTOR_PARAMS="{\"gosh\":\"$GOSH_ADDR\",\"WalletCode\":\"$WALLET_CODE\",\"WalletDa
 DAO_CREATOR_ADDR=$(cat $fn.addr)
 
 echo ===================== DAO CREATOR =====================
-echo addr: $DAO_CREATOR_ADDR
-echo keys: $(cat $fn_keys)
+echo Gosh: $GOSH_ADDR
+echo DAO creator
+echo address: $DAO_CREATOR_ADDR
+echo "   keys:" $(cat $fn_keys)
+echo balance: $(account_balance $NETWORK $DAO_CREATOR_ADDR)
