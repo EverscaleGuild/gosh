@@ -19,6 +19,7 @@ contract Blob{
     bool check = false;
     string _blob;
     uint256 _pubkey;
+    string _prevSha;
     
     modifier onlyOwner {
         bool checkOwn = false;
@@ -28,12 +29,13 @@ contract Blob{
         _;
     }
     
-    constructor(uint256 pubkey, string nameBranch, string blob) public {
+    constructor(uint256 pubkey, string nameBranch, string blob, string prevSha) public {
         tvm.accept();
         _pubkey = pubkey;
         _rootCommit = msg.sender;
         _nameBranch = nameBranch;
         _blob = blob;
+        _prevSha = prevSha;
     }    
 
 /*    
@@ -47,6 +49,10 @@ contract Blob{
     //Getters
     function getNameBlob() external view returns(string) {
         return _nameBlob;
+    }
+    
+    function getprevSha() external view returns(string) {
+        return _prevSha;
     }
 
     function getNameBranch() external view returns(string) {

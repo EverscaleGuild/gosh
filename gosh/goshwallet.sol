@@ -154,10 +154,11 @@ contract GoshWallet {
         string repoName,
         string commit,
         string blobName,
-        string fullBlob
+        string fullBlob,
+        string prevSha
     ) public view onlyOwner accept {
         address commitAddr = _buildCommitAddr(repoName, commit);
-        Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob);
+        Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob, prevSha);
     }
     
     function deployTag(
