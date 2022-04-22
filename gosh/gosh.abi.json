@@ -31,6 +31,60 @@
 			]
 		},
 		{
+			"name": "setTokenRoot",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTokenWallet",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTokenLocker",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVPlatform",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVClient",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVProposal",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "setRepository",
 			"inputs": [
 				{"name":"code","type":"cell"},
@@ -185,6 +239,12 @@
 		{"name":"m_codeDao","type":"cell"},
 		{"name":"m_dataDao","type":"cell"},
 		{"name":"m_codeTag","type":"cell"},
-		{"name":"m_dataTag","type":"cell"}
+		{"name":"m_dataTag","type":"cell"},
+		{"name":"m_TokenLockerCode","type":"cell"},
+		{"name":"m_SMVPlatformCode","type":"cell"},
+		{"name":"m_SMVClientCode","type":"cell"},
+		{"name":"m_SMVProposalCode","type":"cell"},
+		{"name":"m_TokenRootCode","type":"cell"},
+		{"name":"m_TokenWalletCode","type":"cell"}
 	]
 }

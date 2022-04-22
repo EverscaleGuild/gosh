@@ -16,7 +16,13 @@
 				{"name":"RepositoryCode","type":"cell"},
 				{"name":"RepositoryData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"}
+				{"name":"WalletData","type":"cell"},
+				{"name":"TokenLockerCode","type":"cell"},
+				{"name":"SMVPlatformCode","type":"cell"},
+				{"name":"SMVClientCode","type":"cell"},
+				{"name":"SMVProposalCode","type":"cell"},
+				{"name":"TokenRootCode","type":"cell"},
+				{"name":"TokenWalletCode","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -70,6 +76,80 @@
 			"outputs": [
 				{"name":"value0","type":"string"}
 			]
+		},
+		{
+			"name": "onAcceptTokensTransfer",
+			"inputs": [
+				{"name":"tokenRoot","type":"address"},
+				{"name":"amount","type":"uint128"},
+				{"name":"sender","type":"address"},
+				{"name":"senderWallet","type":"address"},
+				{"name":"remainingGasTo","type":"address"},
+				{"name":"payload","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "createProjectCurrencies",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployRoot",
+			"inputs": [
+				{"name":"initialSupplyTo","type":"address"},
+				{"name":"initialSupply","type":"uint128"},
+				{"name":"deployWalletValue","type":"uint128"},
+				{"name":"mintDisabled","type":"bool"},
+				{"name":"burnByRootDisabled","type":"bool"},
+				{"name":"burnPaused","type":"bool"},
+				{"name":"remainingGasTo","type":"address"},
+				{"name":"randomNonce","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "callback",
+			"inputs": [
+				{"name":"res","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "mint",
+			"inputs": [
+				{"name":"tokenRoot","type":"address"},
+				{"name":"amount","type":"uint128"},
+				{"name":"recipient","type":"address"},
+				{"name":"deployWalletValue","type":"uint128"},
+				{"name":"remainingGasTo","type":"address"},
+				{"name":"notify","type":"bool"},
+				{"name":"payload","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "projectTokens",
+			"inputs": [
+			],
+			"outputs": [
+				{"components":[{"name":"ProjectTokenRoot","type":"address"},{"name":"ReverueTokenRoot","type":"address"},{"name":"RevenueTokenWallet","type":"address"}],"name":"projectTokens","type":"map(address,tuple)"}
+			]
+		},
+		{
+			"name": "lastWalletDeployed",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"lastWalletDeployed","type":"address"}
+			]
 		}
 	],
 	"data": [
@@ -80,6 +160,10 @@
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
+		{"name":"tokenRootCode","type":"cell"},
+		{"name":"tokenWalletCode","type":"cell"},
+		{"components":[{"name":"ProjectTokenRoot","type":"address"},{"name":"ReverueTokenRoot","type":"address"},{"name":"RevenueTokenWallet","type":"address"}],"name":"projectTokens","type":"map(address,tuple)"},
+		{"name":"lastWalletDeployed","type":"address"},
 		{"name":"version","type":"string"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
@@ -91,6 +175,13 @@
 		{"name":"m_BlobData","type":"cell"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_rootpubkey","type":"uint256"},
-		{"name":"_nameDao","type":"string"}
+		{"name":"_nameDao","type":"string"},
+		{"name":"m_TokenLockerCode","type":"cell"},
+		{"name":"m_SMVPlatformCode","type":"cell"},
+		{"name":"m_SMVClientCode","type":"cell"},
+		{"name":"m_SMVProposalCode","type":"cell"},
+		{"name":"m_TokenRootCode","type":"cell"},
+		{"name":"m_TokenWalletCode","type":"cell"},
+		{"name":"_rootTokenRoot","type":"address"}
 	]
 }

@@ -31,6 +31,16 @@ contract Gosh {
     TvmCell m_codeTag;
     TvmCell m_dataTag;
 
+    //SMV
+    TvmCell m_TokenLockerCode;
+    TvmCell m_SMVPlatformCode;
+    TvmCell m_SMVClientCode;
+    TvmCell m_SMVProposalCode;
+
+    //TIP3
+    TvmCell m_TokenRootCode;
+    TvmCell m_TokenWalletCode;
+
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 500);
         _;
@@ -92,11 +102,58 @@ contract Gosh {
         require(root_pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
-        new GoshDao {stateInit: s1, value: 3 ton, wid: 0}(
-            address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData);
+        new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
+            address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData,
+            m_TokenLockerCode, m_SMVPlatformCode, m_SMVClientCode, m_SMVProposalCode, m_TokenRootCode, m_TokenWalletCode);
     }
 
     //Setters
+    
+    //SMV
+
+    /* TvmCell m_TokenLockerCode;
+    TvmCell m_SMVPlatformCode;
+    TvmCell m_SMVClientCode;
+    TvmCell m_SMVProposalCode; */
+
+    function setTokenRoot(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_TokenRootCode = code;
+       /*  m_RepositoryData = data; */
+    }
+
+    function setTokenWallet(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_TokenWalletCode = code;
+       /*  m_RepositoryData = data; */
+    }
+
+    function setTokenLocker(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_TokenLockerCode = code;
+       /*  m_RepositoryData = data; */
+    }
+
+    function setSMVPlatform(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_SMVPlatformCode = code;
+        /* m_RepositoryData = data; */
+    }
+
+    function setSMVClient(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_SMVClientCode = code;
+       /*  m_RepositoryData = data; */
+    }
+
+    function setSMVProposal(TvmCell code, TvmCell /* data */) public  onlyOwner {
+        tvm.accept();
+        m_SMVProposalCode = code;
+        /* m_RepositoryData = data; */
+    }
+
+    //////////////////////////////////////////////////////////////////////
+
 
     function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
         tvm.accept();

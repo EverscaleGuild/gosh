@@ -12,9 +12,10 @@ pragma AbiHeader pubkey;
 
 import "goshwallet.sol";
 import "./libraries/GoshLib.sol";
+import "../smv/TokenRootOwner.sol";
 
 /* Root contract of gosh */
-contract GoshDao {
+contract GoshDao is TokenRootOwner {
     string version = "0.1.0";
     TvmCell m_WalletCode;
     TvmCell m_WalletData;    
@@ -27,7 +28,17 @@ contract GoshDao {
     address _rootgosh;
     uint256 _rootpubkey;
     string _nameDao;
- 
+    
+    //added for SMV
+    TvmCell m_TokenLockerCode;
+    TvmCell m_SMVPlatformCode;
+    TvmCell m_SMVClientCode;
+    TvmCell m_SMVProposalCode;
+
+    TvmCell m_TokenRootCode;
+    TvmCell m_TokenWalletCode;
+    address _rootTokenRoot;
+
     modifier onlyOwner {
         require(msg.pubkey() == _rootpubkey, 500);
         _;
@@ -44,7 +55,23 @@ contract GoshDao {
         TvmCell RepositoryCode,
         TvmCell RepositoryData,
         TvmCell WalletCode, 
-        TvmCell WalletData) public {
+        TvmCell WalletData,
+        /////////////////////
+        TvmCell TokenLockerCode,
+        TvmCell SMVPlatformCode,
+        TvmCell SMVClientCode,
+        TvmCell SMVProposalCode,
+        TvmCell TokenRootCode,
+        TvmCell TokenWalletCode
+        ////////////////////////
+        /* address initialSupplyTo,
+        uint128 initialSupply,
+        uint128 deployWalletValue,
+        bool mintDisabled,
+        bool burnByRootDisabled,
+        bool burnPaused,
+        address remainingGasTo,
+        uint256 randomNonce */ ) public TokenRootOwner (TokenRootCode, TokenWalletCode) {
         tvm.accept();
         _rootgosh = rootgosh;
         _rootpubkey = pubkey;
@@ -57,6 +84,15 @@ contract GoshDao {
         m_CommitData = CommitData;
         m_BlobCode = BlobCode;
         m_BlobData = BlobData;
+        /////
+        m_TokenLockerCode = TokenLockerCode;
+        m_SMVPlatformCode = SMVPlatformCode;
+        m_SMVClientCode = SMVClientCode;
+        m_SMVProposalCode = SMVProposalCode;
+        m_TokenRootCode = TokenRootCode;
+        m_TokenWalletCode = TokenWalletCode;
+        ///////////////////////////////////////
+        _rootTokenRoot = _deployRoot (address.makeAddrNone(), 0, 0, false, false, true, address(this), now);
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
@@ -78,7 +114,9 @@ contract GoshDao {
             stateInit: s1, value: 0.9 ton, wid: 0
         }(m_CommitCode, m_CommitData, 
             m_BlobCode, m_BlobData, 
-            m_RepositoryCode, m_RepositoryData);
+            m_RepositoryCode, m_RepositoryData,
+            m_TokenLockerCode, m_SMVPlatformCode,
+            m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
     }
 
     //Setters
