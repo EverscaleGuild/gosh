@@ -362,6 +362,14 @@
 			"outputs": [
 				{"name":"lastVoteResult","type":"optional(bool)"}
 			]
+		},
+		{
+			"name": "_tokenBalance",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_tokenBalance","type":"uint128"}
+			]
 		}
 	],
 	"data": [
@@ -391,6 +399,7 @@
 		{"name":"initialized","type":"bool"},
 		{"name":"lastVoteResult","type":"optional(bool)"},
 		{"name":"lockingAmount","type":"uint128"},
+		{"name":"_tokenBalance","type":"uint128"},
 		{"name":"version","type":"string"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},

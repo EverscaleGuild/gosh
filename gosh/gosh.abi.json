@@ -215,6 +215,14 @@
 			"outputs": [
 				{"name":"value0","type":"string"}
 			]
+		},
+		{
+			"name": "_lastGoshDao",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_lastGoshDao","type":"address"}
+			]
 		}
 	],
 	"data": [
@@ -245,6 +253,7 @@
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"},
 		{"name":"m_TokenRootCode","type":"cell"},
-		{"name":"m_TokenWalletCode","type":"cell"}
+		{"name":"m_TokenWalletCode","type":"cell"},
+		{"name":"_lastGoshDao","type":"address"}
 	]
 }

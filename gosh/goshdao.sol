@@ -26,7 +26,6 @@ contract GoshDao is TokenRootOwner {
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
     address _rootgosh;
-    uint256 _rootpubkey;
     string _nameDao;
     
     //added for SMV
@@ -37,7 +36,8 @@ contract GoshDao is TokenRootOwner {
 
     TvmCell m_TokenRootCode;
     TvmCell m_TokenWalletCode;
-    address _rootTokenRoot;
+    address public _rootTokenRoot;
+    address public _lastAccountAddress;
 
     modifier onlyOwner {
         require(msg.pubkey() == _rootpubkey, 500);
@@ -92,7 +92,7 @@ contract GoshDao is TokenRootOwner {
         m_TokenRootCode = TokenRootCode;
         m_TokenWalletCode = TokenWalletCode;
         ///////////////////////////////////////
-        _rootTokenRoot = _deployRoot (address.makeAddrNone(), 0, 0, false, false, true, address(this), now);
+        _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
@@ -106,11 +106,11 @@ contract GoshDao is TokenRootOwner {
         return _contractflex;
     }
 
-    function deployWallet(uint256 pubkey) public view {
+    function deployWallet(uint256 pubkey) public {
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(_rootpubkey, pubkey);
-        new GoshWallet {
+        _lastAccountAddress = new GoshWallet {
             stateInit: s1, value: 0.9 ton, wid: 0
         }(m_CommitCode, m_CommitData, 
             m_BlobCode, m_BlobData, 

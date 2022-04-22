@@ -41,6 +41,8 @@ contract Gosh {
     TvmCell m_TokenRootCode;
     TvmCell m_TokenWalletCode;
 
+    address public _lastGoshDao;
+
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 500);
         _;
@@ -97,12 +99,12 @@ contract Gosh {
         return tvm.buildStateInit(deployCode, m_dataDao);
     }
     
-    function deployDao(string name, uint256 root_pubkey) public view {
+    function deployDao(string name, uint256 root_pubkey) public {
         require(msg.value > 3 ton, 100);
         require(root_pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
-        new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
+        _lastGoshDao = new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
             address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData,
             m_TokenLockerCode, m_SMVPlatformCode, m_SMVClientCode, m_SMVProposalCode, m_TokenRootCode, m_TokenWalletCode);
     }
