@@ -318,6 +318,17 @@ function isInitialized () external override view responsible check_locker return
     revert();    
 }
 
+//gosh only
+//b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
+function getProposalParams () external view 
+         returns( uint256  proposalKind,  string repoName, string  branchName,  string commitName, string fullCommit, address parent1, address parent2)
+{
+   ( proposalKind,  repoName,  branchName,  commitName,  fullCommit,  parent1,  parent2)
+     = propData.toSlice().decode(uint256, string, string, string, string, address, address);
+}
+
+////////////////////////////////////
+
 function tryEarlyComplete (uint128 t) internal virtual {}
 function calcVotingResult (uint128 t) internal virtual {}
 
