@@ -30,13 +30,15 @@ export daocreator_ADDRESS=`grep "$GREP_STR2" deploy_daocreator.log | sed -e "s/ 
 PUBKEY="0x4842985c85fb8193083967608dd6d35b3667ccdb0b7ffcdbb910075d333b55f8"
 everdev contract run daocreater deployDao -a $daocreator_ADDRESS --input "name:\"dao1\",root_pubkey:\"$PUBKEY\"" --signer keys1
 
-
+sleep 10
 
 everdev contract run-local gosh _lastGoshDao -a $gosh_ADDRESS  | tee get_goshdao_Address.log
 GREP_STR11="\"_lastGoshDao\":"
 goshdao_Address=`grep "$GREP_STR11"  get_goshdao_Address.log | sed -e "s/ *$GREP_STR11  *//" | tr -d '\n'`
 export goshdao_Address=`echo $goshdao_Address | sed s/\"//g`
 #export goshdao_Address="0:c04216bfa2c6d053182dd8af24ab6108cc911fd58b78bb7f00a07320624e997c"
+
+sleep 10
 
 everdev contract run-local goshdao _rootTokenRoot -a $goshdao_Address  | tee get_TokenRoot_Address.log
 GREP_STR12="\"_rootTokenRoot\":"
@@ -46,6 +48,9 @@ export TIP3ROOT_ADDRESS=`echo $TIP3ROOT_ADDRESS | sed s/\"//g`
 
 
 everdev contract run goshdao deployWallet -a $goshdao_Address --input "pubkeyroot:\"$PUBKEY\",pubkey:\"$PUBKEY\"" --signer keys1
+
+sleep 10
+
 everdev contract run-local goshdao _lastAccountAddress -a $goshdao_Address  | tee get_Account_ADDRESS_Address.log
 GREP_STR13="\"_lastAccountAddress\":"
 Account_ADDRESS=`grep "$GREP_STR13"  get_Account_ADDRESS_Address.log | sed -e "s/ *$GREP_STR13  *//" | tr -d '\n'`
