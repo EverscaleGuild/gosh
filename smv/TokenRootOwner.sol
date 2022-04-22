@@ -14,6 +14,8 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
     /* uint256 static nonce; */
     TvmCell tokenRootCode;
     TvmCell tokenWalletCode;
+    uint256 _rootpubkey;
+
 
     struct ProjectCurrencyInfo {
         address ProjectTokenRoot;
@@ -35,8 +37,8 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
     }
 
     function createProjectCurrencies() external {
-        require(tvm.pubkey() != 0, 100);
-        require(msg.pubkey() == tvm.pubkey(), 101);
+        require(_rootpubkey != 0, 100);
+        require(msg.pubkey() == _rootpubkey, 101);
         tvm.accept();
 
 
@@ -46,8 +48,8 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         TvmCell _tokenRootCode,
         TvmCell _tokenWalletCode
     ) public {
-        /* require(tvm.pubkey() != 0, 100);
-        require(msg.pubkey() == tvm.pubkey(), 101);
+        /* require(_rootpubkey != 0, 100);
+        require(msg.pubkey() == _rootpubkey, 101);
         tvm.accept(); */
 
         tokenRootCode = _tokenRootCode;
@@ -65,7 +67,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         uint256 randomNonce
     ) external returns (address) {
 
-        require(msg.pubkey() == tvm.pubkey(), 101);
+        require(msg.pubkey() == _rootpubkey, 101);
         tvm.accept();
 
         return _deployRoot(
@@ -121,7 +123,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         uint128 deployWalletValue
     ) external {
 
-        require(msg.pubkey() == tvm.pubkey(), 101);
+        require(msg.pubkey() == _rootpubkey, 101);
         tvm.accept();
 
         lastWalletDeployed = _deployTokenWallet(tokenRoot, walletOwner, deployWalletValue);
@@ -152,7 +154,7 @@ contract TokenRootOwner is IAcceptTokensTransferCallback {
         TvmCell payload
     ) external {
 
-        require(msg.pubkey() == tvm.pubkey(), 101);
+        require(msg.pubkey() == _rootpubkey, 101);
         tvm.accept();
 
         ITokenRoot(tokenRoot).mint{value: 10 ton}(

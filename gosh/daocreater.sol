@@ -51,7 +51,10 @@ contract DaoCreater {
             value: FEE_DEPLOY_DAO, bounce: true, flag: 2
         }(name, root_pubkey);
     }
-    
+/*     function get_lastGoshDao public view returns (address) {
+        return  _lastGoshDao;
+    }
+ */
     function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view accept {
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey, goshdao);
         address addr = address.makeAddrStd(0, tvm.hash(s1));

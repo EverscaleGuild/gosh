@@ -39,9 +39,9 @@ address public lockerTip3Wallet;
 bool  public  initialized;
 
 modifier check_owner {
-  require ( msg.pubkey () != 0, SMVErrors.error_not_external_message );
+/*   require ( msg.pubkey () != 0, SMVErrors.error_not_external_message );
   require ( tvm.pubkey () == msg.pubkey (), SMVErrors.error_not_my_pubkey );
-  _ ;
+ */  _ ;
 }
 
 modifier check_wallet {
@@ -96,7 +96,7 @@ constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeD
 
     tip3VotingLocker = new SMVTokenLocker { value: SMVConstants.LOCKER_INIT_VALUE +
                                                    SMVConstants.ACTION_FEE,
-                                            stateInit:_stateInit } (platformCodeHash, platformCodeDepth);
+                                            stateInit:_stateInit } (platformCodeHash, platformCodeDepth); 
 }
 
 function onTokenWalletDeployed (address wallet) external check_token_root
@@ -143,6 +143,7 @@ function onTokenBalanceUpdateWhileLockVoting (uint128 balance) external check_wa
         TvmCell empty;
         ITokenWallet(tip3Wallet).transfer {value: 2*SMVConstants.ACTION_FEE, flag: 1}
                                           (lockingAmount, tip3VotingLocker, 0, address(this), true, empty) ;
+        _tokenBalance = balance - lockingAmount;
     }
 }
 
@@ -161,6 +162,7 @@ function lockVoting (uint128 amount) external check_owner
 
     lockingAmount = amount;
     
+
 }
 
 function unlockVoting (uint128 amount) external view check_owner
@@ -187,7 +189,7 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
     require(platformCode.depth() == platformCodeDepth, SMVErrors.error_not_my_code_depth);
 
     require(tvm.hash(clientCode) == clientCodeHash,SMVErrors.error_not_my_code_hash);
-    require(clientCode.depth() == clientCodeDepth, SMVErrors.error_not_my_code_depth + 1);
+    require(clientCode.depth() == clientCodeDepth, SMVErrors.error_not_my_code_depth);
     tvm.accept();
 
     TvmBuilder staticBuilder;
@@ -321,7 +323,7 @@ function updateHead() public view  check_owner
     ISMVTokenLocker(tip3VotingLocker).updateHead {value: 5*SMVConstants.VOTING_COMPLETION_FEE +                              
                                                          5*SMVConstants.ACTION_FEE, flag: 1} ();
 }
-
+uint128 public _tokenBalance;
 function onAcceptTokensTransfer (address tokenRoot,
                                  uint128 amount,
                                  address sender,
@@ -329,14 +331,14 @@ function onAcceptTokensTransfer (address tokenRoot,
                                  address gasTo,
                                  TvmCell payload) external override check_wallet
 {
-/* ... */
+    _tokenBalance += amount;
 }
 function onAcceptTokensMint (address tokenRoot,
                              uint128 amount,
                              address remainingGasTo,
                              TvmCell payload) external override check_wallet
 {
-/* ... */
+    _tokenBalance += amount;
 }
 
 
