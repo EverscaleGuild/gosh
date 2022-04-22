@@ -185,6 +185,14 @@
 			]
 		},
 		{
+			"name": "getSMVProposalCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
 			"name": "getRepositoryCode",
 			"inputs": [
 			],

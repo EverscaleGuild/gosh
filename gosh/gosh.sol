@@ -221,6 +221,10 @@ contract Gosh {
         return GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
     }
 
+    function getSMVProposalCode() external view returns(TvmCell) {
+        return m_SMVProposalCode;
+    }
+
     function getRepositoryCode() external view returns(TvmCell) {
         return m_RepositoryCode;
     }
