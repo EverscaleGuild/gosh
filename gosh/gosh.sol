@@ -224,6 +224,14 @@ contract Gosh {
     function getSMVProposalCode() external view returns(TvmCell) {
         return m_SMVProposalCode;
     }
+    
+    function getSMVPlatformCode() external view returns(TvmCell) {
+        return m_SMVPlatformCode;
+    }
+
+    function getSMVClientCode() external view returns(TvmCell) {
+        return m_SMVClientCode;
+    }
 
     function getRepositoryCode() external view returns(TvmCell) {
         return m_RepositoryCode;
