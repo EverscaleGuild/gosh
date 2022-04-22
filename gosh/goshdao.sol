@@ -70,10 +70,10 @@ contract GoshDao {
         return _contractflex;
     }
 
-    function deployWallet(uint256 pubkeyroot, uint256 pubkey) public view {
+    function deployWallet(uint256 pubkey) public view {
         require(pubkey > 0, 101);
         tvm.accept();
-        TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey);
+        TvmCell s1 = _composeWalletStateInit(_rootpubkey, pubkey);
         new GoshWallet {
             stateInit: s1, value: 0.9 ton, wid: 0
         }(m_CommitCode, m_CommitData, 

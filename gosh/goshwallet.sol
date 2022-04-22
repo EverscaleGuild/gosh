@@ -96,7 +96,7 @@ contract GoshWallet {
         string commitName,
         string fullCommit,
         address parent1,
-        address parent2
+        address parent2  
     ) public view onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployCommit{

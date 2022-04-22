@@ -97,7 +97,7 @@
 			"name": "getAddrRepository",
 			"inputs": [
 				{"name":"name","type":"string"},
-				{"name":"dao","type":"address"}
+				{"name":"dao","type":"string"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}

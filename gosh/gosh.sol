@@ -70,12 +70,12 @@ contract Gosh {
 
     function deployRepository(uint256 pubkey, uint256 rootpubkey, string name, address goshdao) public view {
         require(msg.value > 3 ton, 100);
-        require(pubkey > 0, 101);
+        require(rootpubkey > 0, 101);
         require(checkAccess(pubkey, rootpubkey, msg.sender, goshdao));
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name, goshdao);
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
-            pubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_codeSnapshot, m_dataSnapshot, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
+            rootpubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_codeSnapshot, m_dataSnapshot, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
     }
     
     function _composeDaoStateInit(string name) internal view returns(TvmCell) {
@@ -142,8 +142,8 @@ contract Gosh {
 
     //Getters
 
-    function getAddrRepository(string name, address dao) external view returns(address) {
-        TvmCell s1 = _composeRepoStateInit(name, dao);
+    function getAddrRepository(string name, string dao) external view returns(address) {
+        TvmCell s1 = _composeRepoStateInit(name, address.makeAddrStd(0, tvm.hash(_composeDaoStateInit(dao))));
         return address.makeAddrStd(0, tvm.hash(s1));
     }
     
