@@ -31,8 +31,14 @@
     }
 }
 .branch-button {
-    margin-left: 1rem;
+    margin-left: 1rem !important;
     height: 38px;
+
+    svg {
+        width: 40px;
+        height: 40px;
+        transform: scale(.6);
+    }
 }
 .new-branch {
     margin-bottom: 1rem;
@@ -40,5 +46,12 @@
 .branches-list {
     & > * {
         padding: .75rem 0;
+    }
+    .branches-list-branch {
+        font-weight: 500;
+        * {
+
+            color: $dark;
+        }
     }
 }

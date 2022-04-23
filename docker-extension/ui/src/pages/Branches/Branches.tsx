@@ -137,6 +137,7 @@ export const BranchesPage = () => {
                                 <Flex>
                                     <Button
                                         color="primary"
+                                        type="submit"
                                         size="medium"
                                         variant="contained"
                                         className={cnb("branch-button", "btn-icon")}
@@ -168,33 +169,40 @@ export const BranchesPage = () => {
                 className={cnb("branches-list")}
             >
                 {branches.map((branch, index) => (
-                    <div key={index} className="flex gap-4 items-center px-3 py-2 text-sm">
-                        <div className="grow">
+                    <FlexContainer
+                        key={index}
+                        justify="space-between"
+                        align="center"
+                    >
+                        <Flex className={cnb("branches-list-branch")}>
                             <Link
-                                to={`/${daoName}/${repoName}/tree/${branch.name}`}
+                                to={`/organizations/${daoName}/repositories/${repoName}/tree/${branch.name}`}
                                 className="hover:underline"
                             >
                                 {branch.name}
                             </Link>
-                        </div>
-                        <div>
+                        </Flex>
+                        <Flex>
                             {branch.name !== 'main' && (
-                                <button
-                                    type="button"
-                                    className="px-2.5 py-1.5 text-white text-xs rounded bg-rose-600
-                                        hover:bg-rose-500 disabled:bg-rose-400"
+
+                                <Button
+                                    color="primary"
+                                    type="submit"
+                                    size="medium"
+                                    className={cnb("branch-button", "btn-icon")}
+                                    disableElevation
                                     onClick={() => onBranchDelete(branch.name)}
                                     disabled={branchDeleteMutation.isLoading && branchesOnMutation.indexOf(branch.name) >= 0}
-                                >
-                                    {branchDeleteMutation.isLoading && branchesOnMutation.indexOf(branch.name) >= 0
-                                        ? <Loader/>
-                                        : <></>
-                                    }
-                                    <span className="ml-2">Delete</span>
-                                </button>
+                                    >
+                                        {branchDeleteMutation.isLoading && branchesOnMutation.indexOf(branch.name) >= 0
+                                            ? <Loader/>
+                                            : <></>
+                                        }
+                                        <span className="ml-2">Delete</span>
+                                </Button>
                             )}
-                        </div>
-                    </div>
+                        </Flex>
+                    </FlexContainer>
                 ))}
             </div>
         </div>
