@@ -1,8 +1,8 @@
 import React from "react";
 import { Field } from "formik";
 import { Link } from "react-router-dom";
-import { classNames } from "./../../utils";
-import { Loader } from "./../../components";
+import { classNames } from "../../utils";
+import { Loader} from "../../components";
 
 
 type TFormCommitBlockProps = {
@@ -23,6 +23,7 @@ const FormCommitBlock = (props: TFormCommitBlockProps) => {
             <div>
                 <Field
                     name="title"
+                    component="input"
                     inputProps={{
                         className: 'text-sm py-1.5 w-full',
                         autoComplete: 'off',
@@ -33,8 +34,7 @@ const FormCommitBlock = (props: TFormCommitBlockProps) => {
             <div className="mt-3">
                 <Field
                     name="message"
-                    component="texarea"
-                    help="Markdown syntax is supported"
+                    component="textarea"
                     inputProps={{
                         className: 'text-sm py-1.5 w-full',
                         placeholder: 'Commit optional description'
@@ -50,7 +50,7 @@ const FormCommitBlock = (props: TFormCommitBlockProps) => {
                     type="submit"
                     disabled={isDisabled}
                 >
-                    {isSubmitting && <Loader />}
+                    {isSubmitting && <Loader/>}
                     Commit changes
                 </button>
                 {urlBack && (

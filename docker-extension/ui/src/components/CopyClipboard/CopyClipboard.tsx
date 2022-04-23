@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { ReactNode } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { toast, Slide } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,7 +15,7 @@ const cnb = classnames.bind(styles);
 type TCopyClipboardProps = {
     componentProps: Omit<CopyToClipboard.Props, 'children'>;
     className?: string;
-    label?: string;
+    label?: ReactNode;
     labelClassName?: string;
     iconContainerClassName?: string;
 }
@@ -44,7 +44,9 @@ const CopyClipboard = (props: TCopyClipboardProps) => {
                 })
             }
         >
-            <div className={cnb("flex", className)}>
+            <div
+                className={cnb("flex", className)}
+            >
                 {label && (
                     <div className={cnb(labelClassName)}>{label}</div>
                 )}

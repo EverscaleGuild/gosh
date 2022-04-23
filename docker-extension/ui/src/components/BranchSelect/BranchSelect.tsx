@@ -2,10 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import { Listbox } from "@headlessui/react";
 import { TGoshBranch } from "./../../types/types";
 
+import styles from './BranchSelect.module.scss';
+import classnames from "classnames/bind";
+import Paper from '@mui/material/Paper';
+import Input from '@mui/material/Input';
+import { Icon } from "../Icon";
+import { ChevronDownIcon } from '@heroicons/react/outline';
+import { Typography } from "@mui/material";
+
+const cnb = classnames.bind(styles);
+
 
 type TBranchSelectProps = {
     branch?: TGoshBranch;
     branches: TGoshBranch[];
+    className?: string;
     disabled?: boolean;
     onChange(selected: TGoshBranch | undefined): void;
 }
@@ -32,55 +43,53 @@ export const BranchSelect = (props: TBranchSelectProps) => {
     return (
         <Listbox
             as="div"
-            className={""}
+            className={cnb("list-box", props.className)}
             value={branch}
             disabled={disabled}
             onChange={(value: any) => onChange(value)}
-
         >
             <Listbox.Button
                 as="div"
                 tabIndex={0}
-                className="flex gap-x-3 px-3 py-1.5 text-sm font-medium justify-between items-center cursor-pointer"
+                className={cnb("list-box-button")}
             >
-                <div className="grow items-center justify-start truncate">
-                    {branch?.name}
-                </div>
+                {branch?.name ? branch?.name : <span className={cnb("placeholder")}>Fetching...</span>} <Icon icon="chevron-down"/>
             </Listbox.Button>
             <Listbox.Options
-                className="absolute z-10 left-0 top-full w-52 overflow-hidden mt-1 text-sm bg-white rounded shadow-md ring-1 ring-black ring-opacity-5 focus:outline-none"
+                className={cnb("list-box-options")}
                 onFocusCapture={() => searchRef.current?.focus()}
             >
-                <div className="px-2 py-2 border-b">
-                    <div className="input">
-                        <input
-                            ref={searchRef}
-                            type="text"
-                            className="element !py-1 !text-sm"
-                            autoComplete="off"
-                            placeholder="Search branch"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div className="max-h-56 overflow-auto">
+                <Paper
+                    className={cnb("list-box-options-paper")}
+                    elevation={14}
+                >
+
+                    <Input
+                        ref={searchRef}
+                        type="text"
+                        className={cnb("input", "input-field")}
+                        autoComplete="off"
+                        placeholder="Search branch"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+
                     {!filtered.length && (
-                        <div className="py-2 text-center text-gray-606060 text-xs">
+                        <Typography className={cnb("branch-list-empty")}>
                             No branch found
-                        </div>
+                        </Typography>
                     )}
 
                     {filtered.map((item) => (
                         <Listbox.Option
                             key={item.name}
                             value={item}
-                            className={""}
+                            className={cnb("branch-list-item")}
                         >
                             {item.name}
                         </Listbox.Option>
                     ))}
-                </div>
+                </Paper>
             </Listbox.Options>
         </Listbox>
     );

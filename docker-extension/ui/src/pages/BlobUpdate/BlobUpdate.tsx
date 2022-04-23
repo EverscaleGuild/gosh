@@ -3,18 +3,19 @@ import { Field, Form, Formik } from "formik";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import { Tab } from "@headlessui/react";
-import { classNames } from "./../../utils";
-import BlobEditor from "./../../components/Blob/Editor";
-import FormCommitBlock from "./../BlobCreate/FormCommitBlock";
+import { classNames } from "../../utils";
+import BlobEditor from "../../components/Blob/Editor";
+import FormCommitBlock from "../BlobCreate/FormCommitBlock";
 import { useMonaco } from "@monaco-editor/react";
-import { TRepoLayoutOutletContext } from "./../RepoLayout";
-import { IGoshRepository, IGoshSnapshot } from "./../../types/types";
-import { generateDiff, getCodeLanguageFromFilename, sha1 } from "./../../utils";
-import BlobDiffPreview from "./../../components/Blob/DiffPreview";
-import { GoshSnapshot } from "./../../types/classes";
-import { goshCurrBranchSelector } from "./../../store/gosh.state";
+import { TRepoLayoutOutletContext } from "../RepoLayout";
+import { IGoshRepository, IGoshSnapshot } from "../../types/types";
+import { getCodeLanguageFromFilename } from "../../utils";
+import BlobDiffPreview from "../../components/Blob/DiffPreview";
+import { GoshSnapshot } from "../../types/classes";
+import { goshCurrBranchSelector } from "../../store/gosh.state";
 import { useRecoilValue } from "recoil";
-import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
+import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+import { userStateAtom } from "../../store/user.state";
 
 
 type TFormValues = {
@@ -25,8 +26,9 @@ type TFormValues = {
 }
 
 const BlobUpdatePage = () => {
-    const { goshRepo, goshWallet } = useOutletContext<TRepoLayoutOutletContext>();
     const { daoName, repoName, branchName = 'main', blobName } = useParams();
+    const { goshRepo, goshWallet } = useOutletContext<TRepoLayoutOutletContext>();
+    const userState = useRecoilValue(userStateAtom);
     const { updateBranch } = useGoshRepoBranches(goshRepo);
     const branch = useRecoilValue(goshCurrBranchSelector(branchName));
     const navigate = useNavigate();
@@ -34,41 +36,28 @@ const BlobUpdatePage = () => {
     const [activeTab, setActiveTab] = useState<number>(0);
     const [snapshot, setSnapshot] = useState<IGoshSnapshot>();
     const [blobCodeLanguage, setBlobCodeLanguage] = useState<string>('plaintext');
-    const urlBack = `/organizations/${daoName}/repositories/${repoName}/blob/${branchName}/${blobName}`;
+    const urlBack = `/${daoName}/${repoName}/blob/${branchName}/${blobName}`;
 
     const onCommitChanges = async (values: TFormValues) => {
         try {
+            if (!userState.keys) throw Error('Can not get user keys');
             if (!goshWallet) throw Error('Can not get GoshWallet');
             if (!repoName) throw Error('Repository is undefined');
             if (!branch) throw Error('Branch is undefined');
+            if (!snapshot?.meta) throw Error('File content is undefined');
 
-            // Prepare commit data
-            const blobSha = sha1(values.content, 'blob');
-            const commitData = {
-                title: values.title,
-                message: values.message,
-                blobs: [
-                    {
-                        sha: blobSha,
-                        name: values.name,
-                        diff: await generateDiff(monaco, values.content, snapshot?.meta?.content)
-                    }
-                ]
-            };
-            const commitDataStr = JSON.stringify(commitData)
-            const commitSha = sha1(commitDataStr, 'commit');
-
-            // Deploy commit, blob, diff
+            const message = [values.title, values.message].filter((v) => !!v).join('\n\n');
             await goshWallet.createCommit(
                 repoName,
-                branchName,
-                commitSha,
-                commitDataStr,
-                branch.commitAddr,
-                '0:0000000000000000000000000000000000000000000000000000000000000000'
-            )
-            await goshWallet.createBlob(repoName, commitSha, blobSha, values.content);
-            await goshWallet.createDiff(repoName, branchName, values.name, values.content);
+                branch,
+                userState.keys.public,
+                [{
+                    name: values.name,
+                    modified: values.content,
+                    original: snapshot.meta.content
+                }],
+                message
+            );
 
             await updateBranch(branch.name);
             navigate(urlBack);
@@ -116,7 +105,7 @@ const BlobUpdatePage = () => {
                             <div className="flex gap-3 items-baseline justify-between ">
                                 <div className="flex items-baseline">
                                     <Link
-                                        to={`/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`}
+                                        to={`/${daoName}/${repoName}/tree/${branchName}`}
                                         className="font-medium text-extblue hover:underline"
                                     >
                                         {repoName}

@@ -68,21 +68,19 @@ export const Modal = ({
   className,
   children
 }: ModalProps & {children: ReactNode}) => {
-  const Transition = forwardRef(function Transition(
-    props: TransitionProps & {
-      children: React.ReactElement;
-    },
-    ref: React.Ref<unknown>,
-  ) {
-    return <Slide direction="up" ref={ref} {...props} />;
-  });
-  return (
-<>
-{show && <Dialog
+  // const Transition = forwardRef(function Transition(
+  //   props: TransitionProps & {
+  //     children: React.ReactElement;
+  //   },
+  //   ref: React.Ref<unknown>,
+  // ) {
+  //   return <Slide direction="up" ref={ref} {...props} />;
+  // });
+  return (<Dialog
   keepMounted={false}
   open={show}
   onClose={onHide}
-  TransitionComponent={Transition}
+  // TransitionComponent={Transition}
   className={cnb(className, "modal", {"modal-wide": wide})}
   closeAfterTransition
 >
@@ -97,7 +95,7 @@ export const Modal = ({
       <CloseIcon />
     </IconButton>
     <>{children}</>
-</Dialog>}</>
+</Dialog>
   );
 };
 
