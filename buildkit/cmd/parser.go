@@ -5,9 +5,11 @@ import (
 )
 
 type Config struct {
-	ApiVersion string `yaml:"apiVersion"`
-	Image      string `yaml:"image"`
-	Steps      []Step `yaml:"steps"`
+	ApiVersion string   `yaml:"apiVersion"`
+	Image      string   `yaml:"image"`
+	Entrypoint []string `yaml:"entrypoint,omitempty"`
+	WorkingDir string   `yaml:"workingDir,omitempty"`
+	Steps      []Step   `yaml:"steps"`
 }
 
 type Step struct {
