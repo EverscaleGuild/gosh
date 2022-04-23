@@ -121,7 +121,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             uint256 proposalKind = 0;
             b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
             uint256 id = tvm.hash(b.toCell()); 
-            uint32 startTime = now + 5*60;
+            uint32 startTime = now + 1*60;
             uint32 finishTime = now + 5*60 + 7*24*60*60;
             startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
                            id, b.toCell(), startTime, finishTime);
