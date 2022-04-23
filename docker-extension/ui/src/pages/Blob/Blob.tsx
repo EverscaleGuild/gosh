@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import BranchSelect from "./../../components/BranchSelect";
-import { IGoshRepository, IGoshSnapshot } from "./../../types/types";
-import { TRepoLayoutOutletContext } from "./../RepoLayout";
+import BranchSelect from "../../components/BranchSelect";
+import { IGoshRepository, IGoshSnapshot } from "../../types/types";
+import { TRepoLayoutOutletContext } from "../RepoLayout";
 import { useMonaco } from "@monaco-editor/react";
-import { getCodeLanguageFromFilename } from "./../../utils";
-import BlobPreview from "./../../components/Blob/Preview";
-
-import CopyClipboard from "./../../components/CopyClipboard";
-import { GoshSnapshot } from "./../../types/classes";
-import { Loader } from "./../../components";
+import { getCodeLanguageFromFilename } from "../../utils";
+import BlobPreview from "../../components/Blob/Preview";
+import CopyClipboard from "../../components/CopyClipboard";
+import { GoshSnapshot } from "../../types/classes";
+import { Loader} from "../../components";
 import { useRecoilValue } from "recoil";
-import { goshBranchesAtom, goshCurrBranchSelector } from "./../../store/gosh.state";
+import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
 import { AccountType } from "@eversdk/appkit";
 
 
@@ -46,12 +45,12 @@ const BlobPage = () => {
                         branches={branches}
                         onChange={(selected) => {
                             if (selected) {
-                                navigate(`/organizations/${daoName}/repositories/${repoName}/blob/${selected.name}/${blobName}`);
+                                navigate(`/${daoName}/${repoName}/blob/${selected.name}/${blobName}`);
                             }
                         }}
                     />
                     <Link
-                        to={`/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`}
+                        to={`/${daoName}/${repoName}/tree/${branchName}`}
                         className="ml-3 text-extblue font-medium hover:underline"
                     >
                         {repoName}
@@ -62,12 +61,12 @@ const BlobPage = () => {
             </div>
 
             {!snapshot && (
-                <div className="text-gray-606060">
-                    <Loader />
+                <div className="text-gray-606060 text-sm">
+                    <Loader/>
                     Loading file...
                 </div>
             )}
-            {snapshot && !snapshot.meta && (<p className="text-gray-606060">File not found</p>)}
+            {snapshot && !snapshot.meta && (<div className="text-gray-606060 text-sm">File not found</div>)}
             {monaco && snapshot?.meta && (
                 <div className="border rounded overflow-hidden">
                     <div className="flex bg-gray-100 px-3 py-1 border-b justify-end">
@@ -79,7 +78,7 @@ const BlobPage = () => {
 
                         />
                         <Link
-                            to={`/organizations/${daoName}/repositories/${repoName}/blobs/update/${branchName}/${blobName}`}
+                            to={`/${daoName}/${repoName}/blobs/update/${branchName}/${blobName}`}
                             className="text-extblack/60 hover:text-extblack p-1 ml-2">
                         </Link>
                     </div>

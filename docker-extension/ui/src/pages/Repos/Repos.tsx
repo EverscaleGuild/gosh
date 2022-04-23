@@ -65,7 +65,6 @@ const RepositoriesPage = () => {
           navigate("/account/organizations");
         }}
       /> */}
-      <Outlet/>
       <div className="page-header">
         <FlexContainer
             direction="row"
@@ -77,8 +76,7 @@ const RepositoriesPage = () => {
           </Flex>
           <Flex>
                 <Link
-                    className="btn btn--body px-4 py-1.5 text-sm !font-normal"
-                    to={`/organizations/${goshDao.meta?.name}/repositories/create`}
+                  to={`/organizations/${goshDao.meta?.name}/repositories/create`}
                 >
                   <Button
                       color="primary"
@@ -86,7 +84,6 @@ const RepositoriesPage = () => {
                       size="medium"
                       className={"btn-icon"}
                       disableElevation
-                      disabled
                       // icon={<Icon icon={"arrow-up-right"}/>}
                       // iconAnimation="right"
                       // iconPosition="after"
@@ -120,49 +117,7 @@ const RepositoriesPage = () => {
         {repoListQuery.data?.map((repository, index) => (
             daoName && <RepoListItem key={index} daoName={daoName} repository={repository} />
         ))}
-{/* 
-        <div className="divide-y divide-gray-c4c4c4">
-            {goshDaos?.map((item, index) => (
-              <Link
-                key={index}
-                to={`/organizations/${item.meta?.name}`}
-                className="text-xl font-semibold hover:underline"
-              >
-                <FlexContainer
-                  className="organization"
-                  direction="column"
-                  justify="space-between"
-                  align="flex-start"
-                >
-                  <Flex>
-                    <div className="arrow"><ArrowRightIcon/></div>
-                    <div className="organization-title">
-                      {item.meta?.name}
-                    </div>
-                    <div className="organization-description">
-                      Organization description
-                    </div>
-                  </Flex>
-                  <Flex
-                    className="organization-footer"
-                  >
-                    <FlexContainer
-                      direction="row"
-                      justify="flex-start"
-                      align="center"
-                    >
-                      <Flex>
-                        <div className="badge"><CollectionIcon/> <LoaderDotsText className={"badge-loader"}/> repositories</div>
-                      </Flex>
-                      <Flex>
-                        <div className="badge"><UsersIcon/> <LoaderDotsText className={"badge-loader"}/> members</div>
-                      </Flex>
-                    </FlexContainer>
-                  </Flex>
-                </FlexContainer>
-              </Link>
-            ))}
-        </div> */}
+
       </div>
     </>
     );

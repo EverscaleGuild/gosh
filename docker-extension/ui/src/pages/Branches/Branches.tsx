@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { Field, Form, Formik, FormikHelpers } from "formik";
 import { useMutation } from "react-query";
-import { Link, useOutletContext, useParams } from "react-router-dom";
-import BranchSelect from "./../../components/BranchSelect";
-import { Loader } from "./../../components";
-import { TGoshBranch } from "./../../types/types";
-import { TRepoLayoutOutletContext } from "./../RepoLayout";
+import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Modal, Loader, FlexContainer, Flex, Icon } from "./../../components";
+import BranchSelect from "../../components/BranchSelect";
+import { TGoshBranch } from "../../types/types";
+import { TRepoLayoutOutletContext } from "../RepoLayout";
 import * as Yup from "yup";
 import { useRecoilValue } from "recoil";
-import { goshCurrBranchSelector } from "./../../store/gosh.state";
-import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
+import { goshCurrBranchSelector } from "../../store/gosh.state";
+import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+
+import Button from '@mui/material/Button';
+import InputBase from '@mui/material/InputBase';
+
+import styles from './Branches.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 
 type TCreateBranchFormValues = {
@@ -25,6 +33,7 @@ export const BranchesPage = () => {
     const branch = useRecoilValue(goshCurrBranchSelector(branchName));
     const [search, setSearch] = useState<string>();
     const [branchesOnMutation, setBranchesOnMutation] = useState<string[]>([]);
+    const navigate = useNavigate();
     const branchDeleteMutation = useMutation(
         (name: string) => {
             if (!repoName) throw Error('Repository name is undefined');
@@ -74,7 +83,15 @@ export const BranchesPage = () => {
     }
 
     return (
-        <div className="bordered-block px-7 py-8">
+        <Modal
+          show={true}
+          wide={true}
+          onHide={() => {
+            navigate(`/organizations/${daoName}/repositories/${repoName}`);
+          }}
+        >
+        <div className={cnb("modal-wide", "modal-branches")}>
+                <h2 className="drag-up">Branches</h2>
             <div className="flex justify-between gap-4">
                 <Formik
                     initialValues={{ newName: '', from: branch }}
@@ -86,60 +103,75 @@ export const BranchesPage = () => {
                     })}
                 >
                     {({ isSubmitting, setFieldValue }) => (
-                        <Form className="flex items-center">
-                            <BranchSelect
-                                branch={branch}
-                                branches={branches}
-                                onChange={(selected) => {
-                                    if (selected) {
-                                        setBranchName(selected?.name);
-                                        setFieldValue('from', selected);
-                                    }
-                                }}
-                            />
-                            <span className="mx-3">
-
-                            </span>
-                            <div>
-                                <Field
-                                    name="newName"
-                                    errorEnabled={false}
-                                    inputProps={{
-                                        placeholder: 'Branch name',
-                                        autoComplete: 'off',
-                                        className: '!text-sm !py-1.5'
-                                    }}
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="btn btn--body px-3 py-1.5 ml-3 !text-sm"
-                                disabled={isSubmitting}
+                        <Form>
+                            <FlexContainer
+                                direction="row"
+                                justify="flex-start"
+                                align="center"
+                                className={cnb("new-branch")}
                             >
-                                {isSubmitting && <Loader/>}
-                                Create branch
-                            </button>
+                                <Flex>
+                                    <BranchSelect
+                                        branch={branch}
+                                        branches={branches}
+                                        className={cnb("branch-fork")}
+                                        onChange={(selected) => {
+                                            if (selected) {
+                                                setBranchName(selected?.name);
+                                                setFieldValue('from', selected);
+                                            }
+                                        }}
+                                    />
+                                </Flex>
+                                <Flex>
+                                    <Icon icon="chevron-right"  className={cnb("branch-chevron")} />
+                                </Flex>
+                                <Flex>
+                                    <Field
+                                        name="newName"
+                                        placeholder='Branch name'
+                                        autoComplete='off'
+                                        className={cnb("input-field", "branch-name")}
+                                    />
+                                </Flex>
+                                <Flex>
+                                    <Button
+                                        color="primary"
+                                        size="medium"
+                                        variant="contained"
+                                        className={cnb("branch-button", "btn-icon")}
+                                        disableElevation
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting && <Loader/>}
+                                        Create branch
+                                    </Button>
+                                </Flex>
+                            </FlexContainer>
                         </Form>
                     )}
                 </Formik>
 
                 <div className="input basis-1/4">
-                    <input
-                        type="text"
-                        className="element !text-sm !py-1.5"
-                        placeholder="Search branch (disabled)"
-                        disabled={true}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+
+                <InputBase
+                    className="input-field"
+                    type="text"
+                    placeholder="Search  (Disabled for now)"
+                    disabled
+                    onChange={(e: any) => setSearch(e.target.value)}
+                />
                 </div>
             </div>
 
-            <div className="mt-5 divide-y divide-gray-c4c4c4">
+            <div
+                className={cnb("branches-list")}
+            >
                 {branches.map((branch, index) => (
                     <div key={index} className="flex gap-4 items-center px-3 py-2 text-sm">
                         <div className="grow">
                             <Link
-                                to={`/organizations/${daoName}/repositories/${repoName}/tree/${branch.name}`}
+                                to={`/${daoName}/${repoName}/tree/${branch.name}`}
                                 className="hover:underline"
                             >
                                 {branch.name}
@@ -155,7 +187,7 @@ export const BranchesPage = () => {
                                     disabled={branchDeleteMutation.isLoading && branchesOnMutation.indexOf(branch.name) >= 0}
                                 >
                                     {branchDeleteMutation.isLoading && branchesOnMutation.indexOf(branch.name) >= 0
-                                        ? <Loader />
+                                        ? <Loader/>
                                         : <></>
                                     }
                                     <span className="ml-2">Delete</span>
@@ -166,6 +198,7 @@ export const BranchesPage = () => {
                 ))}
             </div>
         </div>
+        </Modal>
     );
 }
 

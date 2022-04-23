@@ -77,10 +77,19 @@ const Router = () => {
               </Route>
           </Route>
           <Route path="/organizations/:daoName" element={<ProtectedLayout />}>
+            <Route element={<DaoLayout />}>
+              <Route element={<DaoPage />} >
+                <Route index element={null} />
+                <Route path="repositories/create" element={<RepoCreatePage />} />
+              </Route>
+              <Route path="repositories" element={<ReposPage />}/>
+            </Route>
             <Route path="repositories/:repoName" element={<RepoLayout />}>
-                <Route index element={<RepoPage />} />
+                <Route element={<RepoPage />}>
+                  <Route index element={null} />
+                  <Route path="branches" element={<BranchesPage />} />
+                </Route>
                 <Route path="tree/:branchName" element={<RepoPage />} />
-                <Route path="branches" element={<BranchesPage />} />
                 <Route path="blobs/create/:branchName" element={<BlobCreatePage />} />
                 <Route path="blobs/update/:branchName/:blobName" element={<BlobUpdatePage />} />
                 <Route path="blob/:branchName/:blobName" element={<BlobPage />} />
@@ -88,13 +97,6 @@ const Router = () => {
                 <Route path="commit/:branchName/:commitName" element={<CommitPage />} />
                 <Route path="pulls/create" element={<PullCreatePage />} />
                 <Route path="pulls" element={<PullsPage />} />
-            </Route>
-            <Route element={<DaoLayout />}>
-                <Route index element={<DaoPage />} />
-                <Route path="repositories" element={<ReposPage />}>
-                  <Route index element={null} />
-                  <Route path="create" element={<RepoCreatePage />} />
-                </Route>
             </Route>
           </Route>
           <Route path="/containers" element={<Containers />} />

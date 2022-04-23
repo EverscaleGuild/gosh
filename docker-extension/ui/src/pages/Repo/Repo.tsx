@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Link, useNavigate, useOutletContext, useParams, Outlet } from "react-router-dom";
 import { IGoshRepository, IGoshSnapshot, TGoshBranch } from "./../../types/types";
 import { TRepoLayoutOutletContext } from "./../RepoLayout";
 import BranchSelect from "./../../components/BranchSelect";
@@ -7,11 +7,19 @@ import { GoshSnapshot } from "./../../types/classes";
 import { useRecoilValue } from "recoil";
 import { goshCurrBranchSelector } from "./../../store/gosh.state";
 import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
-import { Loader } from "./../../components";
+import { Icon, Loader, FlexContainer, Flex } from '../../components';
 
+import { ClockIcon, PlusIcon, BookOpenIcon } from '@heroicons/react/outline';
+
+import styles from './Repo.module.scss';
+import classnames from "classnames/bind";
+import Button from '@mui/material/Button';
+import Typography from "@mui/material/Typography";
+
+const cnb = classnames.bind(styles);
 
 const RepoPage = () => {
-    const { goshRepo } = useOutletContext<TRepoLayoutOutletContext>();
+    const { goshRepo, goshWallet } = useOutletContext<TRepoLayoutOutletContext>();
     const { daoName, repoName, branchName = 'main' } = useParams();
     const navigate = useNavigate();
     const { branches } = useGoshRepoBranches(goshRepo);
@@ -36,61 +44,95 @@ const RepoPage = () => {
     }, [goshRepo, branch]);
 
     return (
-        <div className="bordered-block px-7 py-8">
-            <div className="flex items-center justify-between gap-3">
-                <div>
-                    <BranchSelect
-                        branch={branch}
-                        branches={branches}
-                        onChange={(selected) => {
-                            if (selected) {
-                                navigate(`/organizations/${daoName}/repositories/${repoName}/tree/${selected.name}`);
-                            }
-                        }}
-                    />
-
+        <>
+            <div className="actions">
+                
+                <FlexContainer
+                    direction="row"
+                    justify="flex-start"
+                    align="center"
+                    className={cnb("repository-actions")}
+                >
+                    <Flex>
+                    
+                        <BranchSelect
+                            branch={branch}
+                            branches={branches}
+                            onChange={(selected) => {
+                                if (selected) {
+                                    navigate(`/organizations/${daoName}/repositories/${repoName}/tree/${selected.name}`);
+                                }
+                            }}
+                        />
+                    </Flex>
+                    <Flex>
                     <Link
                         to={`/organizations/${daoName}/repositories/${repoName}/branches`}
-                        className="ml-4 text-sm text-gray-050a15/65 hover:text-gray-050a15"
+                        className={cnb("repository-action")}
                     >
-                        <span className="mr-1 font-semibold">
-                            {branches.length}
+                        
+                        <span>
+                            <Icon icon={"branches"} className={cnb("my-icon")} /> {branches.length}
                         </span>
-                        branches
+                        <Typography>{branches.length === 1 ? "branch" : "branches"}</Typography>
                     </Link>
-
+                    </Flex>
+                    <Flex>
                     <Link
                         to={`/organizations/${daoName}/repositories/${repoName}/commits/${branchName}`}
-                        className="ml-4 text-sm text-gray-050a15/65 hover:text-gray-050a15"
+                        className={cnb("repository-action")}
                     >
-                        History
-                    </Link>
-                </div>
 
-                <div className="flex gap-3">
+                        <span>
+                            <ClockIcon/>
+                        </span> <Typography>History</Typography>
+                    </Link>
+                
+                    </Flex>
+                    <Flex
+                        grow={1000}
+                    >
+                <div className="align-right">
                     <Link
                         to={`/organizations/${daoName}/repositories/${repoName}/blobs/create/${branchName}`}
                         className="btn btn--body px-4 py-1.5 text-sm !font-normal"
                     >
-                        Add file
+                        
+                        <Button
+                            color="primary"
+                            size="medium"
+                            variant="contained"
+                            className={"btn-icon"}
+                            disableElevation
+                            // icon={<Icon icon={"arrow-up-right"}/>}
+                            // iconAnimation="right"
+                            // iconPosition="after"
+                        ><PlusIcon/> Add file </Button>
                     </Link>
                 </div>
+                
+                    </Flex>
+                </FlexContainer>
+
+
+
+
+
             </div>
 
-            <div className="mt-5">
+            <div className={cnb("tree")}>
                 {tree === undefined && (
-                    <div className="text-gray-606060">
-                        <Loader/>
-                        Loading tree...
+                    <div className="loader">
+                    <Loader />
+                    Loading {"tree"}...
                     </div>
                 )}
 
                 {tree && !tree?.length && (
-                    <div className="text-sm text-gray-606060 py-3">
-                        There are no files yet
-                    </div>
+                    <div className="no-data"><BookOpenIcon/>There are no files yet</div>
                 )}
 
+<Outlet context={{ goshRepo, goshWallet }} />
                 {Boolean(tree?.length) && tree?.map((blob, index) => (
                     <div
                         key={index}
@@ -115,7 +157,7 @@ const RepoPage = () => {
                     </div>
                 ))}
             </div>
-        </div>
+        </>
     );
 }
 

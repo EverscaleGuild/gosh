@@ -29,6 +29,10 @@ const DaoPage = () => {
           /> */}
           <div className="left-column">
           {/* <h2 className="font-semibold text-2xl mb-5">User account</h2> */}
+          {!goshDao && <div className="loader">
+            <Loader />
+            Loading {"organization"}...
+            </div>}
           {goshDao && (<>
             <h2 className="color-faded">{goshDao.meta?.name}</h2>
             <Outlet context={{ goshDao }} />
@@ -69,7 +73,6 @@ const DaoPage = () => {
                                 size="medium"
                                 className={"btn-icon"}
                                 disableElevation
-                                disabled
                                 // icon={<Icon icon={"arrow-up-right"}/>}
                                 // iconAnimation="right"
                                 // iconPosition="after"

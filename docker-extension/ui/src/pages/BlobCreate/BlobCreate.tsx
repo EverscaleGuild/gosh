@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { Field, Form, Formik } from "formik";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { TRepoLayoutOutletContext } from "./../RepoLayout";
+import { TRepoLayoutOutletContext } from "../RepoLayout";
 import { useMonaco } from "@monaco-editor/react";
-import { generateDiff, getCodeLanguageFromFilename, sha1 } from "./../../utils";
+import { getCodeLanguageFromFilename } from "../../utils";
 import * as Yup from "yup";
 import { Tab } from "@headlessui/react";
-import BlobEditor from "./../../components/Blob/Editor";
-import BlobPreview from "./../../components/Blob/Preview";
+import { classNames } from "../../utils";
+import BlobEditor from "../../components/Blob/Editor";
+import BlobPreview from "../../components/Blob/Preview";
 import FormCommitBlock from "./FormCommitBlock";
 import { useRecoilValue } from "recoil";
-import { goshCurrBranchSelector } from "./../../store/gosh.state";
-import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
-
+import { goshCurrBranchSelector } from "../../store/gosh.state";
+import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
+import { userStateAtom } from "../../store/user.state";
 
 
 type TFormValues = {
@@ -25,48 +26,30 @@ type TFormValues = {
 const BlobCreatePage = () => {
     const { daoName, repoName, branchName = 'main' } = useParams();
     const { goshRepo, goshWallet } = useOutletContext<TRepoLayoutOutletContext>();
+    const userState = useRecoilValue(userStateAtom);
     const { updateBranch } = useGoshRepoBranches(goshRepo);
-
     const branch = useRecoilValue(goshCurrBranchSelector(branchName));
     const navigate = useNavigate();
     const monaco = useMonaco();
     const [blobCodeLanguage, setBlobCodeLanguage] = useState<string>('plaintext');
     const [activeTab, setActiveTab] = useState<number>(0);
-    const urlBack = `/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`;
+    const urlBack = `/${daoName}/${repoName}/tree/${branchName}`;
 
     const onCommitChanges = async (values: TFormValues) => {
         try {
+            if (!userState.keys) throw Error('Can not get user keys');
             if (!goshWallet) throw Error('Can not get GoshWallet');
             if (!repoName) throw Error('Repository is undefined');
             if (!branch) throw Error('Branch is undefined');
 
-            // Prepare commit data
-            const blobSha = sha1(values.content, 'blob');
-            const commitData = {
-                title: values.title,
-                message: values.message,
-                blobs: [
-                    {
-                        sha: blobSha,
-                        name: values.name,
-                        diff: await generateDiff(monaco, values.content)
-                    }
-                ]
-            };
-            const commitDataStr = JSON.stringify(commitData)
-            const commitSha = sha1(commitDataStr, 'commit');
-
-            // Deploy commit, blob, diff
+            const message = [values.title, values.message].filter((v) => !!v).join('\n\n');
             await goshWallet.createCommit(
                 repoName,
-                branchName,
-                commitSha,
-                commitDataStr,
-                branch.commitAddr,
-                '0:0000000000000000000000000000000000000000000000000000000000000000'
-            )
-            await goshWallet.createBlob(repoName, commitSha, blobSha, values.content);
-            await goshWallet.createDiff(repoName, branchName, values.name, values.content);
+                branch,
+                userState.keys.public,
+                [{ name: values.name, modified: values.content, original: '' }],
+                message
+            );
 
             await updateBranch(branch.name);
             navigate(urlBack);
@@ -90,7 +73,7 @@ const BlobCreatePage = () => {
                         <div className="flex gap-3 items-baseline justify-between ">
                             <div className="flex items-baseline">
                                 <Link
-                                    to={`/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`}
+                                    to={`/${daoName}/${repoName}/tree/${branchName}`}
                                     className="font-medium text-extblue hover:underline"
                                 >
                                     {repoName}
@@ -143,10 +126,22 @@ const BlobCreatePage = () => {
                                 <Tab.List
                                 >
                                     <Tab
+                                        className={({ selected }) => classNames(
+                                            'px-4 py-3 border-r text-sm',
+                                            selected
+                                                ? 'bg-white border-b-white font-medium text-extblack'
+                                                : 'bg-transparent border-b-transparent text-extblack/70 hover:text-extblack'
+                                        )}
                                     >
                                         Edit new file
                                     </Tab>
                                     <Tab
+                                        className={({ selected }) => classNames(
+                                            'px-4 py-3 text-sm',
+                                            selected
+                                                ? 'bg-white border-b-white border-r font-medium text-extblack'
+                                                : 'bg-transparent border-b-transparent text-extblack/70 hover:text-extblack'
+                                        )}
                                     >
                                         Preview
                                     </Tab>

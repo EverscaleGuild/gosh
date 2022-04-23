@@ -8,13 +8,22 @@
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
-				{"name":"blob","type":"string"}
+				{"name":"blob","type":"string"},
+				{"name":"prevSha","type":"string"}
 			],
 			"outputs": [
 			]
 		},
 		{
 			"name": "getNameBlob",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
+			"name": "getprevSha",
 			"inputs": [
 			],
 			"outputs": [
@@ -71,6 +80,7 @@
 		{"name":"_nameBranch","type":"string"},
 		{"name":"check","type":"bool"},
 		{"name":"_blob","type":"string"},
-		{"name":"_pubkey","type":"uint256"}
+		{"name":"_pubkey","type":"uint256"},
+		{"name":"_prevSha","type":"string"}
 	]
 }

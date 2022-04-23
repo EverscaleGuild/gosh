@@ -23,11 +23,13 @@ const RepoCreatePage = () => {
     const { daoName } = useParams();
     const goshWallet = useGoshWallet(daoName);
     const navigate = useNavigate();
-    // const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
+    const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
+
+    console.log(goshWallet);
 
     const onRepoCreate = async (values: TFormValues) => {
         try {
-            await goshWallet?.createRepo(values.name);
+            await goshWallet?.deployRepo(values.name);
             navigate(`/organizations/${daoName}/repositories/${values.name}`, { replace: true });
         } catch (e: any) {
             console.error(e.message);
@@ -40,11 +42,11 @@ const RepoCreatePage = () => {
           show={true}
           wide={true}
           onHide={() => {
-            // navigate(`/account/organizations/${goshDao.meta?.name}`);
+            navigate(`/organizations/${goshDao.meta?.name}`);
           }}
         >
         <div className="modal-wide">
-                <h2 className="font-semibold text-2xl text-center mb-8">Create new repository</h2>
+        <h2 className="drag-up">New repository</h2>
 
                 <Formik
                     initialValues={{ name: '' }}
@@ -68,7 +70,7 @@ const RepoCreatePage = () => {
                             />
                             {errors.name && (
                                 <Typography className="error-block color-error">
-                                    Enter organization's name.
+                                    Enter repository's name.
                                 </Typography>
                             )}
                         </div>

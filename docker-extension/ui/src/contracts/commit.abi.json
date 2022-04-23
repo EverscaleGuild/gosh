@@ -27,7 +27,8 @@
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBlob","type":"string"},
-				{"name":"fullBlob","type":"string"}
+				{"name":"fullBlob","type":"string"},
+				{"name":"prevSha","type":"string"}
 			],
 			"outputs": [
 			]
