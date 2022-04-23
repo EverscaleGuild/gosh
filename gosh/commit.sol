@@ -106,8 +106,9 @@ contract Commit {
     }
 
     function deployBlob(uint256 pubkey, string nameBlob, string fullBlob, string prevSha) public {
+        require(msg.sender==_rootRepo);
         tvm.accept();
-        require(checkAccess(pubkey, msg.sender));
+        //require(checkAccess(pubkey, msg.sender));
         TvmCell s1 = _composeBlobStateInit(nameBlob);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Blob{stateInit: s1, value: 1 ton, wid: 0}(pubkey, _nameBranch, fullBlob, prevSha);
