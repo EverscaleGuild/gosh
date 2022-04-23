@@ -10,6 +10,7 @@ export interface FlexProps extends InputHTMLAttributes<HTMLInputElement>{
 }
 export interface FlexContainerProps extends InputHTMLAttributes<HTMLInputElement>{
   direction?: string,
+  className?: string,
   justify?: string,
   align?: string,
 }
@@ -17,13 +18,14 @@ export interface FlexContainerProps extends InputHTMLAttributes<HTMLInputElement
 export const FlexContainer = ({
   direction,
   justify,
+  className,
   align,
   children,
   ...props
 } : FlexContainerProps) => {
   return <>
     <div
-      className={cnb("flex-container", direction ? "flex-container-row" : "flex-container-" + direction)}
+      className={cnb("flex-container", className, direction ? "flex-container-" + direction : "flex-container-row")}
       style={{
         justifyContent: justify,
         alignItems: align

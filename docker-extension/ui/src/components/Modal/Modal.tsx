@@ -14,11 +14,11 @@ const cnb = classnames.bind(styles);
 
 interface ModalProps {
   show: boolean,
+  wide?: boolean,
   onHide: () => void,
   className?: string,
   [key: string]: any
 }
-
 
 export const Overlay = ({
   show,
@@ -64,6 +64,7 @@ export const Overlay = ({
 export const Modal = ({
   show,
   onHide,
+  wide,
   className,
   children
 }: ModalProps & {children: ReactNode}) => {
@@ -82,7 +83,7 @@ export const Modal = ({
   open={show}
   onClose={onHide}
   TransitionComponent={Transition}
-  className={cnb(className, "modal")}
+  className={cnb(className, "modal", {"modal-wide": wide})}
   closeAfterTransition
 >
 

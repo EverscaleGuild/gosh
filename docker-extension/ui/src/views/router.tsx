@@ -77,7 +77,6 @@ const Router = () => {
               </Route>
           </Route>
           <Route path="/organizations/:daoName" element={<ProtectedLayout />}>
-            <Route path="repositories/create" element={<RepoCreatePage />} />
             <Route path="repositories/:repoName" element={<RepoLayout />}>
                 <Route index element={<RepoPage />} />
                 <Route path="tree/:branchName" element={<RepoPage />} />
@@ -92,7 +91,10 @@ const Router = () => {
             </Route>
             <Route element={<DaoLayout />}>
                 <Route index element={<DaoPage />} />
-                <Route path="repositories" element={<ReposPage />} />
+                <Route path="repositories" element={<ReposPage />}>
+                  <Route index element={null} />
+                  <Route path="create" element={<RepoCreatePage />} />
+                </Route>
             </Route>
           </Route>
           <Route path="/containers" element={<Containers />} />

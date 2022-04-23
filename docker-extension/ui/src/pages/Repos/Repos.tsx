@@ -78,7 +78,7 @@ const RepositoriesPage = () => {
           <Flex>
                 <Link
                     className="btn btn--body px-4 py-1.5 text-sm !font-normal"
-                    to={`/organizations/repositories/create`}
+                    to={`/organizations/${goshDao.meta?.name}/repositories/create`}
                 >
                   <Button
                       color="primary"
@@ -86,6 +86,7 @@ const RepositoriesPage = () => {
                       size="medium"
                       className={"btn-icon"}
                       disableElevation
+                      disabled
                       // icon={<Icon icon={"arrow-up-right"}/>}
                       // iconAnimation="right"
                       // iconPosition="after"
@@ -94,7 +95,7 @@ const RepositoriesPage = () => {
           </Flex>
       </FlexContainer>
       <InputBase
-        className="search-field"
+        className="input-field"
         type="text"
         placeholder="Search repositories"
         autoComplete={'off'}
@@ -104,16 +105,16 @@ const RepositoriesPage = () => {
     </div>
       <div className="divider"></div>
       <div className="mt-8">
+
         {(repoListQuery.isIdle || repoListQuery.isLoading) && (
-            <p className="text-sm text-gray-500 text-center py-3">
-                Loading repositories...
-            </p>
+          <div className="loader">
+            <Loader />
+            Loading {"repositories"}...
+          </div>
         )}
 
         {repoListQuery.isFetched && !repoListQuery.data?.length && (
-            <p className="text-sm text-gray-500 text-center py-3">
-                There are no repositories
-            </p>
+          <div className="no-data"><EmojiSadIcon/>There are no repositories</div>
         )}
 
         {repoListQuery.data?.map((repository, index) => (

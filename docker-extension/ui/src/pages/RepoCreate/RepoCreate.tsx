@@ -2,8 +2,17 @@ import React from "react";
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { useGoshWallet } from "./../../hooks/gosh.hooks";
-import { useNavigate, useParams } from "react-router-dom";
-import { Loader } from "./../../components";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
+import { Loader, Modal } from "./../../components";
+import { TDaoLayoutOutletContext } from "./../DaoLayout";
+import InputBase from '@mui/material/InputBase';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+
+import styles from './RepoCreate.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 
 type TFormValues = {
@@ -14,6 +23,7 @@ const RepoCreatePage = () => {
     const { daoName } = useParams();
     const goshWallet = useGoshWallet(daoName);
     const navigate = useNavigate();
+    // const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
 
     const onRepoCreate = async (values: TFormValues) => {
         try {
@@ -26,9 +36,15 @@ const RepoCreatePage = () => {
     }
 
     return (
-        <div className="container mt-12 mb-5">
-            <div className="bordered-block max-w-lg px-7 py-8 mx-auto">
-                <h1 className="font-semibold text-2xl text-center mb-8">Create new repository</h1>
+        <Modal
+          show={true}
+          wide={true}
+          onHide={() => {
+            // navigate(`/account/organizations/${goshDao.meta?.name}`);
+          }}
+        >
+        <div className="modal-wide">
+                <h2 className="font-semibold text-2xl text-center mb-8">Create new repository</h2>
 
                 <Formik
                     initialValues={{ name: '' }}
@@ -37,32 +53,42 @@ const RepoCreatePage = () => {
                         name: Yup.string().required('Name is required')
                     })}
                 >
-                    {({ isSubmitting }) => (
+                    {({ isSubmitting, values, errors, touched, handleChange }) => (
                         <Form>
-                            <div>
-                                <Field
-                                    name="name"
-                                    inputProps={{
-                                        className: 'w-full',
-                                        autoComplete: 'off',
-                                        placeholder: 'Repository name'
-                                    }}
-                                />
-                            </div>
+                        <div>
+                            <InputBase
+                                name="name"
+                                className="input-field input-field-modal"
+                                type="text"
+                                placeholder="Repository name"
+                                autoComplete={'off'}
+                                value={values.name}
+                                onChange={handleChange}
+                                error={touched && touched.name && Boolean(errors.name)}
+                            />
+                            {errors.name && (
+                                <Typography className="error-block color-error">
+                                    Enter organization's name.
+                                </Typography>
+                            )}
+                        </div>
 
-                            <button
+                            <Button
+                                color="primary"
+                                className={cnb("button-cta", "button-submit")}
+                                variant="contained"
+                                size="large"
                                 type="submit"
-                                disabled={isSubmitting || !goshWallet}
-                                className="btn btn--body px-3 py-3 w-full mt-6"
+                                disabled={isSubmitting}
                             >
-                                {isSubmitting && <Loader />}
+                                {isSubmitting && <Loader className={cnb({"loader-active": isSubmitting})} />}
                                 Create repository
-                            </button>
+                            </Button>
                         </Form>
                     )}
                 </Formik>
             </div>
-        </div>
+    </Modal>
     );
 }
 

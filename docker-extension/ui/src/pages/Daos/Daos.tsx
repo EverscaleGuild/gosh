@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, Outlet } from "react-router-dom";
+import { Link, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { Loader, LoaderDotsText, FlexContainer, Flex, Modal } from "./../../components";
 import { useGoshRoot } from "./../../hooks/gosh.hooks";
@@ -17,22 +17,8 @@ const DaosPage = ({action}: {action?: string}) => {
   const userState = useRecoilValue(userStateAtom);
   const goshRoot = useGoshRoot();
   const navigate = useNavigate();
+  const location = useLocation();
   const [goshDaos, setGoshDaos] = useState<IGoshDao[]>();
-
-  const CreateDaoModal = ({showModal, handleClose}: {
-    showModal: boolean,
-    handleClose: any,
-  }) => {
-    return (
-      <Modal
-        show={showModal}
-        onHide={handleClose}
-        // className={cnb("modal")}
-      >
-        <DaoCreatePage/>
-      </Modal>
-    )
-  };
 
   useEffect(() => {
       const getDaoList = async (goshRoot: IGoshRoot, pubkey: string) => {
@@ -63,7 +49,7 @@ const DaosPage = ({action}: {action?: string}) => {
       }
 
       if (goshRoot && userState.keys) getDaoList(goshRoot, userState.keys.public);
-  }, [userState.keys, goshRoot]);
+  }, [userState.keys, goshRoot, location.pathname]);
 
   return (
     <>
@@ -81,14 +67,16 @@ const DaosPage = ({action}: {action?: string}) => {
             direction="row"
             justify="space-between"
             align="flex-start"
+            className="page-header-flex"
         >
-          <Flex>
-              <h2 className="font-semibold text-2xl mb-5">Organizations</h2>
+          <Flex
+            className="overflow-ellipsis"
+          >
+              <h2>Organizations</h2>
           </Flex>
           <Flex>
               <Link
                   to="/account/organizations/create"
-                  className="btn btn--body py-1.5 px-3 !font-normal"
               >
                   <Button
                       color="primary"
@@ -104,36 +92,35 @@ const DaosPage = ({action}: {action?: string}) => {
           </Flex>
       </FlexContainer>
       <InputBase
-        className="search-field"
+        className="input-field"
         type="text"
         placeholder="Search orgranizations (Disabled for now)"
         disabled
       />
     </div>
       <div className="divider"></div>
-      <div className="mt-8">
+      <div>
         {goshDaos === undefined && (
           <div className="loader">
             <Loader />
             Loading {"organizations"}...
           </div>
         )}
-        {!goshDaos?.length && !goshDaos === undefined &&  (
+        {!goshDaos?.length && goshDaos !== undefined &&  (
             <div className="no-data"><EmojiSadIcon/>You have no organizations yet</div>
         )}
 
-        <div className="divide-y divide-gray-c4c4c4">
+        <div className="">
             {goshDaos?.map((item, index) => (
               <Link
                 key={index}
                 to={`/organizations/${item.meta?.name}`}
-                className="text-xl font-semibold hover:underline"
               >
                 <FlexContainer
                   className="organization"
                   direction="column"
                   justify="space-between"
-                  align="flex-start"
+                  align="stretch"
                 >
                   <Flex>
                     <div className="arrow"><ArrowRightIcon/></div>

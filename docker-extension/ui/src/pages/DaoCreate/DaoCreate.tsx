@@ -5,9 +5,19 @@ import { useGoshRoot } from "./../../hooks/gosh.hooks";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { userStateAtom } from "./../../store/user.state";
-import { Loader, Modal } from "./../../components";
+import { Loader, Modal, FlexContainer, Flex } from "./../../components";
 import { GoshDao } from "./../../types/classes";
 import { fromEvers } from "./../../utils";
+import InputBase from '@mui/material/InputBase';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
+
+import styles from './DaoCreate.module.scss';
+import classnames from "classnames/bind";
+import { Typography } from "@mui/material";
+
+const cnb = classnames.bind(styles);
 
 
 type TFormValues = {
@@ -51,14 +61,14 @@ const DaoCreatePage = () => {
     return (
         <Modal
           show={true}
+          wide={true}
           onHide={() => {
             navigate('/account/organizations');
           }}
         >
 
-        <div className="container mt-12 mb-5">
-            <div className="bordered-block max-w-lg px-7 py-8 mx-auto">
-                <h1 className="font-semibold text-2xl text-center mb-8">Create new organization</h1>
+        <div className="modal-wide">
+                <h2>Create new organization</h2>
 
                 <Formik
                     initialValues={{
@@ -73,74 +83,108 @@ const DaoCreatePage = () => {
                         participants: Yup.array().of(Yup.string().required('Required'))
                     })}
                 >
-                    {({ values, touched, errors, isSubmitting }) => (
+                    {({ values, touched, handleChange, errors, isSubmitting }) => (
                         <Form>
                             <div>
-                                <Field
+                                <InputBase
                                     name="name"
-                                    placeholder={'New organization name'}
-                                        autoComplete={'off'}
+                                    className="input-field input-field-modal"
+                                    type="text"
+                                    placeholder="New organization name"
+                                    autoComplete={'off'}
+                                    value={values.name}
+                                    onChange={handleChange}
+                                    error={touched && touched.name && Boolean(errors.name)}
                                 />
+                                {errors.name && (
+                                    <Typography className="error-block color-error">
+                                        Enter organization's name.
+                                    </Typography>
+                                )}
                             </div>
-
-                            <div className="mt-6">
-                                <h3 className="mb-2">Participants</h3>
+<>
+</>
+                            <div className={cnb("participants")}>
+                                <h4>Participants</h4>
                                 <FieldArray
                                     name="participants"
+                                    // className={cnb("participants-list)}
                                     render={({ push, remove }) => (
                                         <>
                                             {values.participants.map((item, index) => (
-                                                <div key={index} className="flex items-center justify-between gap-x-3 mb-2">
-                                                    <div className="grow">
-                                                        <Field
+                                                <FlexContainer
+                                                    direction="row"
+                                                    justify="space-between"
+                                                    align="center"
+                                                    key={index}
+                                                    className={cnb("participants-list-item")}
+                                                >
+                                                    <Flex 
+                                                        grow={1}
+                                                    >
+                                                        <InputBase
                                                             name={`participants.${index}`}
-                                                                className={'w-full'}
-                                                                placeholder={'Participant public key'}
-                                                                autoComplete={'off'}
-                                                                disabled={index === 0}
+                                                            className="input-field input-field-modal"
+                                                            type="text"
+                                                            placeholder="Participant public key"
+                                                            disabled={index === 0}
+                                                            value={values.participants[index]}
+                                                            onChange={handleChange}
+                                                            error={touched && touched.participants && Boolean(errors.participants)}
                                                         />
-                                                    </div>
-                                                    {index > 0 && (
-                                                        <button
-                                                            className="btn btn--body px-3.5 py-3"
-                                                            type="button"
+                                                    </Flex>
+
+                                                    <Flex 
+                                                        grow={0}
+                                                        className={cnb("remove-button")}
+                                                    >
+                                                        <IconButton
+                                                            edge="start"
+                                                            color="inherit"
                                                             onClick={() => remove(index)}
+                                                            aria-label="close"
+                                                            className={cnb("close")}
+                                                            disabled={index <= 0 }
                                                         >
-                                                        </button>
-                                                    )}
-                                                </div>
+                                                            <CloseIcon />
+                                                        </IconButton>
+                                                    </Flex>
+                                                </FlexContainer>
                                             ))}
 
-                                            <button
-                                                className="btn btn--body w-full !font-normal text-sm px-4 py-1.5"
+                                            <Button
+                                                className={cnb("add-participant")}
                                                 type="button"
+                                                size="large"
                                                 onClick={() => push('')}
                                             >
-                                                Add participant
-                                            </button>
+                                                Add participant <CloseIcon />
+                                            </Button>
 
                                             {touched.participants && errors.participants && (
-                                                <div className="text-red-dd3a3a text-sm mt-1">
-                                                    There are empty participants. Either fill them or remove
-                                                </div>
+                                                <Typography className="color-error">
+                                                    There are empty participants. Either fill them or remove.
+                                                </Typography>
                                             )}
                                         </>
                                     )}
                                 />
                             </div>
 
-                            <button
+                            <Button
+                                color="primary"
+                                className={cnb("button-cta", "button-submit")}
+                                variant="contained"
+                                size="large"
                                 type="submit"
-                                className="btn btn--body px-3 py-3 w-full mt-8"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting && <Loader />}
+                                {isSubmitting && <Loader className={cnb({"loader-active": isSubmitting})} />}
                                 Create organization
-                            </button>
+                            </Button>
                         </Form>
                     )}
                 </Formik>
-            </div>
         </div>
         </Modal>
     );
