@@ -88,12 +88,3 @@ save-example:
 	@echo Save example image
 	@echo ------------------------------------
 	./examples/local_dev/build.sh save
-
-.PHONE: public_image
-public_image:
-	@echo ------------------------------------
-	@echo Build and push public image
-	@echo ------------------------------------
-	${DOCKER} buildx create --use
-	${DOCKER} buildx build --push --platform linux/amd64,linux/arm64 -f Dockerfile -t teamgosh/goshfile:${VERSION} .
-	${DOCKER} buildx rm
