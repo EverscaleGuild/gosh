@@ -323,8 +323,37 @@ function isInitialized () external override view responsible check_locker return
 function getProposalParams () external view 
          returns( uint256  proposalKind,  string repoName, string  branchName,  string commitName, string fullCommit, address parent1, address parent2)
 {
-   ( proposalKind,  repoName,  branchName,  commitName,  fullCommit,  parent1,  parent2)
-     = propData.toSlice().decode(uint256, string, string, string, string, address, address);
+    TvmSlice s = propData.toSlice();
+    TvmSlice s1 = s.loadRefAsSlice();
+    (proposalKind,  repoName,  branchName,  commitName,  fullCommit,  parent1,  parent2)
+     = s1.decode(uint256, string, string, string, string, address, address);
+}
+
+function getBlob1Params () external view 
+         returns(string blobName, string  fullBlob,  string prevSha)
+{
+    TvmSlice s = propData.toSlice();
+    s.loadRefAsSlice();
+    TvmSlice s1 = s.loadRefAsSlice();
+    (blobName, fullBlob, prevSha) = s1.decode(string, string, string);
+}
+
+function getBlob2Params () external view 
+         returns(string blobName, string  fullBlob,  string prevSha)
+{
+    TvmSlice s = propData.toSlice();
+    s.loadRefAsSlice(); s.loadRefAsSlice();
+    TvmSlice s1 = s.loadRefAsSlice();
+    (blobName, fullBlob, prevSha) = s1.decode(string, string, string);
+}
+
+function getDiffParams () external view 
+         returns(string diffName, string diff)
+{
+    TvmSlice s = propData.toSlice();
+    s.loadRefAsSlice(); s.loadRefAsSlice(); s.loadRefAsSlice();
+    TvmSlice s1 = s.loadRefAsSlice();
+    (diffName, diff) = s1.decode(string, string);
 }
 
 ////////////////////////////////////

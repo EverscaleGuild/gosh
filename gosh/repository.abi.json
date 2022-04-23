@@ -35,6 +35,18 @@
 			]
 		},
 		{
+			"name": "deployBlob",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"},
+				{"name":"commitAddr","type":"address"},
+				{"name":"blobName","type":"string"},
+				{"name":"fullBlob","type":"string"},
+				{"name":"prevSha","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployBranch",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},

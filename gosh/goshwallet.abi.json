@@ -37,7 +37,15 @@
 				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
 				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"}
+				{"name":"parent2","type":"address"},
+				{"name":"blobName1","type":"string"},
+				{"name":"fullBlob1","type":"string"},
+				{"name":"prevSha1","type":"string"},
+				{"name":"blobName2","type":"string"},
+				{"name":"fullBlob2","type":"string"},
+				{"name":"prevSha2","type":"string"},
+				{"name":"diffName","type":"string"},
+				{"name":"diff","type":"string"}
 			],
 			"outputs": [
 			]
@@ -321,6 +329,14 @@
 				{"name":"payload","type":"cell"}
 			],
 			"outputs": [
+			]
+		},
+		{
+			"name": "tip3Root",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"tip3Root","type":"address"}
 			]
 		},
 		{

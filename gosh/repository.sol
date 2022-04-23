@@ -100,6 +100,11 @@ contract Repository {
         deployNewSnapshot(name,  branch, diff);
     }
 
+    function deployBlob(uint256 pubkey, address commitAddr, string blobName, string fullBlob, string prevSha) public {
+        require(checkAccess(pubkey, msg.sender));
+        Commit(commitAddr).deployBlob{value: 2.8 ton}(pubkey, blobName, fullBlob, prevSha);
+    }
+
     function getSnapshotAddr(string name) private view returns(address) {
         TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Snapshot, varInit: {NameOfFile: name}});

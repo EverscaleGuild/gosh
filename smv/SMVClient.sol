@@ -70,20 +70,31 @@ function amount_locked () internal view override  returns(uint128)
 
 function performAction (uint128 amountToLock, uint128 total_votes, TvmCell inputCell) external override check_locker
 {
-    require(initialized, SMVErrors.error_not_initialized);
+    /* require(initialized, SMVErrors.error_not_initialized);
     require(now < propFinishTime, SMVErrors.error_proposal_ended);
     require(address(this).balance >= SMVConstants.CLIENT_MIN_BALANCE +
                                      SMVConstants.VOTING_FEE +
                                      SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
-    require(amountToLock + amount_locked() <= total_votes, SMVErrors.error_not_enough_votes);                               
-    tvm.accept();
+    require(amountToLock + amount_locked() <= total_votes, SMVErrors.error_not_enough_votes);  */ 
 
-    TvmSlice s = inputCell.toSlice();
-    TvmSlice s1 = s.loadRefAsSlice();
-    bool choice = s1.decode(bool);
-    currentHead = s.decode (optional (address));
+    bool allowed = initialized && (now < propFinishTime)  && (address(this).balance >= SMVConstants.CLIENT_MIN_BALANCE +
+                                     SMVConstants.VOTING_FEE +
+                                     SMVConstants.ACTION_FEE) && (amountToLock + amount_locked() <= total_votes);
 
-    vote(choice, amountToLock);
+    optional (address) empty;
+    
+    if (!allowed) 
+        ISMVTokenLocker(tokenLocker).onClientCompleted {value:0, flag: 64 } (platform_id, false, empty);
+    else {
+        tvm.accept();
+
+        TvmSlice s = inputCell.toSlice();
+        TvmSlice s1 = s.loadRefAsSlice();
+        bool choice = s1.decode(bool);
+        currentHead = s.decode (optional (address));
+
+        vote(choice, amountToLock);
+    }
 }
 
 function continueLeftBro() private

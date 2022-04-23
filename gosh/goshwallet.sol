@@ -114,12 +114,32 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string commitName,
         string fullCommit,
         address parent1,
-        address parent2  
+        address parent2, 
+
+        string blobName1, string fullBlob1, string prevSha1,
+        string blobName2, string fullBlob2, string prevSha2,
+        string diffName, string diff
     ) public view onlyOwner accept {
         if ((branchName == "main") || (branchName == "master")) {
-            TvmBuilder b;
+            TvmBuilder commitBuilder;
             uint256 proposalKind = 0;
-            b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
+            commitBuilder.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
+            
+            TvmBuilder blob1Builder;
+            blob1Builder.store(blobName1, fullBlob1, prevSha1);
+
+            TvmBuilder blob2Builder;
+            blob2Builder.store(blobName2, fullBlob2, prevSha2);
+
+            TvmBuilder diff1Builder;
+            diff1Builder.store(diffName, diff);
+
+            TvmBuilder b;
+            b.storeRef(commitBuilder);
+            b.storeRef(blob1Builder);
+            b.storeRef(blob2Builder);
+            b.storeRef(diff1Builder);
+
             uint256 id = tvm.hash(b.toCell()); 
             uint32 startTime = now + 1*60;
             uint32 finishTime = now + 5*60 + 7*24*60*60;
@@ -127,6 +147,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
                            id, b.toCell(), startTime, finishTime);
         } else {
             _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+            _deployDiff(repoName, diffName, branchName, diff);
+            _deployBlob(repoName, commitName, blobName1, fullBlob1, prevSha1);
+            _deployBlob(repoName, commitName, blobName2, fullBlob2, prevSha2);
         }
     }
 
@@ -144,8 +167,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         }(tvm.pubkey(), branchName, commitName, fullCommit, parent1, parent2);
     }
     
-    
-
     function tryProposalResult (address proposal) public view onlyOwner accept
     {
         ISMVProposal(proposal).isCompleted{
@@ -160,12 +181,23 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         if (res.hasValue()) {
             if (res.get()) {
                 TvmSlice s = propData.toSlice();
-                uint256 kind = s.decode(uint256);
+                TvmSlice commitSlice = s.loadRefAsSlice();
+                uint256 kind = commitSlice.decode(uint256);
+                TvmSlice blob1Slice = s.loadRefAsSlice();
+                TvmSlice blob2Slice = s.loadRefAsSlice();
+                TvmSlice diff1Slice = s.loadRefAsSlice();
                 if (kind == 0)
                 {
                     (string repoName, string branchName, string commitName, string fullCommit, address parent1, address parent2) =
-                        s.decode(string, string, string, string, address, address);
+                        commitSlice.decode(string, string, string, string, address, address);
                     _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+
+                    (string diffName, string diff) =  diff1Slice.decode(string, string);
+                    _deployDiff(repoName, diffName, branchName, diff);
+                    (string blobName, string fullBlob, string prevSha) = blob1Slice.decode(string, string, string);
+                    _deployBlob(repoName, commitName, blobName, fullBlob, prevSha);
+                    ( blobName,  fullBlob,  prevSha) = blob2Slice.decode(string, string, string);
+                    _deployBlob(repoName, commitName, blobName, fullBlob, prevSha);
                 }
             }
         }
@@ -199,11 +231,21 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branch,
         string diff
     ) public view onlyOwner accept {
+        _deployDiff(repoName, name, branch, diff);
+    }
+
+    function _deployDiff(
+        string repoName,
+        string name,
+        string branch,
+        string diff
+    ) private view  {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployDiff{
             value: 2 ton, bounce: true, flag: 2 
         }(tvm.pubkey(), name, branch, diff);
     }
+
 
 
     function topupCommit(
@@ -224,8 +266,22 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string fullBlob,
         string prevSha
     ) public view onlyOwner accept {
+        _deployBlob(repoName, commit, blobName, fullBlob, prevSha);
+    }
+
+    function _deployBlob(
+        string repoName,
+        string commit,
+        string blobName,
+        string fullBlob,
+        string prevSha
+    ) private view {
         address commitAddr = _buildCommitAddr(repoName, commit);
-        Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob, prevSha);
+        /*  Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob, prevSha); */
+        address repo = _buildRepositoryAddr(repoName);
+        Repository(repo).deployBlob{
+            value: 3 ton, bounce: true, flag: 2 
+        }(tvm.pubkey(), commitAddr, blobName, fullBlob, prevSha);
     }
     
     function deployTag(
