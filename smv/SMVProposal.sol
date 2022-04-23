@@ -193,7 +193,7 @@ function onContinueInitialize(uint128 t) external check_token_root
     }
 
     proposalBusy = false;
-    currentCaller = address.makeAddrNone();
+    currentCaller = address.makeAddrStd(0,0);
 }
 
 
@@ -223,7 +223,7 @@ function onContinueVoting(uint128 t) external check_token_root
     }
 
     proposalBusy = false;
-    currentCaller = address.makeAddrNone();
+    currentCaller = address.makeAddrStd(0,0);
     currentAmount = 0;
 }
 
@@ -264,7 +264,7 @@ function completeVoting (uint128 t) external check_token_root
         IVotingResultRecipient(currentCaller).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
     }
 
-    currentCaller = address.makeAddrNone();
+    currentCaller = address.makeAddrStd(0,0);
     proposalBusy = false;
 }
 
