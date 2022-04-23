@@ -7,6 +7,12 @@ import ReposPage from "./../Repos";
 import Button from '@mui/material/Button';
 import { PlusIcon, CollectionIcon, UsersIcon, ArrowRightIcon, EmojiSadIcon } from '@heroicons/react/outline';
 import InputBase from '@mui/material/InputBase';
+import { Typography } from "@mui/material";
+
+import styles from './Dao.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 const DaoPage = () => {
     const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
@@ -26,17 +32,16 @@ const DaoPage = () => {
           {goshDao && (<>
             <h2 className="color-faded">{goshDao.meta?.name}</h2>
             <Outlet context={{ goshDao }} />
-            <p className="text-sm text-gray-606060">
-                    This is a Gosh test organization
-                </p>
-
-                <CopyClipboard
-                    label={shortString(goshDao.address)}
-                    className="mt-2"
-                    componentProps={{
-                        text: goshDao.address
-                    }}
-                />
+            <Typography>
+              This is a Gosh test organization
+            </Typography>
+              <CopyClipboard
+                className={cnb("address")}
+                label={shortString(goshDao.address)}
+                componentProps={{
+                    text: goshDao.address
+                }}
+              />
             </>
           )}
   
@@ -64,6 +69,7 @@ const DaoPage = () => {
                                 size="medium"
                                 className={"btn-icon"}
                                 disableElevation
+                                disabled
                                 // icon={<Icon icon={"arrow-up-right"}/>}
                                 // iconAnimation="right"
                                 // iconPosition="after"
@@ -71,13 +77,14 @@ const DaoPage = () => {
                         </Link>
                     </Flex>
                 </FlexContainer>
-                {/* <InputBase
-                  className="search-field"
+                <InputBase
+                  className="input-field"
                   type="text"
                   placeholder="Search repositories"
                   autoComplete={'off'}
-                  onChange={(event) => setSearch(event.target.value)}
-                /> */}
+                  onChange={() =>{}}
+                />
+                <div className="divider"></div>
           
               </div>
             <div className="loader">
