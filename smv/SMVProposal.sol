@@ -26,8 +26,8 @@ uint32   creationTime;
 address public tokenRoot;
 
 TvmCell propData;
-uint32 startTime;
-uint32 finishTime;
+uint32 public startTime;
+uint32 public finishTime;
 optional (address) notificationAddress;
 
 uint128 public votesYes;
