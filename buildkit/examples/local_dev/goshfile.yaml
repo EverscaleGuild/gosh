@@ -2,6 +2,7 @@
 
 apiVersion: 1
 image: bash:latest@sha256:b3abe4255706618c550e8db5ec0875328333a14dbf663e6f1e2b6875f45521e5
+entrypoint: []
 steps:
   - name: print hello
     run:
