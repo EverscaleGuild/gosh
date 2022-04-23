@@ -174,7 +174,7 @@ function getInitialize(address _tokenLocker, uint256 _platform_id) external over
     bool allowed = (!proposalBusy) && (now >= startTime) &&  (now < finishTime) && (!votingResult.hasValue());
 
     if (!allowed)
-        ISMVClient(currentCaller).initialize {value:0, flag: 64} (false, finishTime);
+        ISMVClient(msg.sender).initialize {value:0, flag: 64} (false, finishTime);
     else {
         proposalBusy = true;
         currentCaller = msg.sender;
