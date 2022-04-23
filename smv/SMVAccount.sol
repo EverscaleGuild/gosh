@@ -21,7 +21,7 @@ import "SMVTokenLocker.sol";
 
 contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback, IAcceptTokensMintCallback {
 
-address /* static */ tip3Root;
+address /* static */ public tip3Root;
 uint256 /* static */ nonce;
 
 address public tip3Wallet;

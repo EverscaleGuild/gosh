@@ -23,7 +23,7 @@ abstract contract SMVProposalBase is LockableBase, ISMVProposal , IVotingResultR
 
 uint256 public propId;
 uint32   creationTime;
-address  tokenRoot;
+address public tokenRoot;
 
 TvmCell propData;
 uint32 startTime;
