@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-if [[ -z "$1" ]]; then
+if [ -z "$1" ]; then
     echo "Usage: $0 target_image"
     exit 1
 fi
@@ -8,6 +8,7 @@ fi
 TARGET_IMAGE=$1
 
 {
+    docker pull "$TARGET_IMAGE"
     CONTAINER_ID=$(docker create "$TARGET_IMAGE" /bin/sh)
 
     mkdir -p "$CONTAINER_ID"
@@ -21,4 +22,4 @@ TARGET_IMAGE=$1
     rm -rf "$CONTAINER_ID"
 } > /dev/null 2>&1
 
-echo sha256:"$GOSH_SHA256"
+printf 'sha256:%s' "$GOSH_SHA256"
