@@ -9,8 +9,6 @@ WORKDIR /app
 COPY . /app
 RUN <<EOF
     set -e
-    apt-get update -yq
-    apt-get install openssl -yq
     npm ci
     npm i -g typescript
     tsc
