@@ -183,7 +183,7 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
                                     SMVConstants.VOTING_FEE +
                                     SMVConstants.CLIENT_INIT_VALUE +
                                     SMVConstants.PROP_INITIALIZE_FEE +
-                                    8*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+                                    9*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
 
     require(tvm.hash(platformCode) == platformCodeHash,SMVErrors.error_not_my_code_hash);
     require(platformCode.depth() == platformCodeDepth, SMVErrors.error_not_my_code_depth);
@@ -203,7 +203,7 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
                     {value:  SMVConstants.VOTING_FEE +
                              SMVConstants.CLIENT_INIT_VALUE +
                              SMVConstants.PROP_INITIALIZE_FEE +
-                             7*SMVConstants.ACTION_FEE, flag: 1 }
+                             8*SMVConstants.ACTION_FEE, flag: 1 }
                     (platformCode, clientCode, amount, staticBuilder.toCell(), inputBuilder.toCell(),
                                     SMVConstants.CLIENT_INIT_VALUE +
                                     SMVConstants.PROP_INITIALIZE_FEE + 5*SMVConstants.ACTION_FEE);
