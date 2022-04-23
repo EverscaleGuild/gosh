@@ -7,6 +7,11 @@ PROGRESS            ?= plain
 GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
+# main ==> docker:latest
+ifeq "${GIT_BRANCH}" "main"
+	GIT_BRANCH := "latest"
+endif
+
 all: sign-cli git-remote-gosh goshfile
 
 .PHONE: clean
@@ -60,3 +65,16 @@ goshfile: prepare-builder
 		\
 		-f goshfile/Dockerfile \
 		../buildkit
+
+.PHONE: image-hash
+image-hash: prepare-builder
+	@echo === $@
+	${DOCKER_BUILDX} \
+		--push \
+		--progress=${PROGRESS} \
+		--platform ${PLATFORM} \
+		-t teamgosh/image-hash:${GIT_COMMIT} \
+		-t teamgosh/image-hash:${GIT_BRANCH} \
+		\
+		-f image-hash/Dockerfile \
+		..
