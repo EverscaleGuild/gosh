@@ -103,6 +103,10 @@ async function runLocal(contract, fn, args = {}) {
     return ES_CLIENT.tvm.run_tvm({ message, account, abi })
 }
 
+async function waitTrxCompletion(transaction) {
+    await ES_CLIENT.net.query_transaction_tree({in_msg: transaction.in_msg, timeout: 60000 * 5})
+}
+
 function call(contract, function_name, input = {}, keys) {
     let signer = signerNone
     if (keys || contract.keys) {
@@ -127,7 +131,12 @@ function call(contract, function_name, input = {}, keys) {
         },
     }
     return ES_CLIENT.processing.process_message(params)
-        .then(({ transaction, decoded }) => ({ transaction_id: transaction.id, output: decoded.output }))
+        .then(async ({ transaction, decoded }) => {
+            process.stderr.write(`wait trx ${transaction.id}... `)
+            await waitTrxCompletion(transaction)
+            verbose('ok')
+            return { transaction_id: transaction.id, output: decoded.output }
+        })
         .catch(err => {
             verbose(`ERROR! Contract: ${contract.address}`)
             fatal(err)

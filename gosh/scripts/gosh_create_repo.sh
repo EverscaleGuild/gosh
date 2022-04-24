@@ -37,6 +37,8 @@ DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$DAO
 REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$DAO_NAME\",\"name\":\"$REPO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 ./giver.sh $REPO_ADDR $NINETY_EVERS
 
+sleep 11
+
 echo ===================== REPO =====================
 echo Gosh
 echo " address:" $GOSH_ADDR
@@ -45,4 +47,4 @@ echo " address:" $DAO_ADDR
 echo "repo ($(account_data $NETWORK $REPO_ADDR))"
 echo "    name:" $REPO_NAME
 echo " address:" $REPO_ADDR
-echo "  remote:" "gosh::$NETWORK://$GOSH_ADDR/$DAO_NAME/gosh_test/repo03"
+echo "  remote:" "gosh::$NETWORK://$GOSH_ADDR/$DAO_NAME/$REPO_NAME"

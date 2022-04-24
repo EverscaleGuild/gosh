@@ -50,6 +50,8 @@ DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$DAO
 cp $WALLET_KEYS $DAO_KEYS
 ./giver.sh $DAO_ADDR $THIRTY_EVERS
 
+sleep 5
+
 echo ===================== DAO =====================
 echo "  Gosh root:" $GOSH_ADDR
 echo DAO creator: $DAO_CREATOR_ADDR
