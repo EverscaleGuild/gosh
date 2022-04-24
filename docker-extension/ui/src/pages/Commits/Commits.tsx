@@ -3,7 +3,7 @@ import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom
 import { useRecoilValue } from "recoil";
 import BranchSelect from "../../components/BranchSelect";
 import CopyClipboard from "../../components/CopyClipboard";
-import { Loader} from "../../components";
+import { Flex, FlexContainer, Loader} from "../../components";
 import { getCommitTime } from "../../utils";
 import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
 import { GoshCommit } from "../../types/classes";
@@ -59,8 +59,7 @@ const CommitsPage = () => {
     }, [goshRepo, branch]);
 
     return (<>
-        <div
-                    className={cnb("repository-actions")}>
+        <div className={cnb("repository-actions")}>
             <BranchSelect
                 branch={branch}
                 branches={branches}
@@ -70,15 +69,13 @@ const CommitsPage = () => {
                     }
                 }}
             />
-            </div>
-        <div
-                    className={cnb("tree")}>
+        </div>
+        <div className={cnb("tree")}>
 
-            <div className="mt-5 divide-y divide-gray-c4c4c4">
-                {commits === undefined && (
-                    <div className="text-sm text-gray-606060">
-                        <Loader/>
-                        Loading commits...
+                {commits === undefined && (            
+                    <div className="loader">
+                        <Loader />
+                        Loading {"commits"}...
                     </div>
                 )}
 
@@ -86,48 +83,52 @@ const CommitsPage = () => {
                     <div className="no-data"><PuzzleIcon/>There are no commits yet</div>
                 )}
 
-                {Boolean(commits?.length) && commits?.map((commit, index) => (
-                    <div
-                        key={index}
-                        className="flex py-3 justify-between items-center"
-                    >
-                        <div>
-                            <Link
-                                className="hover:underline"
-                                to={`/${daoName}/${repoName}/commits/${branchName}/${commit.meta?.sha}`}
+                {Boolean(commits?.length) && 
+                    <div className={cnb("commits")}>
+                        {commits?.map((commit, index) => 
+                            <FlexContainer
+                                key={index}
+                                className={cnb("commit")}
+                                justify="space-between"
+                                direction="row"
+                                align="flex-start"
                             >
-                                {commit.meta?.content.title}
-                            </Link>
-                            <div className="mt-2 flex gap-x-4 text-gray-050a15/75 text-xs">
-                                <div className="flex items-center">
-                                    <span className="mr-2 text-gray-050a15/65">Commit by</span>
-                                    {renderCommitter(commit.meta?.content.committer || '')}
-                                </div>
-                                <div>
-                                    <span className="mr-2 text-gray-050a15/65">at</span>
-                                    {getCommitTime(commit.meta?.content.committer || '').toLocaleString()}
-                                </div>
-                            </div>
-                        </div>
+                                <Flex>
+                                    <Link
+                                        className={cnb("commit-title")}
+                                        to={`/organizations/${daoName}/repositories/${repoName}/commit/${branchName}/${commit.meta?.sha}`}
+                                    >
+                                        {commit.meta?.content.title}
+                                    </Link>
+                                    <div className={cnb("commit-meta")}>
+                                        <div className="flex items-center">
+                                            <span className="color-faded">Commit by</span>
+                                            {renderCommitter(commit.meta?.content.committer || '')}
+                                        </div>
+                                        <div>
+                                            <span className="color-faded">at</span>
+                                            {getCommitTime(commit.meta?.content.committer || '').toLocaleString()}
+                                        </div>
+                                    </div>
+                                </Flex>
 
-                        <div className="flex border border-gray-0a1124/65 rounded items-center text-gray-0a1124/65">
-                            <Link
-                                className="px-2 py-1 font-medium font-mono text-xs hover:underline hover:text-gray-0a1124"
-                                to={`/${daoName}/${repoName}/commits/${branchName}/${commit.meta?.sha}`}
-                            >
-                                {shortString(commit.meta?.sha || '', 7, 0, '')}
-                            </Link>
-                            <CopyClipboard
-                                componentProps={{
-                                    text: commit.meta?.sha || ''
-                                }}
-                                iconContainerClassName="px-2 border-l border-gray-0a1124 hover:text-gray-0a1124"
-                            />
-                        </div>
-                    </div>
-                ))}
+                                <Flex className={cnb("commit-meta-right")}>
+                                    <Link
+                                        className="px-2 py-1 font-medium font-mono text-xs hover:underline hover:text-gray-0a1124"
+                                        to={`/organizations/${daoName}/repositories/${repoName}/commit/${branchName}/${commit.meta?.sha}`}
+                                    >
+                                        {shortString(commit.meta?.sha || '', 7, 0, '')}
+                                    </Link>
+                                    <CopyClipboard
+                                        componentProps={{
+                                            text: commit.meta?.sha || ''
+                                        }}
+                                    />
+                                </Flex>
+                            </FlexContainer>
+                        )}
+                </div>}
             </div>
-        </div>
         </>
     );
 }
