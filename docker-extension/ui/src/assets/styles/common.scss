@@ -231,6 +231,11 @@ main {
     }
   }
 }
+h2 {
+  font-size: 1.4em;
+  letter-spacing: -.06rem;
+  font-weight: bold;
+}
 .content-container-fullwidth {
   flex-grow: 1;
   display: flex!important;
@@ -755,9 +760,9 @@ pre {
 }
 .input-field {
   background-color: #f7f8fa !important;
-  width: 100%;
-  padding: .375rem 1.25rem;
-  border-radius: .375rem;
+  width: 100% !important;
+  padding: .375rem 1rem !important;
+  border-radius: .375rem !important;
   color: $tertiary;
   outline: none;
   border: none;
@@ -979,4 +984,17 @@ pre {
 
 h2.drag-up {
   margin-top: -.5rem;
+}
+
+.monaco-editor, .monaco-editor-background, .monaco-editor .inputarea.ime-input {
+  background-color: transparent !important;
+}
+.monaco-editor {
+  .margin, .lines-content {  
+    padding: 1rem 0px;
+    background-color: transparent !important;
+  }
+  .view-overlays, .cursors-layer {
+    transform: translateY(1rem);
+  }
 }

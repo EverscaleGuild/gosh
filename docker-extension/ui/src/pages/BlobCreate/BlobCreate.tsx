@@ -15,6 +15,13 @@ import { goshCurrBranchSelector } from "../../store/gosh.state";
 import { useGoshRepoBranches } from "../../hooks/gosh.hooks";
 import { userStateAtom } from "../../store/user.state";
 
+import { Icon, FlexContainer, Flex } from '../../components';
+import Button from '@mui/material/Button';
+
+import styles from './BlobCreate.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 type TFormValues = {
     name: string;
@@ -33,7 +40,7 @@ const BlobCreatePage = () => {
     const monaco = useMonaco();
     const [blobCodeLanguage, setBlobCodeLanguage] = useState<string>('plaintext');
     const [activeTab, setActiveTab] = useState<number>(0);
-    const urlBack = `/${daoName}/${repoName}/tree/${branchName}`;
+    const urlBack = `/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`;
 
     const onCommitChanges = async (values: TFormValues) => {
         try {
@@ -59,7 +66,6 @@ const BlobCreatePage = () => {
     }
 
     return (
-        <div className="bordered-block px-7 py-8">
             <Formik
                 initialValues={{ name: '', content: '', title: '', message: '' }}
                 validationSchema={Yup.object().shape({
@@ -69,54 +75,82 @@ const BlobCreatePage = () => {
                 onSubmit={onCommitChanges}
             >
                 {({ values, setFieldValue, isSubmitting, handleBlur }) => (
-                    <Form>
-                        <div className="flex gap-3 items-baseline justify-between ">
-                            <div className="flex items-baseline">
-                                <Link
-                                    to={`/${daoName}/${repoName}/tree/${branchName}`}
-                                    className="font-medium text-extblue hover:underline"
-                                >
+
+    <div className={cnb("header-row", "header")}>
+    <Form>
+      
+      <FlexContainer
+        direction="row"
+        justify="space-between"
+        align="center"
+        className={cnb("header-actions")}
+      >
+        <Flex>
+            <FlexContainer
+                direction="row"
+                justify="flex-start"
+                align="center"
+            >
+                <Flex>
+            <h2>
+                    <Link
+                        to={`/organizations/${daoName}/repositories/${repoName}/tree/${branchName}`}
+                        className="font-medium text-extblue hover:underline"
+                    >
                                     {repoName}
                                 </Link>
-                                <span className="mx-2">/</span>
+                                </h2>
+                </Flex>
+                <Flex>
+                                <h2>/</h2>
+                </Flex>
+                <Flex>
                                 <div>
                                     <Field
                                         name="name"
-                                        errorEnabled={false}
-                                        inputProps={{
-                                            className: '!text-sm !px-2.5 !py-1.5',
-                                            autoComplete: 'off',
-                                            placeholder: 'Name of new file',
-                                            disabled: !monaco || activeTab === 1,
-                                            onBlur: (e: any) => {
-                                                // Formik `handleBlur` event
-                                                handleBlur(e);
+                                        className={cnb("input-field", "input-filename")}
+                                        autoComplete='off'
+                                        placeholder='File name'
+                                        disabled={!monaco || activeTab === 1}
+                                        onBlur={(e: any) => {
+                                            // Formik `handleBlur` event
+                                            handleBlur(e);
 
-                                                // Resolve file code language by it's extension
-                                                // and update editor
-                                                const language = getCodeLanguageFromFilename(
-                                                    monaco,
-                                                    e.target.value
-                                                );
-                                                setBlobCodeLanguage(language);
-
-                                                // Set commit title
-                                                setFieldValue('title', `Create ${e.target.value}`);
-                                            }
+                                            // Resolve file code language by it's extension
+                                            // and update editor
+                                            const language = getCodeLanguageFromFilename(
+                                                monaco,
+                                                e.target.value
+                                            );
+                                            setBlobCodeLanguage(language);
+                                            // Set commit title
+                                            setFieldValue('title', `Create ${e.target.value}`);
                                         }}
                                     />
                                 </div>
-                                <span className="mx-2">in</span>
+                </Flex>
+                <Flex>
+                                <span className={cnb("color-faded", "in")}>in</span>
                                 <span>{branchName}</span>
-                            </div>
-
-                            <Link
-                                to={urlBack}
-                                className="btn btn--body px-3 py-1.5 !text-sm !font-normal"
-                            >
-                                Discard changes
-                            </Link>
-                        </div>
+                
+                </Flex>
+            </FlexContainer>
+        </Flex>
+        <Flex>
+          
+            <Link to={urlBack} >
+                  <Button
+                      color="inherit"
+                      size="small"
+                      className={cnb("btn-icon", "button-discard")}
+                      disableElevation
+                      // icon={<Icon icon={"arrow-up-right"}/>}
+                      // iconAnimation="right"
+                      // iconPosition="after"
+                  > Discard changes</Button>
+            </Link>
+        </Flex>
+      </FlexContainer>
 
                         <div className="mt-5 border rounded overflow-hidden">
                             <Tab.Group
@@ -124,40 +158,35 @@ const BlobCreatePage = () => {
                                 onChange={(index) => setActiveTab(index)}
                             >
                                 <Tab.List
+                                className={"menu-list"}
                                 >
                                     <Tab
-                                        className={({ selected }) => classNames(
-                                            'px-4 py-3 border-r text-sm',
-                                            selected
-                                                ? 'bg-white border-b-white font-medium text-extblack'
-                                                : 'bg-transparent border-b-transparent text-extblack/70 hover:text-extblack'
-                                        )}
+                                        className={({ selected }) => cnb("tabs-item", {"selected": selected})}
                                     >
-                                        Edit new file
+                                        File editor
                                     </Tab>
                                     <Tab
-                                        className={({ selected }) => classNames(
-                                            'px-4 py-3 text-sm',
-                                            selected
-                                                ? 'bg-white border-b-white border-r font-medium text-extblack'
-                                                : 'bg-transparent border-b-transparent text-extblack/70 hover:text-extblack'
-                                        )}
+                                        className={({ selected }) => cnb("tabs-item", {"selected": selected})}
                                     >
                                         Preview
                                     </Tab>
                                 </Tab.List>
-                                <Tab.Panels
-                                    className="-mt-[1px] border-t"
-                                >
-                                    <Tab.Panel>
+                                <Tab.Panels>
+                                    <Tab.Panel
+                                            className={cnb("text-editor-wrapper")}
+                                    >
                                         <BlobEditor
+                                            className={cnb("text-editor")}
                                             language={blobCodeLanguage}
                                             value={values.content}
                                             onChange={(value) => setFieldValue('content', value)}
                                         />
                                     </Tab.Panel>
-                                    <Tab.Panel>
+                                    <Tab.Panel
+                                            className={cnb("text-editor-wrapper", "text-editor-wrapper-preview")}
+                                    >
                                         <BlobPreview
+                                            className={cnb("text-editor", "text-editor-preview")}
                                             language={blobCodeLanguage}
                                             value={values.content}
                                         />
@@ -165,16 +194,20 @@ const BlobCreatePage = () => {
                                 </Tab.Panels>
                             </Tab.Group>
                         </div>
+                        <div className="divider"></div>
 
-                        <FormCommitBlock
+                        <FormCommitBlock<TFormValues>
+                            values={values}
                             urlBack={urlBack}
                             isDisabled={!monaco || isSubmitting}
                             isSubmitting={isSubmitting}
                         />
+
+
                     </Form>
+    </div>
                 )}
             </Formik>
-        </div>
     );
 }
 

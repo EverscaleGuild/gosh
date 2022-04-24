@@ -2,7 +2,7 @@
 @import '../../assets/styles/mixins.scss';
 
 .repository-actions {
-  margin-top: -3px;
+  margin-top: -2.5px;
 
   & > * {
     margin-right: 1.5rem;
@@ -42,4 +42,32 @@
 .tree {
   padding-top: 24px;
   flex-grow: 1;
+}
+.tree-files {
+  border-radius: 5px;
+  border: 0.07rem solid #e8e9ee;
+
+  .tree-files-item {
+    padding: .375rem .5rem;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 0.07rem solid #e8e9ee;
+    @include transition(0.2s);
+
+    a {
+      color: $dark;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: $surf-gray-background-alt;
+
+      a {
+        color: $main;
+      }
+    }
+  }
 }

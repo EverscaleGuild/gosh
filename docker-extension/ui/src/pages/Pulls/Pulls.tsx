@@ -61,7 +61,7 @@ const PullsPage = () => {
                             color="primary"
                             size="small"
                             variant="contained"
-                            className={"btn-icon"}
+                            className={cnb("button-create", "btn-icon")}
                             disableElevation
                             disabled={branchFrom?.name === branchTo?.name}
                             onClick={() => {
