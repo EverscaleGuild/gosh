@@ -1,6 +1,7 @@
 
 import { FlexContainer, Flex } from "./../../components";
 import { EmojiHappyIcon } from '@heroicons/react/outline';
+import InputBase from '@mui/material/InputBase';
 
 export const Settings = () => {
   return (
@@ -13,6 +14,16 @@ export const Settings = () => {
         >
           <Flex>
             <h2 className="font-semibold text-2xl mb-5">Settings</h2>
+          </Flex>
+
+          <Flex>
+            Gosh root address
+            <InputBase
+              className="input-field"
+              type="text"
+              value="Search orgranizations (Disabled for now)"
+              disabled
+            />
           </Flex>
         </FlexContainer>
       </div>

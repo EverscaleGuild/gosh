@@ -10,6 +10,7 @@ import { Icon, FlexContainer, Flex } from '../../components';
 
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import InputBase from '@mui/material/InputBase';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -102,12 +103,12 @@ const RepoLayout = () => {
         </Flex>
         <Flex>
           
-        <CopyClipboard
-            componentProps={{
-                text: goshRepo?.address || ""
-            }}
-            label={<Typography>{shortString(goshRepo?.address || "")}</Typography>}
-        />
+          <CopyClipboard
+              componentProps={{
+                  text: goshRepo?.address || ""
+              }}
+              label={<Typography>{shortString(goshRepo?.address || "")}</Typography>}
+          />
         </Flex>
       </FlexContainer>
 

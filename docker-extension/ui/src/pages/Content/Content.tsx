@@ -18,7 +18,7 @@ export const Content = ({title, path}: {title?: string, path?: string}) => {
   useEffect(() => {
     setContent('');
     async function getContent () {
-      const file = await import(`../../content/${id || path}.md`);
+      const file = await import(`./../../content/${id || path}.md`);
       const response = await fetch(file.default);
       const markdown = await response.text();
       await setContent(markdown);

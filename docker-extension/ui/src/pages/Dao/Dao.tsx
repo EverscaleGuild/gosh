@@ -7,6 +7,7 @@ import ReposPage from "./../Repos";
 import Button from '@mui/material/Button';
 import { PlusIcon, CollectionIcon, UsersIcon, ArrowRightIcon, EmojiSadIcon } from '@heroicons/react/outline';
 import InputBase from '@mui/material/InputBase';
+import { useGoshWallet } from "../../hooks/gosh.hooks";
 import { Typography } from "@mui/material";
 
 import styles from './Dao.module.scss';
@@ -16,6 +17,8 @@ const cnb = classnames.bind(styles);
 
 const DaoPage = () => {
     const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
+
+    const goshWallet = useGoshWallet(goshDao.meta?.name);
 
     return (
         <>
@@ -46,6 +49,25 @@ const DaoPage = () => {
                     text: goshDao.address
                 }}
               />
+              <div className={cnb("wallet-address")}>
+
+                <Typography>{goshDao.meta?.name} wallet address</Typography>
+
+                <div className={cnb("wallet-address-copy-wrapper")}>
+                  <InputBase
+                    className="input-field"
+                    type="text"
+                    value={goshWallet?.address}
+                    disabled
+                    />
+                    <CopyClipboard
+                        componentProps={{
+                            text: goshWallet?.address || ""
+                        }}
+                    />
+
+                </div>
+              </div>
             </>
           )}
   
