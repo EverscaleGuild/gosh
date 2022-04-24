@@ -45,7 +45,8 @@ echo ===================== GOSH WALLET =====================
 echo "Gosh root:" $GOSH_ADDR
 echo " DAO name:" $1
 echo " DAO addr:" $DAO_ADDR
-echo wallet
-echo "  address:" $WALLET_ADDR
-echo "     keys:" $(cat $WALLET_KEYS)
-echo "  balance:" $(account_balance $NETWORK $WALLET_ADDR)
+echo "wallet ($(account_data $NETWORK $WALLET_ADDR))"
+echo "{"
+echo "    \"address\": \"$WALLET_ADDR\","
+echo "    \"keys\":" $(cat $WALLET_KEYS)
+echo "}"

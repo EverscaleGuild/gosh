@@ -55,6 +55,7 @@ const userCredentials = async (account) => (await loadCredentials())[account]
 
 async function getRefs() {
     const branches = await helper.branchList()
+    verbose(branches)
     return branches.reduce((acc, { branch, address, sha }) => {
         if (address) {
             _remoteRefs[branch] = { address, sha }
@@ -69,10 +70,6 @@ function objectData(object) {
         git.typeObject(object),
         git.catObject(object),
     ]).then(([type, content]) => ({ type, content }))
-    /* return {
-        type: git.typeObject(object),
-        content: git.catObject(object)
-    } */
 }
 
 async function deleteRemoteRef(ref) {
@@ -81,19 +78,20 @@ async function deleteRemoteRef(ref) {
 
 async function pushObject(sha, currentCommit, branch) {
     const { type, content } = await objectData(sha)
-    // verbose(`debug: object ${type} "${content}"`)
+    // verbose(`object ${type} "${content}"`)
     if (type === 'commit') {
         const address = await helper.getCommitAddr(sha, branch)
+        verbose({ address })
         currentCommit = { sha, address }
-        // verbose('debug: set current commit:', currentCommit)
+        // verbose('set current commit:', currentCommit)
         const result = await helper.createCommit(branch, sha, content)
-        verbose(`debug: uploading ${type}(${sha}): ${address}`)
+        verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
-        const result = await helper.createBlob(sha, type, currentCommit.address, content)
+        const result = await helper.createBlob(sha, type, currentCommit.sha, content)
         const address = await helper.getBlobAddr(sha, type, currentCommit.address)
-        verbose(`debug: uploading ${type}(${sha}): ${address}`)
+        verbose(`uploading ${type}(${sha}): ${address}`)
     }
-    verbose(`debug: writing: ${sha} (${type})`)
+    verbose(`writing: ${sha} (${type})`)
     return currentCommit
 }
 
@@ -102,13 +100,16 @@ async function pushRef(localRef, remoteRef) {
     let result
     try {
         const branch = localRef.slice('refs/heads/'.length)
-        // verbose(`debug: pushRef(${localRef}, ${remoteRef})`)
+        const branchAddr = await helper.getBranch(branch)
+        if (branchAddr === helper.ZERO_ADDRESS) {
+            await helper.createBranch(branch, 'main')
+        }
+        // verbose(`pushRef(${localRef}, ${remoteRef})`)
         const exists = Object.values(_remoteRefs).map(ref => ref.sha)
         const output = await git.lsObjects(localRef, exists)
-        // verbose(`debug: listed ${output.length} object(s):`)
+        // verbose(`listed ${output.length} object(s):`)
         // verbose(output)
         const objects = output.map(o => o.split(' ')[0])
-
         let currentCommit = {}
         for (let sha of objects) {
             currentCommit = await pushObject(sha, currentCommit, branch)
@@ -150,8 +151,13 @@ async function doList(forPush = false) {
     refs.forEach(ref => send(ref))
 
     if (!forPush) {
-        const remoteHead = helper.getRemoteHead()
-        send(`@${remoteHead} HEAD`)
+        // const remoteHead = helper.getRemoteHead()
+        // send(`@${remoteHead} HEAD`)
+        if (refs.length) {
+            // 7974047d961a77798581fee8bfaa8b3c29530508 refs/heads/dev-0
+            const headBranch = refs[0].split(' ')[1].slice('refs/heads/'.length)
+            send(`@refs/heads/${headBranch} HEAD`)
+        }
     }
     send()
 }
@@ -185,30 +191,30 @@ async function doFetch(input) {
         if (received.includes(sha)) continue
         if (serializationQueue.includes(sha)) continue
         // if (await git.isExistsObject(sha)) {
-        //     verbose(`debug: already downloaded: ${sha}`)
+        //     verbose(`already downloaded: ${sha}`)
         // } else {
             if (type === 'commit') {
                 const object = await helper.getCommit(sha, branch)
-                verbose(`debug: got: ${sha}`)
+                verbose(`got: ${sha}`)
                 commits[object.sha] = object
                 const refList = git.extractRefs(type, object.content)
                     .map(o => ({ ...o, commit: sha }))
                     .filter(notQueued)
                 queue.push(...refList)
-                // verbose('debug: after load commit:', queue)
+                // verbose('after load commit:', queue)
                 if (!serializationQueue.includes(sha)) {
                     promises.push(git.writeObject(type, object.content, { sha }))
                     serializationQueue.push(sha)
                 }
             } else if (type === 'tag') {
-                verbose(`debug: warning: retrieving ${type}-object not supported yet`)
+                verbose(`warning: retrieving ${type}-object not supported yet`)
                 continue
             } else {
                 const commitAddr = commits[commit]
                     ? commits[commit].address
                     : await helper.getCommitAddr(commit, branch)
                 const object = await helper.getBlob(sha, type, commitAddr)
-                verbose(`debug: got: ${sha}`)
+                verbose(`got: ${sha}`)
                 const refList = git.extractRefs(type, object.content)
                     .map(o => ({ ...o, commit }))
                     .filter(notQueued)
@@ -279,14 +285,14 @@ async function doFetch(input) {
                 //    const result = await execCmd(`${arg} ${context.repo}`)
                 //    verbose('[DEBUG] stdout:', result)
                 //    send(result)
-            } else if (input === '') { // finish communication
-                send()
-                const endTime = process.hrtime.bigint()
-                verbose(`completed in ${(endTime - startTime) / BigInt(1e9)} sec`)
-                process.exit(0)
-            } else {
-                verbose(`remote: got unknown command: "${input}"`)
-                process.exit(1)
-            }
+        } else if (input === '') { // finish communication
+            send()
+            const endTime = process.hrtime.bigint()
+            verbose(`completed in ${(endTime - startTime) / BigInt(1e9)} sec`)
+            process.exit(0)
+        } else {
+            verbose(`remote: got unknown command: "${input}"`)
+            process.exit(1)
         }
+    }
 })()

@@ -13,6 +13,9 @@ if [ -z $1 ]; then
     exit
 fi
 
+DAO_NAME=$1
+REPO_NAME=$2
+
 WALLET=../goshwallet
 WALLET_ABI=$WALLET.abi.json
 WALLET_KEYS=$WALLET.keys.json
@@ -27,18 +30,19 @@ NETWORK=${3:-localhost}
 
 NINETY_EVERS=90000000000
 
-CALLED="deployRepository {\"nameRepo\":\"$2\"}"
+CALLED="deployRepository {\"nameRepo\":\"$REPO_NAME\"}"
 $TONOS_CLI -u $NETWORK call $WALLET_ADDR $CALLED --abi $WALLET_ABI --sign $WALLET_KEYS > /dev/null || exit 1
 
-REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$1\",\"name\":\"$2\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$DAO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$DAO_NAME\",\"name\":\"$REPO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 ./giver.sh $REPO_ADDR $NINETY_EVERS
 
 echo ===================== REPO =====================
-echo DAO
-echo "    name:" $1
+echo Gosh
+echo " address:" $GOSH_ADDR
+echo "DAO '$DAO_NAME'"
 echo " address:" $DAO_ADDR
-echo repository
-echo "    name:" $2
+echo "repo ($(account_data $NETWORK $REPO_ADDR))"
+echo "    name:" $REPO_NAME
 echo " address:" $REPO_ADDR
-echo " balance:" $(account_balance $NETWORK $REPO_ADDR)
-echo "  status:" $(account_status $NETWORK $REPO_ADDR)
+echo "  remote:" "gosh::$NETWORK://$GOSH_ADDR/$DAO_NAME/gosh_test/repo03"

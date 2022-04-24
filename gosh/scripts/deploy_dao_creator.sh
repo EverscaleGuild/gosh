@@ -24,7 +24,7 @@ GOSH=../gosh
 #     h)
 #     echo Usage: $0 -f NETWORK
 #     echo
-#     echo "  -f (optional) - force to redeploy GOSH"
+#     echo "  -f (optional) - force to redeploy DAO creater contract"
 #     echo "  NETWORK (optional) - points to network endpoint:"
 #     echo "      localhost - Evernode SE (default)"
 #     echo "      net.ton.dev - devnet"
@@ -55,7 +55,6 @@ DAO_CREATOR_ADDR=$(cat $fn.addr)
 
 echo ===================== DAO CREATOR =====================
 echo Gosh: $GOSH_ADDR
-echo DAO creator
+echo "DAO creator ($(account_data $NETWORK $DAO_CREATOR_ADDR))"
 echo address: $DAO_CREATOR_ADDR
 echo "   keys:" $(cat $fn_keys)
-echo balance: $(account_balance $NETWORK $DAO_CREATOR_ADDR)

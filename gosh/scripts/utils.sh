@@ -12,3 +12,7 @@ account_balance() {
 account_status() {
     echo $($TONOS_CLI -u $1 account $2 | awk '/acc_type:/{print $2}')
 }
+
+account_data() {
+    echo "$(account_status $1 $2) / $(account_balance $1 $2) EVER"
+}

@@ -89,7 +89,7 @@ const deconstructRemoteUrl = (url) => {
 }
 
 function execCmd(cmd, raw = false, options = {}) {
-    // verbose(`shell$ ${cmd}`)
+    verbose(`shell$ ${cmd}`)
     const [command, ...args] = cmd.trimEnd().split(' ')
 
     return new Promise((resolve, reject) => {
