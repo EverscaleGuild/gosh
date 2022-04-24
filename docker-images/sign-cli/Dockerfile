@@ -24,7 +24,9 @@ EOF
 
 FROM base
 ENV NODE_ENV=production
+RUN apt-get update -yq && apt-get install ca-certificates -yq
 
+WORKDIR /app
 COPY --from=builder /app/ .
 ENTRYPOINT [ "node", "cli" ]
 CMD [ "--help" ]
