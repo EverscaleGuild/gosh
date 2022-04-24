@@ -78,8 +78,9 @@ async function deleteRemoteRef(ref) {
 
 async function pushObject(sha, currentCommit, branch) {
     const { type, content } = await objectData(sha)
-    // verbose(`object ${type} "${content}"`)
+    verbose(`object ${type} "${content}"`)
     if (type === 'commit') {
+        verbose('commit...')
         const address = await helper.getCommitAddr(sha, branch)
         verbose({ address })
         currentCommit = { sha, address }
@@ -87,6 +88,7 @@ async function pushObject(sha, currentCommit, branch) {
         const result = await helper.createCommit(branch, sha, content)
         verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
+        verbose(`${type}...`)
         const result = await helper.createBlob(sha, type, currentCommit.sha, content)
         const address = await helper.getBlobAddr(sha, type, currentCommit.address)
         verbose(`uploading ${type}(${sha}): ${address}`)

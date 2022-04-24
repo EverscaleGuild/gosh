@@ -41,6 +41,8 @@ WALLET_ADDR=$($TONOS_CLI -j -u $NETWORK run $DAO_ADDR getAddrWallet "{\"pubkeyro
 echo -n $WALLET_ADDR > $WALLET.addr
 ./giver.sh $WALLET_ADDR $NINETY_EVERS
 
+sleep 5
+
 echo ===================== GOSH WALLET =====================
 echo "Gosh root:" $GOSH_ADDR
 echo " DAO name:" $1
