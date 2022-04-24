@@ -86,9 +86,12 @@ export const getGoshDaoCreator = (client: TonClient): IGoshDaoCreator => {
 export const getCodeLanguageFromFilename = (monaco: any, filename: string): string => {
     let splitted = filename.split('.');
     const ext = `.${splitted[splitted.length - 1]}`;
-    const found = monaco.languages.getLanguages().find((item: any) => (
-        item.extensions.indexOf(ext) >= 0
-    ));
+    const found = monaco.languages.getLanguages().find((item: any) => {
+        if (item.extensions)
+            return item.extensions.indexOf(ext) >= 0
+        else 
+            return false;
+    });
     return found?.id || 'plaintext';
 }
 

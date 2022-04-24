@@ -132,30 +132,32 @@ const RepoPage = () => {
                     <div className="no-data"><BookOpenIcon/>There are no files yet</div>
                 )}
 
-<Outlet context={{ goshRepo, goshWallet }} />
-                {Boolean(tree?.length) && tree?.map((blob, index) => (
-                    <div
-                        key={index}
-                        className="flex gap-x-4 py-3 border-b border-gray-300 last:border-b-0"
-                    >
-                        <div className="basis-1/4 text-sm font-medium">
-                            <Link
-                                className="hover:underline"
-                                to={`/organizations/${daoName}/repositories/${repoName}/blob/${blob.meta?.name}`}
-                            >
-                                {blob.meta && blob.meta.name.split('/').slice(-1)}
-                            </Link>
+                    <Outlet context={{ goshRepo, goshWallet }} />
+                {Boolean(tree?.length) && <div className={cnb("tree-files")}>
+                    {tree?.map((blob, index) => (
+                        <div
+                            key={index}
+                            className={cnb("tree-files-item")}
+                        >
+                            <div className="basis-1/4 text-sm font-medium">
+                                <Link
+                                    className="hover:underline"
+                                    to={`/organizations/${daoName}/repositories/${repoName}/blob/${blob.meta?.name}`}
+                                >
+                                    {blob.meta && blob.meta.name.split('/').slice(-1)}
+                                </Link>
+                            </div>
+                            <div className="text-gray-500 text-sm">
+                                {/* <Link
+                                    className="hover:underline"
+                                    to={`/repositories/${repoName}/commit/${blob.lastCommitSha}`}
+                                >
+                                    {blob.lastCommitMsg.title}
+                                </Link> */}
+                            </div>
                         </div>
-                        <div className="text-gray-500 text-sm">
-                            {/* <Link
-                                className="hover:underline"
-                                to={`/repositories/${repoName}/commit/${blob.lastCommitSha}`}
-                            >
-                                {blob.lastCommitMsg.title}
-                            </Link> */}
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>}
             </div>
         </>
     );

@@ -34,6 +34,7 @@ import CommitsPage from "./../pages/Commits";
 import CommitPage from "./../pages/Commit";
 import PullsPage from "./../pages/Pulls";
 import PullCreatePage from "./../pages/PullCreate";
+import RepoLayoutClear from "../pages/RepoLayout/RepoLayoutClear";
 
 const Router = () => {
   const client = useEverClient();
@@ -84,19 +85,21 @@ const Router = () => {
               </Route>
               <Route path="repositories" element={<ReposPage />}/>
             </Route>
+            <Route path="repositories/:repoName/blobs" element={<RepoLayoutClear />}>
+              <Route path="create/:branchName" element={<BlobCreatePage />} />
+              <Route path="update/:branchName/:blobName" element={<BlobUpdatePage />} />
+            </Route>
             <Route path="repositories/:repoName" element={<RepoLayout />}>
-                <Route element={<RepoPage />}>
-                  <Route index element={null} />
-                  <Route path="branches" element={<BranchesPage />} />
-                </Route>
-                <Route path="tree/:branchName" element={<RepoPage />} />
-                <Route path="blobs/create/:branchName" element={<BlobCreatePage />} />
-                <Route path="blobs/update/:branchName/:blobName" element={<BlobUpdatePage />} />
-                <Route path="blob/:branchName/:blobName" element={<BlobPage />} />
-                <Route path="commits/:branchName" element={<CommitsPage />} />
-                <Route path="commit/:branchName/:commitName" element={<CommitPage />} />
-                <Route path="pulls/create" element={<PullCreatePage />} />
-                <Route path="pulls" element={<PullsPage />} />
+              <Route element={<RepoPage />}>
+                <Route index element={null} />
+                <Route path="branches" element={<BranchesPage />} />
+              </Route>
+              <Route path="tree/:branchName" element={<RepoPage />} />
+              <Route path="blob/:branchName/:blobName" element={<BlobPage />} />
+              <Route path="commits/:branchName" element={<CommitsPage />} />
+              <Route path="commit/:branchName/:commitName" element={<CommitPage />} />
+              <Route path="pulls/create" element={<PullCreatePage />} />
+              <Route path="pulls" element={<PullsPage />} />
             </Route>
           </Route>
           <Route path="/containers" element={<Containers />} />

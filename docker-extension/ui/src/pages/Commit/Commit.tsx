@@ -9,6 +9,12 @@ import { GoshBlob, GoshCommit } from "../../types/classes";
 import CopyClipboard from "../../components/CopyClipboard";
 import { shortString } from "../../utils";
 
+import styles from './Commit.module.scss';
+import classnames from "classnames/bind";
+import { Flex, FlexContainer } from "../../components";
+
+const cnb = classnames.bind(styles);
+
 
 const CommitPage = () => {
     const { goshRepo } = useOutletContext<TRepoLayoutOutletContext>();
@@ -91,33 +97,43 @@ const CommitPage = () => {
     }, [goshRepo, branchName, commitName]);
 
     return (
-        <div className="bordered-block px-7 py-8">
+        <div>
             {(!monaco || !commit) && (<p>Loading commit...</p>)}
             {monaco && commit && (
                 <>
                     <div>
-                        <div className="font-medium py-2">
-                            {commit.meta?.content.title}
-                        </div>
-
+                        <FlexContainer
+                            direction="row"
+                            justify="space-between"
+                        >
+                            <Flex>
+                                <h4>
+                                    {commit.meta?.content.title}
+                                </h4>
+                            </Flex>
+                            <Flex>
+                                <CopyClipboard
+                                    label={shortString(commit.meta?.sha || "")}
+                                    componentProps={{
+                                        text: commit.meta?.sha || ""
+                                    }}
+                                />
+                            </Flex>
+                        </FlexContainer>
                         {commit.meta?.content.message && (
                             <pre className="mb-3 text-gray-050a15/65 text-sm">
                                 {commit.meta.content.message}
                             </pre>
                         )}
-
-                        <div className="flex border-t gap-x-6 py-1 text-gray-050a15/75 text-xs">
+                                    
+                        <div className={cnb("commit-meta")}>
                             <div className="flex items-center">
-                                <span className="mr-2 text-gray-050a15/65">Commit by</span>
+                                            <span className="color-faded">Commit by</span>
                                 {renderCommitter(commit.meta?.content.committer || '')}
                             </div>
                             <div>
-                                <span className="mr-2 text-gray-050a15/65">at</span>
+                                            <span className="color-faded">at</span>
                                 {getCommitTime(commit.meta?.content.committer || '').toLocaleString()}
-                            </div>
-                            <div className="grow text-right">
-                                <span className="mr-2 text-gray-050a15/65">commit</span>
-                                {commit.meta?.sha}
                             </div>
                         </div>
                     </div>

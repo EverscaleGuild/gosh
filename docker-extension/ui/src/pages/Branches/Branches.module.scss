@@ -3,14 +3,13 @@
 
 .modal-branches {
     min-height: 400px;
-    margin-top: .75rem;
     font-weight: 700;
 }
 .branch-name {
     height: 24px;
     padding: 0.375rem .875rem;
     background-color: $white;
-    width: auto;
+    width: auto !important;
 }
 .branch-fork {
     z-index: 200;
@@ -44,6 +43,8 @@
     margin-bottom: 1rem;
 }
 .branches-list {
+    margin-top: .75rem;
+    
     & > * {
         padding: .75rem 0;
     }
