@@ -998,3 +998,27 @@ h2.drag-up {
     transform: translateY(1rem);
   }
 }
+.input-field-setting-goshroot {
+  margin-top: .25rem
+}
+
+.gosh-root-address {
+  position: relative;
+
+  div:first-child {
+      background-color: #e9ecf0 !important;
+      margin-top: .5rem;
+  }
+  input {
+      color: $dark !important;
+      padding-right: 25px;
+      width: 100%;
+      -webkit-text-fill-color: $dark !important;
+  }
+
+  button {
+      position: absolute;
+      top: 2.389rem;
+      right: .9rem;
+  }
+}

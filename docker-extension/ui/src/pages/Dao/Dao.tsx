@@ -18,7 +18,7 @@ const cnb = classnames.bind(styles);
 const DaoPage = () => {
     const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
 
-    const goshWallet = useGoshWallet(goshDao.meta?.name);
+    const goshWallet = useGoshWallet(goshDao && goshDao.meta?.name);
 
     return (
         <>
@@ -57,7 +57,8 @@ const DaoPage = () => {
                   <InputBase
                     className="input-field"
                     type="text"
-                    value={goshWallet?.address}
+                    value={goshWallet?.address || ""}
+                    onChange={() => {}}
                     disabled
                     />
                     <CopyClipboard
