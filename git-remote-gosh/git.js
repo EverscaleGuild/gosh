@@ -78,6 +78,7 @@ const writeObject = async (type, content, options = {}) => {
         input = Buffer.concat(entries)
         // verbose('tree length:', input.length)
     }
+    if (sha === 'd1105a6a48b55529a58049bf69733a1702b1b7b3') input = `${content}\n\n`
     const [computedSha,] = await execCmd(
         `git hash-object --stdin -t ${type} ${!dryRun ? '-w': ''}`,
         null,
