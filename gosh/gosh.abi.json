@@ -14,7 +14,72 @@
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"}
+				{"name":"rootpubkey","type":"uint256"},
+				{"name":"name","type":"string"},
+				{"name":"goshdao","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployDao",
+			"inputs": [
+				{"name":"name","type":"string"},
+				{"name":"root_pubkey","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTokenRoot",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTokenWallet",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTokenLocker",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVPlatform",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVClient",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSMVProposal",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"value1","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -56,12 +121,91 @@
 			]
 		},
 		{
+			"name": "setWallet",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setDao",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setTag",
+			"inputs": [
+				{"name":"code","type":"cell"},
+				{"name":"data","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "getAddrRepository",
+			"inputs": [
+				{"name":"name","type":"string"},
+				{"name":"dao","type":"string"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "getAddrDao",
 			"inputs": [
 				{"name":"name","type":"string"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "getRepoDaoCode",
+			"inputs": [
+				{"name":"dao","type":"address"}
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getDaoWalletCode",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getSMVProposalCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getSMVPlatformCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getSMVClientCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
 			]
 		},
 		{
@@ -89,11 +233,19 @@
 			]
 		},
 		{
-			"name": "upgrade",
+			"name": "getVersion",
 			"inputs": [
-				{"name":"state","type":"cell"}
 			],
 			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
+			"name": "_lastGoshDao",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_lastGoshDao","type":"address"}
 			]
 		}
 	],
@@ -112,7 +264,20 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
+		{"name":"m_WalletCode","type":"cell"},
+		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_codeSnapshot","type":"cell"},
-		{"name":"m_dataSnapshot","type":"cell"}
+		{"name":"m_dataSnapshot","type":"cell"},
+		{"name":"m_codeDao","type":"cell"},
+		{"name":"m_dataDao","type":"cell"},
+		{"name":"m_codeTag","type":"cell"},
+		{"name":"m_dataTag","type":"cell"},
+		{"name":"m_TokenLockerCode","type":"cell"},
+		{"name":"m_SMVPlatformCode","type":"cell"},
+		{"name":"m_SMVClientCode","type":"cell"},
+		{"name":"m_SMVProposalCode","type":"cell"},
+		{"name":"m_TokenRootCode","type":"cell"},
+		{"name":"m_TokenWalletCode","type":"cell"},
+		{"name":"_lastGoshDao","type":"address"}
 	]
 }

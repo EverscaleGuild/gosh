@@ -6,43 +6,43 @@
 #	
 #	Copyright 2019-2022 (c) EverX
 
+source utils.sh
+
 if [ -z $1 ]; then
-    echo "Usage: $0 REPO_NAME <NETWORK>"
+    echo "Usage: $0 DAO_NAME REPO_NAME <NETWORK>"
     exit
 fi
 
-GOSH=../gosh
-GOSH_ABI=$GOSH.abi.json
-GOSH_KEYS=$GOSH.keys.json
-GOSH_ADDR=$(cat $GOSH.addr)
+DAO_NAME=$1
+REPO_NAME=$2
 
-export TONOS_CLI=tonos-cli
-export NETWORK=${2:-localhost}
-
-
-if [ "$NETWORK" == "localhost" ]; then
-    WALLET=wallets/localnode/SafeMultisigWallet
-else
-    WALLET=wallets/devnet/SafeMultisigWallet
-fi
-
-WALLET_ADDR=$(cat $WALLET.addr)
+WALLET=../goshwallet
 WALLET_ABI=$WALLET.abi.json
 WALLET_KEYS=$WALLET.keys.json
+WALLET_ADDR=$(cat $WALLET.addr)
 
-OWNER_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
-PAYLOAD=$($TONOS_CLI body --abi $GOSH_ABI deployRepository "{\"pubkey\":\"$OWNER_PUBKEY\",\"name\":\"$1\"}" \
-          | sed -n '/Message body:/ s/Message body: // p')
+GOSH=../gosh
+GOSH_ABI=$GOSH.abi.json
+GOSH_ADDR=$(cat $GOSH.addr)
 
-THREE_EVERS=3000000000
-SEVENTY_EVERS=70000000000
-VALUE=$THREE_EVERS
+TONOS_CLI=tonos-cli
+NETWORK=${3:-localhost}
 
-CALLED="submitTransaction {\"dest\":\"$GOSH_ADDR\",\"value\":$VALUE,\"bounce\":false,\"allBalance\":false,\"payload\":\"$PAYLOAD\"}"
+NINETY_EVERS=90000000000
+
+CALLED="deployRepository {\"nameRepo\":\"$REPO_NAME\"}"
 $TONOS_CLI -u $NETWORK call $WALLET_ADDR $CALLED --abi $WALLET_ABI --sign $WALLET_KEYS > /dev/null || exit 1
-REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"pubkey\":\"$OWNER_PUBKEY\",\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
-./giver.sh $REPO_ADDR $SEVENTY_EVERS
+
+DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$DAO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$DAO_NAME\",\"name\":\"$REPO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+./giver.sh $REPO_ADDR $NINETY_EVERS
 
 echo ===================== REPO =====================
-echo name: $1
-echo addr: $REPO_ADDR
+echo Gosh
+echo " address:" $GOSH_ADDR
+echo "DAO '$DAO_NAME'"
+echo " address:" $DAO_ADDR
+echo "repo ($(account_data $NETWORK $REPO_ADDR))"
+echo "    name:" $REPO_NAME
+echo " address:" $REPO_ADDR
+echo "  remote:" "gosh::$NETWORK://$GOSH_ADDR/$DAO_NAME/gosh_test/repo03"

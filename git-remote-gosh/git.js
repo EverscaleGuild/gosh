@@ -22,6 +22,8 @@ const catObject = (object, type) => {
 const typeObject = (object) => execCmd(`git cat-file -t ${object}`).then(([type,]) => type)
 const sizeObject = (object) => execCmd(`git cat-file -s ${object}`).then(([size,]) => size)
 
+const blobPrevSha = (name) => execCmd(`git log --follow -p --oneline -n 1 $name | awk -F"[ .]" '/index.*100644/{print $2}`)
+
 const isExistsObject = (object) =>
     execCmd(`git cat-file -e ${object}`).then(() => true).catch(() => false)
 

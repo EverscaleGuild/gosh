@@ -12,13 +12,14 @@ pragma AbiHeader pubkey;
 
 /* Root contract of Blob */
 contract Blob{
-    string version = "0.0.1";
+    string version = "0.1.0";
     address _rootCommit;
     string static _nameBlob;
     string _nameBranch;
     bool check = false;
     string _blob;
     uint256 _pubkey;
+    string _prevSha;
     
     modifier onlyOwner {
         bool checkOwn = false;
@@ -28,19 +29,30 @@ contract Blob{
         _;
     }
     
-    constructor(uint256 pubkey, string nameBranch, string blob) public {
+    constructor(uint256 pubkey, string nameBranch, string blob, string prevSha) public {
         tvm.accept();
         _pubkey = pubkey;
         _rootCommit = msg.sender;
         _nameBranch = nameBranch;
         _blob = blob;
+        _prevSha = prevSha;
     }    
+
+/*    
+    function destroy(address addr) public onlyOwner {
+        selfdestruct(addr);
+    }
+*/
     
     //Setters
     
     //Getters
     function getNameBlob() external view returns(string) {
         return _nameBlob;
+    }
+    
+    function getprevSha() external view returns(string) {
+        return _prevSha;
     }
 
     function getNameBranch() external view returns(string) {
@@ -53,5 +65,9 @@ contract Blob{
     
     function getBlob() external view returns(string sha, address commit, string content) {
         return (_nameBlob, _rootCommit, _blob);
+    }
+
+    function getVersion() external view returns(string) {
+        return version;
     }
 }
