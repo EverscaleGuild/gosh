@@ -9,11 +9,15 @@ import { goshCurrBranchSelector } from "./../../store/gosh.state";
 import { useGoshRepoBranches } from "./../../hooks/gosh.hooks";
 import { Icon, Loader, FlexContainer, Flex } from '../../components';
 
-import { ClockIcon, PlusIcon, BookOpenIcon } from '@heroicons/react/outline';
+import { Popover } from '@headlessui/react'
+import { ClockIcon, PlusIcon, BookOpenIcon, DownloadIcon } from '@heroicons/react/outline';
+
+import CopyClipboard from "../../components/CopyClipboard";
 
 import styles from './Repo.module.scss';
 import classnames from "classnames/bind";
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import Typography from "@mui/material/Typography";
 
 const cnb = classnames.bind(styles);
@@ -92,12 +96,26 @@ const RepoPage = () => {
                     <Flex
                         grow={1000}
                     >
-                <div className="align-right">
+                <div className={cnb("button-actions", "align-right")}>
                     <Link
                         to={`/organizations/${daoName}/repositories/${repoName}/blobs/create/${branchName}`}
                         className="btn btn--body px-4 py-1.5 text-sm !font-normal"
                     >
                         
+                        <Button
+                            color="inherit"
+                            size="medium"
+                            variant="contained"
+                            className={cnb("button-default", "btn-icon")}
+                            disableElevation
+                            // icon={<Icon icon={"arrow-up-right"}/>}
+                            // iconAnimation="right"
+                            // iconPosition="after"
+                        ><PlusIcon/> Add file </Button>
+                        </Link>
+
+                        <Popover className={cnb("relative")}>
+                    <Popover.Button as={"div"}>
                         <Button
                             color="primary"
                             size="medium"
@@ -107,8 +125,31 @@ const RepoPage = () => {
                             // icon={<Icon icon={"arrow-up-right"}/>}
                             // iconAnimation="right"
                             // iconPosition="after"
-                        ><PlusIcon/> Add file </Button>
-                    </Link>
+                        ><DownloadIcon/> Clone </Button></Popover.Button>
+
+                        <Popover.Panel className={cnb("absolute")}>
+                            <Paper
+                                square={false}
+                                className={cnb("gosh-clone-paper")}
+                                elevation={14}
+                            >
+                                <div className={cnb("clone-field")}>
+                                    <textarea
+                                        onClick={(event: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => (event.target as HTMLTextAreaElement).select()}
+                                        value={`git clone -v gosh::net.ton.dev://${process.env.REACT_APP_GOSH_ADDR}/${daoName}/${repoName}`}
+                                        onChange={() => {}}        
+                                    />   
+
+                                <CopyClipboard
+                                    componentProps={{
+                                        text: `git clone -v gosh::net.ton.dev://${process.env.REACT_APP_GOSH_ADDR}/${daoName}/${repoName}`
+                                    }}
+                                />
+                                </div>
+                        </Paper>
+                        </Popover.Panel>
+                        </Popover>
+    
                 </div>
                 
                     </Flex>
