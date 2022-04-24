@@ -253,7 +253,7 @@ function getRemoteHead(repo = CURRENT_REPO_NAME) {
     return 'refs/heads/main'
 }
 
-async function createCommit(branch, sha, content) {
+async function createCommit(branch, sha, content, diffName = '') {
     verbose({ branch, sha, content })
     const parents = []
     for (const line of content.split('\n')) {
@@ -277,7 +277,7 @@ async function createCommit(branch, sha, content) {
         blobName2: '',
         fullBlob2: '',
         prevSha2: '',
-        diffName: '',
+        diffName,
         diff: '',
     })
 }

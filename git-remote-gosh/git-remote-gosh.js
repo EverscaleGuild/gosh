@@ -85,7 +85,8 @@ async function pushObject(sha, currentCommit, branch) {
         verbose({ address })
         currentCommit = { sha, address }
         // verbose('set current commit:', currentCommit)
-        const result = await helper.createCommit(branch, sha, content)
+        const diffName = (await git.lsCommitedBlobNames(sha))[0]
+        const result = await helper.createCommit(branch, sha, content, diffName)
         verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
         verbose(`${type}...`)

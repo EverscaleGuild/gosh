@@ -7,9 +7,13 @@ const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391' // $ echo -n '
 const headCommit = () => execCmd('git rev-parse HEAD').then(([commit,]) => commit)
 const headBranch = () => execCmd('git rev-parse --abbrev-ref HEAD').then(([short,]) => short)
 
-function lsObjects (ref, exclude) {
+function lsObjects(ref, exclude) {
     const excluded_refs = exclude ? exclude.map(i => `^${i}`).join(' ') : ''
     return execCmd(`git rev-list --objects --in-commit-order --reverse ${ref} ${excluded_refs}`)
+}
+
+function lsCommitedBlobNames(sha) {
+    return execCmd(`git show --pretty= --name-only ${sha}`)
 }
 
 const lsTreeCommit = (sha) => execCmd(`git ls-tree -t -r --full-tree ${sha}`, true)
@@ -108,6 +112,7 @@ module.exports = {
     headBranch,
     headCommit,
     lsObjects,
+    lsCommitedBlobNames,
     lsTreeCommit,
     catObject,
     typeObject,
