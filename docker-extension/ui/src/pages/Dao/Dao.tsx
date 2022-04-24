@@ -51,7 +51,7 @@ const DaoPage = () => {
               />
               <div className={cnb("wallet-address")}>
 
-                <Typography>{goshDao.meta?.name} wallet address</Typography>
+                <Typography>User wallet address</Typography>
 
                 <div className={cnb("wallet-address-copy-wrapper")}>
                   <InputBase
