@@ -30,8 +30,7 @@ NINETY_EVERS=90000000000
 CALLED="deployRepository {\"nameRepo\":\"$2\"}"
 $TONOS_CLI -u $NETWORK call $WALLET_ADDR $CALLED --abi $WALLET_ABI --sign $WALLET_KEYS > /dev/null || exit 1
 
-DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
-REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$DAO_ADDR\",\"name\":\"$2\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+REPO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrRepository "{\"dao\":\"$1\",\"name\":\"$2\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 ./giver.sh $REPO_ADDR $NINETY_EVERS
 
 echo ===================== REPO =====================
