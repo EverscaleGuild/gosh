@@ -12,8 +12,6 @@
 				{"name":"blobData","type":"cell"},
 				{"name":"repositoryCode","type":"cell"},
 				{"name":"repositoryData","type":"cell"},
-				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"},
 				{"name":"lockerCode","type":"cell"},
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
@@ -32,7 +30,7 @@
 			]
 		},
 		{
-			"name": "__deployCommit",
+			"name": "deployCommit",
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"branchName","type":"string"},
@@ -48,29 +46,6 @@
 				{"name":"prevSha2","type":"string"},
 				{"name":"diffName","type":"string"},
 				{"name":"diff","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployCommit",
-			"inputs": [
-				{"name":"repoName","type":"string"},
-				{"name":"branchName","type":"string"},
-				{"name":"commitName","type":"string"},
-				{"name":"fullCommit","type":"string"},
-				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "setCommit",
-			"inputs": [
-				{"name":"repoName","type":"string"},
-				{"name":"branchName","type":"string"},
-				{"name":"parent1","type":"address"}
 			],
 			"outputs": [
 			]
@@ -451,8 +426,6 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
-		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

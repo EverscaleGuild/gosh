@@ -114,7 +114,7 @@ contract GoshDao is TokenRootOwner {
             stateInit: s1, value: 60 ton, wid: 0
         }(m_CommitCode, m_CommitData, 
             m_BlobCode, m_BlobData, 
-            m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData,
+            m_RepositoryCode, m_RepositoryData,
             m_TokenLockerCode, m_SMVPlatformCode,
             m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
     }

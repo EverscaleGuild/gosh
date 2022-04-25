@@ -42,8 +42,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
-    TvmCell m_WalletCode;
-    TvmCell m_WalletData;    
     
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
@@ -80,7 +78,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell blobCode,
         TvmCell blobData,
         TvmCell repositoryCode,
-        TvmCell repositoryData, TvmCell WalletCode, TvmCell WalletData,
+        TvmCell repositoryData,
          //added for SMV
         TvmCell lockerCode, 
         TvmCell platformCode,
@@ -96,18 +94,10 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         m_CommitData = commitData;
         m_BlobData = blobData;
         m_RepositoryData = repositoryData;
-        m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         ///////////////////
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
         m_SMVProposalCode = proposalCode;
-    }
-    
-    function _composeCommitStateInit(string _commit, address repo) internal view returns(TvmCell) {
-        TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, repo, version);
-        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
-        return stateInit;
     }
 
     function deployRepository(
@@ -118,7 +108,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
     }
     
-    function __deployCommit(
+    function deployCommit(
         string repoName,
         string branchName,
         string commitName,
@@ -163,16 +153,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         }
     }
 
-    function deployCommit(
-        string repoName,
-        string branchName,
-        string commitName,
-        string fullCommit,
-        address parent1,
-        address parent2) public view onlyOwner accept {
-        _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
-    }
-
     function _deployCommit(
         string repoName,
         string branchName,
@@ -182,18 +162,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         address parent2) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
-        TvmCell s1 = _composeCommitStateInit(commitName, repo);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, repoName, branchName, fullCommit, parent1, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
-    }
-    
-    function setCommit(
-        string repoName,
-        string branchName,
-        address parent1) public view onlyOwner accept {
-        address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, parent1);
+        Repository(repo).deployCommit{
+            value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
+        }(tvm.pubkey(), branchName, commitName, fullCommit, parent1, parent2);
     }
     
     function tryProposalResult (address proposal) public view onlyOwner accept

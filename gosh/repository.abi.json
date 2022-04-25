@@ -86,11 +86,14 @@
 			]
 		},
 		{
-			"name": "setCommit",
+			"name": "deployCommit",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
-				{"name":"commit","type":"address"}
+				{"name":"nameCommit","type":"string"},
+				{"name":"fullCommit","type":"string"},
+				{"name":"parent1","type":"address"},
+				{"name":"parent2","type":"address"}
 			],
 			"outputs": [
 			]
