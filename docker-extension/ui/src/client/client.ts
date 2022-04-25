@@ -5,7 +5,7 @@ import {
 
 const logger = console;
 
-const WELL_KNOWN_ROOT_CONTRACT_ADDRESS = "gosh::net.ton.dev://0:2f4ade4a98f916f47b1b2ff7abe1ee8a096d8443754b01b092d5043aa8ba1c8e/"
+const WELL_KNOWN_ROOT_CONTRACT_ADDRESS = "gosh::net.ton.dev://0:08ff47a77ba853306d234f5803dc25e5a9128aa280df44889f7d64c69f81aec8/"
 
 const METADATA_KEY = {
   BUILD_PROVIDER: "WALLET_PUBLIC",
