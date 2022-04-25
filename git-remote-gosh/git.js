@@ -12,9 +12,7 @@ function lsObjects(ref, exclude) {
     return execCmd(`git rev-list --objects --in-commit-order --reverse ${ref} ${excluded_refs}`)
 }
 
-function lsCommitedBlobNames(sha) {
-    return execCmd(`git show --pretty= --name-only ${sha}`)
-}
+const lsCommitedBlobNames = (sha) => execCmd(`git show --pretty= --name-only ${sha}`)
 
 const lsTreeCommit = (sha) => execCmd(`git ls-tree -t -r --full-tree ${sha}`, true)
 
@@ -82,7 +80,12 @@ const writeObject = async (type, content, options = {}) => {
         input = Buffer.concat(entries)
         // verbose('tree length:', input.length)
     }
-    if (sha === 'd1105a6a48b55529a58049bf69733a1702b1b7b3') input = `${content}\n\n`
+    // dirty fix
+    const wtf = [
+        'd1105a6a48b55529a58049bf69733a1702b1b7b3',
+        '5e1aa554511f1a24fbbfcba90e3c14d4577f9637'
+    ]
+    if (wtf.includes(sha)) input = `${content}\n\n`
     const [computedSha,] = await execCmd(
         `git hash-object --stdin -t ${type} ${!dryRun ? '-w': ''}`,
         null,
