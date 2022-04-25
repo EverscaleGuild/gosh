@@ -10,7 +10,7 @@ REPOSITORY_NAME=$1
 COMMIT_HASH=$2
 
 GOSH_NETWORK="net.ton.dev"
-GOSH_ROOT_CONTRACT_ADDRESS="0:2f4ade4a98f916f47b1b2ff7abe1ee8a096d8443754b01b092d5043aa8ba1c8e"
+GOSH_ROOT_CONTRACT_ADDRESS="0:08ff47a77ba853306d234f5803dc25e5a9128aa280df44889f7d64c69f81aec8"
 
 NETWORKS="${NETWORKS:-https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev}"
 
@@ -21,6 +21,7 @@ GOSH_REMOTE_URL=gosh::${GOSH_NETWORK}://${GOSH_ROOT_CONTRACT_ADDRESS}/"$REPOSITO
     LAST_PWD=$(pwd)
     mkdir -p /workdir/"$REPOSITORY_NAME"
     cd /workdir/"$REPOSITORY_NAME"
+    rm -rf *
 
     git clone "$GOSH_REMOTE_URL" "$REPOSITORY_NAME"
 
@@ -28,7 +29,7 @@ GOSH_REMOTE_URL=gosh::${GOSH_NETWORK}://${GOSH_ROOT_CONTRACT_ADDRESS}/"$REPOSITO
     git fetch -a
     git checkout "$COMMIT_HASH"
 
-    IDDFILE=../"$REPOSITORY_NAME".iidfile
+    IDDFILE=/workdir/"$REPOSITORY_NAME".iidfile
 
     docker buildx build \
         -f goshfile.yaml \
