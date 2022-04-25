@@ -15,22 +15,7 @@ async function getSignatureAddress(client, signer, content) {
     return (await client.abi.encode_message(getDeployMessageParams(signer, content))).address;
 }
 exports.getSignatureAddress = getSignatureAddress;
-async function deploySignature(client, signer, content, topupAmount, giverAddress, giverSigner) {
-    const deployParams = getDeployMessageParams(signer, content);
-    const address = (await client.abi.encode_message(deployParams)).address;
-    if (giverAddress && giverSigner) {
-        await topup(client, address, topupAmount ?? "1000000000", giverAddress, giverSigner);
-    }
-    await client.processing.process_message({
-        message_encode_params: deployParams,
-        send_events: false,
-    });
-    return address;
-}
-exports.deploySignature = deploySignature;
-async function checkSignature(client, signer, content) {
-    const abi = contentSignaturePackage.abi;
-    const address = await getSignatureAddress(client, signer, content);
+async function findAccountInfo(client, address) {
     const info = (await client.net.query_collection({
         collection: "accounts",
         filter: {
@@ -39,12 +24,42 @@ async function checkSignature(client, signer, content) {
         limit: 1,
         result: "acc_type data",
     })).result;
-    if (info.length === 0 || info[0].acc_type !== 1) {
+    return (info.length > 0 && info[0].acc_type === 1) ? info[0] : undefined;
+}
+async function deploySignature(client, signer, content, topupAmount, giverAddress, giverSigner) {
+    const deployParams = getDeployMessageParams(signer, content);
+    const address = (await client.abi.encode_message(deployParams)).address;
+    const info = await findAccountInfo(client, address);
+    if (info) {
+        return address;
+    }
+    try {
+        if (giverAddress && giverSigner) {
+            await topup(client, address, topupAmount ?? "1000000000", giverAddress, giverSigner);
+        }
+        await client.processing.process_message({
+            message_encode_params: deployParams,
+            send_events: false,
+        });
+    }
+    catch (error) {
+        if (error.code !== 414) {
+            throw error;
+        }
+    }
+    return address;
+}
+exports.deploySignature = deploySignature;
+async function checkSignature(client, signer, content) {
+    const abi = contentSignaturePackage.abi;
+    const address = await getSignatureAddress(client, signer, content);
+    const info = await findAccountInfo(client, address);
+    if (!info) {
         return false;
     }
     const data = (await client.abi.decode_account_data({
         abi,
-        data: info[0].data,
+        data: info.data,
     })).data;
     const signerPublic = await getPublicKey(client, signer);
     const pubkey = data._pubkey.substring(2);
