@@ -26,6 +26,26 @@ export async function getSignatureAddress(
     return (await client.abi.encode_message(getDeployMessageParams(signer, content))).address;
 }
 
+type AccountInfo = {
+    data: string,
+    acc_type: number
+}
+
+async function findAccountInfo(
+    client: TonClient,
+    address: string,
+): Promise<AccountInfo | undefined> {
+    const info: AccountInfo[] = (await client.net.query_collection({
+        collection: "accounts",
+        filter: {
+            id: { eq: address },
+        },
+        limit: 1,
+        result: "acc_type data",
+    })).result;
+    return (info.length > 0 && info[0].acc_type === 1) ? info[0] : undefined;
+}
+
 export async function deploySignature(
     client: TonClient,
     signer: Signer,
@@ -37,14 +57,23 @@ export async function deploySignature(
     const deployParams = getDeployMessageParams(signer, content);
     const address = (await client.abi.encode_message(deployParams)).address;
 
-    if (giverAddress && giverSigner) {
-        await topup(client, address, topupAmount ?? "1000000000", giverAddress, giverSigner);
+    const info = await findAccountInfo(client, address);
+    if (info) {
+        return address;
     }
-
-    await client.processing.process_message({
-        message_encode_params: deployParams,
-        send_events: false,
-    });
+    try {
+        if (giverAddress && giverSigner) {
+            await topup(client, address, topupAmount ?? "1000000000", giverAddress, giverSigner);
+        }
+        await client.processing.process_message({
+            message_encode_params: deployParams,
+            send_events: false,
+        });
+    } catch (error) {
+        if ((error as { code?: number }).code !== 414) {
+            throw error;
+        }
+    }
     return address;
 }
 
@@ -53,23 +82,17 @@ export async function checkSignature(
     client: TonClient,
     signer: Signer,
     content: string,
-): Promise<Boolean> {
+): Promise<boolean> {
     const abi = contentSignaturePackage.abi;
     const address = await getSignatureAddress(client, signer, content);
-    const info: { data: string, acc_type: number }[] = (await client.net.query_collection({
-        collection: "accounts",
-        filter: {
-            id: { eq: address },
-        },
-        limit: 1,
-        result: "acc_type data",
-    })).result;
-    if (info.length === 0 || info[0].acc_type !== 1) {
+
+    const info = await findAccountInfo(client, address);
+    if (!info) {
         return false;
     }
     const data: ContentSignatureData = (await client.abi.decode_account_data({
         abi,
-        data: info[0].data,
+        data: info.data,
     })).data;
 
     const signerPublic = await getPublicKey(client, signer);
