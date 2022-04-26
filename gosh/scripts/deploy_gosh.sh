@@ -8,8 +8,6 @@
 
 source utils.sh
 
-source utils.sh
-
 fn=../gosh
 fn_src=$fn.sol
 fn_abi=$fn.abi.json
