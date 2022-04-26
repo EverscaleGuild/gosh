@@ -201,9 +201,15 @@ func frontendBuild() client.BuildFunc {
 			"PATH=" + system.DefaultPathEnv(def.Constraints.Platform.OS),
 		}
 
+		workingDir := config.WorkingDir
+		if len(workingDir) == 0 {
+			workingDir = "/"
+		}
+
 		imgConfig := ocispecs.ImageConfig{
 			Labels:     labels,
-			WorkingDir: "/",
+			WorkingDir: workingDir,
+			Entrypoint: config.Entrypoint,
 			Env:        env,
 		}
 

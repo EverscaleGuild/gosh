@@ -1,23 +1,43 @@
 import { useState, useEffect } from "react";
-import { Navbar, Nav } from "react-bootstrap";
-import { ReactComponent as Logo } from "../../assets/images/logo.svg";
+
+import Box from '@mui/material/Box';
+import { ReactComponent as Logo } from "./../../assets/images/logo.svg";
 import { Link } from "react-router-dom";
 import styles from "./Header.module.scss";
 import classnames from "classnames/bind";
+import Button from '@mui/material/Button'
 
 const cn = classnames.bind(styles);
 
 export const Header = ({location, ...props}: {location: string}) => {
   return (<>
     <header className={cn("header")}>
-      <Navbar
-        expand="sm"
-        className={cn("navbar")}
-      >
-        <Nav className={cn("navbar-nav", "me-auto")}>
-          <Navbar.Brand className={cn("navbar-brand")}><Link to="/" className="logo"><Logo/></Link></Navbar.Brand>
-        </Nav>
-      </Navbar>
+    <Box
+      className={cn("navbar")}
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+      }}
+    > 
+        <Link to={""} className={cn("logo")}><Logo/></Link>
+
+        <div className={cn("button-block")}>
+          <Link to="/account/organizations"><Button
+            color="primary"
+            size="medium"
+            disableElevation
+            // icon={<Icon icon={"arrow-up-right"}/>}
+            // iconAnimation="right"
+            // iconPosition="after"
+          >Repositories</Button></Link>
+          <Link to="/containers"><Button
+            disableElevation
+            color="primary"
+            variant="contained"
+            size="medium"
+          >Containers</Button></Link>
+        </div>
+      </Box>
     </header>
     </>
   );

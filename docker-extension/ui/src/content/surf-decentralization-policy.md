@@ -37,7 +37,7 @@
 <a name='general-provisions' id='general-provisions'></a>
 
 #### General Provisions
-This Surf Decentralization Policy (the "Policy") governs your use of the mobile application and web versions of Surf (Hereinafter, collectively "Surf") and the services offered by Surf (the "Service" or the "Services"). The web version of Surf is available at [ton.surf](https://ton.surf) and the mobile application is published in the AppStore and Google Play.
+This Surf Decentralization Policy (the "Policy") governs your use of the mobile application and web versions of Surf (Hereinafter, collectively "Surf") and the services offered by Surf (the "Service" or the "Services"). The web version of Surf is available at [ever.surf](https://ever.surf) and the mobile application is published in the AppStore and Google Play.
 
 Surf is a TON smart contract wallet featuring support for decentralized bots ("DeBots"). It can act as a TON operating system ("TON OS") user environment as it supports an end-to-end decentralization (E2ED) framework.
 
@@ -168,7 +168,7 @@ You agree to assume full responsibility to determine which taxes may apply to yo
 
 <a name='intellectual-property' id='intellectual-property'></a>
 #### Intellectual Property
-All copyrights and other intellectual property of Surf, including all content and information published in Surf and in [ton.surf](https://ton.surf), including but not limited to the Surf logo, designs, graphics, pictures, software and other related materials, belong exclusively to TON Venture Studio Ltd, a company incorporated under the laws of the British Virgin Islands, whose registered office is at Ground Floor, Coastal Building Wickhams Cay II, Road Town, P.O. Box 2136, Carrot Bay VG 1130, British Virgin Islands ("TON Labs").
+All copyrights and other intellectual property of Surf, including all content and information published in Surf and in [ever.surf](https://ever.surf), including but not limited to the Surf logo, designs, graphics, pictures, software and other related materials, belong exclusively to TON Venture Studio Ltd, a company incorporated under the laws of the British Virgin Islands, whose registered office is at Ground Floor, Coastal Building Wickhams Cay II, Road Town, P.O. Box 2136, Carrot Bay VG 1130, British Virgin Islands ("TON Labs").
 
 Surf is built on top of TON Labs open source SDK available at: 
 [https://github.com/tonlabs/TON-SDK/](https://github.com/tonlabs/TON-SDK/)

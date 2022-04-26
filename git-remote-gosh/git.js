@@ -7,10 +7,12 @@ const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391' // $ echo -n '
 const headCommit = () => execCmd('git rev-parse HEAD').then(([commit,]) => commit)
 const headBranch = () => execCmd('git rev-parse --abbrev-ref HEAD').then(([short,]) => short)
 
-function lsObjects (ref, exclude) {
+function lsObjects(ref, exclude) {
     const excluded_refs = exclude ? exclude.map(i => `^${i}`).join(' ') : ''
     return execCmd(`git rev-list --objects --in-commit-order --reverse ${ref} ${excluded_refs}`)
 }
+
+const lsCommitedBlobNames = (sha) => execCmd(`git show --pretty= --name-only ${sha}`)
 
 const lsTreeCommit = (sha) => execCmd(`git ls-tree -t -r --full-tree ${sha}`, true)
 
@@ -21,6 +23,8 @@ const catObject = (object, type) => {
 
 const typeObject = (object) => execCmd(`git cat-file -t ${object}`).then(([type,]) => type)
 const sizeObject = (object) => execCmd(`git cat-file -s ${object}`).then(([size,]) => size)
+
+const blobPrevSha = (name) => execCmd(`git log --follow -p --oneline -n 1 $name | awk -F"[ .]" '/index.*100644/{print $2}`)
 
 const isExistsObject = (object) =>
     execCmd(`git cat-file -e ${object}`).then(() => true).catch(() => false)
@@ -76,6 +80,12 @@ const writeObject = async (type, content, options = {}) => {
         input = Buffer.concat(entries)
         // verbose('tree length:', input.length)
     }
+    // dirty fix
+    const wtf = [
+        'd1105a6a48b55529a58049bf69733a1702b1b7b3',
+        '5e1aa554511f1a24fbbfcba90e3c14d4577f9637'
+    ]
+    if (wtf.includes(sha)) input = `${content}\n\n`
     const [computedSha,] = await execCmd(
         `git hash-object --stdin -t ${type} ${!dryRun ? '-w': ''}`,
         null,
@@ -105,6 +115,7 @@ module.exports = {
     headBranch,
     headCommit,
     lsObjects,
+    lsCommitedBlobNames,
     lsTreeCommit,
     catObject,
     typeObject,

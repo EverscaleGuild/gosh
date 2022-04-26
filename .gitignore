@@ -4,7 +4,5 @@
 /content-signature/node_modules/
 /content-signature/**/*.d.ts
 /content-signature/**/*.d.ts.map
-/content-signature/**/*.js
 /content-signature/**/*.js.map
-/content-signature/package-lock.json
 /content-signature/tsconfig.tsbuildinfo

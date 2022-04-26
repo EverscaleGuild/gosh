@@ -14,7 +14,7 @@ export WALLET_PUBLIC=...
 export WALLET_SECRET=...
 ```
 
-### 2. Write `dockerfile-for-gosh.yaml` (this specification is far from complete, think of it as a proof of concept)
+### 2. Write `goshfile.yaml` (this specification is far from complete, think of it as a proof of concept)
 
 ```yaml
 # syntax=teamgosh/goshfile
@@ -29,7 +29,6 @@ steps:
         - -c
         - >-
           (date +'%s %H:%M:%S %Z'; echo "Hi there") | tee /message.txt
-      # here will be gosh mounts (WIP)
 ```
 
 ### 3. Now build an image
@@ -37,17 +36,25 @@ steps:
 ```bash
 TARGET_IMAGE="my-target-super-image"
 
-# run buildkitd containered
-docker run -d --name buildkitd --privileged moby/buildkit:latest
-# build image
-buildctl --addr=docker-container://buildkitd build \
-        --frontend gateway.v0 \
-        --local dockerfile=. \
-        --local context=. \
-        --opt source=teamgosh/goshfile \
-        --opt filename=goshfile.yaml \
-        --opt wallet_public="$WALLET_PUBLIC" \
-        --output type=image,name="$TARGET_IMAGE",push=true
+docker buildx build \
+    --push \
+    --label WALLET_PUBLIC="$WALLET_PUBLIC" \
+    -f goshfile.yaml \
+    -t "$TARGET_IMAGE" \
+    .
+
+## OR more complicated way via buildctl directly
+# # run buildkitd containered
+# docker run -d --name buildkitd --privileged moby/buildkit:latest
+# # build image
+# buildctl --addr=docker-container://buildkitd build \
+#         --frontend gateway.v0 \
+#         --local dockerfile=. \
+#         --local context=. \
+#         --opt source=teamgosh/goshfile \
+#         --opt filename=goshfile.yaml \
+#         --opt wallet_public="$WALLET_PUBLIC" \
+#         --output type=image,name="$TARGET_IMAGE",push=true
 ```
 
 Here we parameterize the image build process with our wallet credentials.
@@ -80,7 +87,7 @@ WALLET_PUBLIC=$(docker inspect --format='{{.Config.Labels.WALLET_PUBLIC}}' $TARG
 
 TARGET_IMAGE_SHA=$(docker inspect --format='{{index (split (index .RepoDigests 0) "@") 1}}' $TARGET_IMAGE)
 
-docker run --rm content-signature check \
+docker run --rm teamgosh/sign-cli check \
     -n <blockchain_network e.g. https://gra01.net.everos.dev> \
     $WALLET_PUBLIC \
     $TARGET_IMAGE_SHA
@@ -93,19 +100,3 @@ The image has label WALLET_PUBLIC and image's sha256 also publically available.
 ## Examples
 
 [Publisher example](./examples/publisher)
-
-## Build buildkit frontend for Gosh yourself
-
-```bash
-go mod vendor
-docker build -f Dockerfile -t goshfile .
-docker push goshfile
-```
-
-or for custom docker registry:
-
-```bash
-go mod vendor
-docker build -f Dockerfile -t my-reg-url:5000/goshfile .
-docker push my-reg-url:5000/goshfile
-```

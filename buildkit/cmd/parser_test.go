@@ -8,6 +8,10 @@ func TestParser(t *testing.T) {
 	config, err := parseConfig([]byte(`
 apiVersion: 1
 image: bash:latest
+workingDir: "/"
+entrypoint:
+  - sleep
+  - infinity
 steps:
   - name: print date
     run:
@@ -28,6 +32,10 @@ steps:
 
 	if config.Image != "bash:latest" {
 		t.Errorf("Wrong image")
+	}
+
+	if len(config.Entrypoint) != 2 {
+		t.Errorf("Wrong entrypoint")
 	}
 
 	step := config.Steps[0]

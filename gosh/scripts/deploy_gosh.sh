@@ -17,7 +17,9 @@ fn_keys=$fn.keys.json
 while getopts "fh" opt; do
   case $opt in
     f)
-    if [ -f $fn_keys ]; then rm $fn_keys; fi
+    if [ -f $fn_keys ]; then
+      rm $fn_keys
+    fi
     shift
     ;;
     h)
@@ -41,7 +43,7 @@ export NETWORK=${1:-localhost}
 echo "[deploy $fn]"
 
 CTOR_PARAMS={}
-./deploy_contract.sh $fn $CTOR_PARAMS 20000000000 || exit 1
+./deploy_contract.sh $fn $CTOR_PARAMS 90000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
 
 echo "load \`repo\`-contract"
@@ -105,6 +107,6 @@ SMVProposal_DATA=$($TVM_LINKER decode --tvc ../../smv/SMVProposal.tvc | sed -n '
 $TONOS_CLI -u $NETWORK call $GOSH_ADDR setSMVProposal "{\"code\":\"$SMVProposal_CODE\",\"value1\":\"$SMVProposal_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
 
 echo ===================== GOSH =====================
+echo "Gosh ($(account_data $NETWORK $GOSH_ADDR))"
 echo "   addr:" $GOSH_ADDR
 echo "   keys:" $(cat $fn_keys)
-echo balance: $(account_balance $NETWORK $GOSH_ADDR)

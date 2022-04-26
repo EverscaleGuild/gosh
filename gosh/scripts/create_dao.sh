@@ -12,6 +12,7 @@ if [ -z $1 ]; then
     echo "Usage: $0 DAO_NAME <NETWORK>"
     exit
 fi
+DAO_NAME=$1
 
 DAO_CREATOR=../daocreater
 DAO_CREATOR_ABI=$DAO_CREATOR.abi.json
@@ -43,17 +44,18 @@ DAO_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x
 
 THIRTY_EVERS=30000000000
 
-CALLED="deployDao {\"root_pubkey\":\"$DAO_PUBKEY\",\"name\":\"$1\"}"
+CALLED="deployDao {\"root_pubkey\":\"$DAO_PUBKEY\",\"name\":\"$DAO_NAME\"}"
 $TONOS_CLI -u $NETWORK call $DAO_CREATOR_ADDR $CALLED --abi $DAO_CREATOR_ABI --sign $DAO_CREATOR_KEYS > /dev/null || exit 1
-DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$1\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+DAO_ADDR=$($TONOS_CLI -j -u $NETWORK run $GOSH_ADDR getAddrDao "{\"name\":\"$DAO_NAME\"}" --abi $GOSH_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 cp $WALLET_KEYS $DAO_KEYS
 ./giver.sh $DAO_ADDR $THIRTY_EVERS
+
+sleep 5
 
 echo ===================== DAO =====================
 echo "  Gosh root:" $GOSH_ADDR
 echo DAO creator: $DAO_CREATOR_ADDR
-echo DAO
-echo "       name:" $1
+echo "DAO ($(account_data $NETWORK $DAO_ADDR))"
+echo "       name:" $DAO_NAME
 echo "    address:" $DAO_ADDR
 echo "       keys:" $(cat $DAO_KEYS)
-echo "    balance:" $(account_balance $NETWORK $DAO_ADDR)

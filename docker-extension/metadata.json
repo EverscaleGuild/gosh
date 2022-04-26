@@ -1,6 +1,5 @@
 {
-  "name": "GoshDockerExtension",
-  "provider": "Tonlabs Inc.",
+  "icon": "icon.svg",
   "vm": {
     "composefile": "docker-compose.yaml"
   },

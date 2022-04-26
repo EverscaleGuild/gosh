@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { withRouter } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-function ScrollToTop({ history, location }) {
+function ScrollToTop() {
   
   const prevLocation = useRef('');
+  const location = useLocation();
 
   useEffect(() => {
     if (prevLocation.current !== location.pathname) {
@@ -18,4 +19,4 @@ function ScrollToTop({ history, location }) {
   return (null);
 }
 
-export default withRouter(ScrollToTop);
+export default ScrollToTop;

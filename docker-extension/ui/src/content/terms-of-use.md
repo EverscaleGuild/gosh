@@ -218,7 +218,7 @@ Unless otherwise provided in the applicable laws and regulations, should the Use
 
 1. For all purposes of these Terms, any notice, claim, complaint or request (hereinafter - the letter) is required to be sent to us in writing or in an electronic form using an email.
 2. The official Company’s email is [info@walletsolutions.eu](mailto:info@walletsolutions.eu).
-3. In the event of questions relating to the service in Surf application, please contact us via Surf chat with assistance or send information to support@ton.surf making sure to specify your contact information and to provide any information to the Company to allow it to assess the origin and implications of the dispute. The Surf application is available in the Apple Store, in Google Play and Web version. More information about Surf can be also found at https://ton.surf/.
+3. In the event of questions relating to the service in Surf application, please contact us via Surf chat with assistance or send information to support@ever.surf making sure to specify your contact information and to provide any information to the Company to allow it to assess the origin and implications of the dispute. The Surf application is available in the Apple Store, in Google Play and Web version. More information about Surf can be also found at https://ever.surf/.
 
 <a name='governing-law-and-legal-disputes' id='governing-law-and-legal-disputes'></a>
 
