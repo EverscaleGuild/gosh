@@ -1,7 +1,7 @@
 {
 	"ABI version": 2,
 	"version": "2.2",
-	"header": ["pubkey", "time", "expire"],
+	"header": ["pubkey", "expire"],
 	"functions": [
 		{
 			"name": "constructor",
@@ -12,6 +12,8 @@
 				{"name":"blobData","type":"cell"},
 				{"name":"repositoryCode","type":"cell"},
 				{"name":"repositoryData","type":"cell"},
+				{"name":"WalletCode","type":"cell"},
+				{"name":"WalletData","type":"cell"},
 				{"name":"lockerCode","type":"cell"},
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
@@ -37,15 +39,26 @@
 				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
 				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"},
-				{"name":"blobName1","type":"string"},
-				{"name":"fullBlob1","type":"string"},
-				{"name":"prevSha1","type":"string"},
-				{"name":"blobName2","type":"string"},
-				{"name":"fullBlob2","type":"string"},
-				{"name":"prevSha2","type":"string"},
-				{"name":"diffName","type":"string"},
-				{"name":"diff","type":"string"}
+				{"name":"parent2","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setCommit",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"},
+				{"name":"parent1","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setHEAD",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"}
 			],
 			"outputs": [
 			]
@@ -397,7 +410,6 @@
 	],
 	"fields": [
 		{"name":"_pubkey","type":"uint256"},
-		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"tip3Root","type":"address"},
 		{"name":"nonce","type":"uint256"},
@@ -416,6 +428,7 @@
 		{"name":"lastVoteResult","type":"optional(bool)"},
 		{"name":"lockingAmount","type":"uint128"},
 		{"name":"_tokenBalance","type":"uint128"},
+		{"name":"m_messages","type":"map(uint256,uint32)"},
 		{"name":"version","type":"string"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},
@@ -426,6 +439,9 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
+		{"name":"m_WalletCode","type":"cell"},
+		{"name":"m_WalletData","type":"cell"},
+		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

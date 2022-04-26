@@ -39,6 +39,7 @@ contract Repository {
     address _rootGosh;
     string static _name;
     address _goshdao;
+    string _head;
     mapping(string => Item) _Branches;
 
     modifier onlyOwner {
@@ -78,8 +79,9 @@ contract Repository {
         m_dataTag = dataTag;
         address[] files;
         _Branches["main"] = Item("main", address.makeAddrNone(), files);
+        _head = "main";
     }
-
+    
     function deployNewSnapshot(string name, string branch, string diff) private {
         tvm.accept();
         TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
@@ -177,16 +179,18 @@ contract Repository {
         return addr == sender;
     }
 
-    function deployCommit(uint256 pubkey, string nameBranch, string nameCommit, string fullCommit, address parent1, address parent2) public {
+    function setCommit(uint256 pubkey, string nameBranch, address commit) public {
         tvm.accept();
-        require(checkAccess(pubkey, msg.sender));
-        require(_Branches.exists(nameBranch));
-        require(_Branches[nameBranch].value == parent1, 120);
-        TvmCell s1 = _composeCommitStateInit(nameCommit);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootGosh, _pubkey, _name, nameBranch, fullCommit, _Branches[nameBranch].value, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
-        _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
+        require(checkAccess(pubkey, msg.sender),101);
+        require(_Branches.exists(nameBranch), 102);
+        _Branches[nameBranch] = Item(nameBranch, commit, _Branches[nameBranch].snapshot);
+    }
+    
+    function setHEAD(uint256 pubkey, string nameBranch) public {
+        tvm.accept();
+        require(checkAccess(pubkey, msg.sender),101);
+        require(_Branches.exists(nameBranch), 102);
+        _head = nameBranch;
     }
     
     function deployTag(uint256 pubkey, string nametag, string nameCommit, address commit) public view {
@@ -228,6 +232,10 @@ contract Repository {
     
     function getName() external view returns(string) {
         return _name;
+    }
+    
+    function getHEAD() external view returns(string) {
+        return _head;
     }
 
     function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {

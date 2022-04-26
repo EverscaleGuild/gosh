@@ -86,14 +86,20 @@
 			]
 		},
 		{
-			"name": "deployCommit",
+			"name": "setCommit",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
-				{"name":"nameCommit","type":"string"},
-				{"name":"fullCommit","type":"string"},
-				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"}
+				{"name":"commit","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setHEAD",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"},
+				{"name":"nameBranch","type":"string"}
 			],
 			"outputs": [
 			]
@@ -159,6 +165,14 @@
 			]
 		},
 		{
+			"name": "getHEAD",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
 			"name": "getCommitAddr",
 			"inputs": [
 				{"name":"nameBranch","type":"string"},
@@ -211,6 +225,7 @@
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_name","type":"string"},
 		{"name":"_goshdao","type":"address"},
+		{"name":"_head","type":"string"},
 		{"name":"_Branches","type":"optional(cell)"}
 	]
 }

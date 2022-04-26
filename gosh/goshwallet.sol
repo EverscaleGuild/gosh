@@ -28,9 +28,20 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     uint constant ERR_NOT_ROOT_REPO = 105;
     uint constant ERR_INVALID_SENDER = 107;
     uint constant ERR_LOW_BALANCE = 108;
+    uint constant ERR_DOUBLE_MSG = 109;
 
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
+    
+    // mapping to store hashes of inbound messages;
+    mapping(uint256 => uint32) m_messages;
+    // Each transaction is limited by gas, so we must limit count of iteration in loop.
+    uint8 constant MAX_CLEANUP_MSGS = 20;
+    
+    struct LastMsg {
+        uint32 expireAt;
+        uint256 msgHash;
+    }
 
     string version = "0.1.0";
     uint256 static _rootRepoPubkey;
@@ -42,11 +53,14 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+    TvmCell m_WalletCode;
+    TvmCell m_WalletData;    
+    LastMsg m_lastMsg;
     
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
     TvmCell m_SMVProposalCode;
-
+    
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), 100);
         _;
@@ -71,6 +85,21 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         tvm.accept();
         _;
     }
+    
+    modifier saveMsg() {
+        m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
+        _;
+    }
+    
+    modifier clean() {
+        _;
+        gc();
+    }
+
+    modifier minBalance(uint128 val) {
+        require(address(this).balance > val + 1 ton, ERR_LOW_BALANCE);
+        _;
+    }
 
     constructor(
         TvmCell commitCode,
@@ -79,6 +108,8 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell blobData,
         TvmCell repositoryCode,
         TvmCell repositoryData,
+        TvmCell WalletCode, 
+        TvmCell WalletData,
          //added for SMV
         TvmCell lockerCode, 
         TvmCell platformCode,
@@ -94,15 +125,23 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         m_CommitData = commitData;
         m_BlobData = blobData;
         m_RepositoryData = repositoryData;
+        m_WalletCode = WalletCode;
+        m_WalletData = WalletData;
         ///////////////////
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
         m_SMVProposalCode = proposalCode;
     }
+    
+    function _composeCommitStateInit(string _commit, address repo) internal view returns(TvmCell) {
+        TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, repo, version);
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
+        return stateInit;
+    }
 
     function deployRepository(
         string nameRepo
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept saveMsg clean {
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -114,43 +153,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string commitName,
         string fullCommit,
         address parent1,
-        address parent2, 
-
-        string blobName1, string fullBlob1, string prevSha1,
-        string blobName2, string fullBlob2, string prevSha2,
-        string diffName, string diff
-    ) public view onlyOwner accept {
-        if ((branchName == "main") || (branchName == "master")) {
-            TvmBuilder commitBuilder;
-            uint256 proposalKind = 0;
-            commitBuilder.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
-            
-            TvmBuilder blob1Builder;
-            blob1Builder.store(blobName1, fullBlob1, prevSha1);
-
-            TvmBuilder blob2Builder;
-            blob2Builder.store(blobName2, fullBlob2, prevSha2);
-
-            TvmBuilder diff1Builder;
-            diff1Builder.store(diffName, diff);
-
-            TvmBuilder b;
-            b.storeRef(commitBuilder);
-            b.storeRef(blob1Builder);
-            b.storeRef(blob2Builder);
-            b.storeRef(diff1Builder);
-
-            uint256 id = tvm.hash(b.toCell()); 
-            uint32 startTime = now + 1*60;
-            uint32 finishTime = now + 5*60 + 7*24*60*60;
-            startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
-                           id, b.toCell(), startTime, finishTime);
-        } else {
-            _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
-            _deployDiff(repoName, diffName, branchName, diff);
-            _deployBlob(repoName, commitName, blobName1, fullBlob1, prevSha1);
-            _deployBlob(repoName, commitName, blobName2, fullBlob2, prevSha2);
-        }
+        address parent2
+        ) public onlyOwner accept saveMsg clean {
+        _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
     }
 
     function _deployCommit(
@@ -162,9 +167,35 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         address parent2) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).deployCommit{
-            value: FEE_DEPLOY_COMMIT, bounce: true, flag: 2 
-        }(tvm.pubkey(), branchName, commitName, fullCommit, parent1, parent2);
+        TvmCell s1 = _composeCommitStateInit(commitName, repo);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
+            _goshdao, _rootgosh, _rootRepoPubkey, repoName, branchName, fullCommit, parent1, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
+    }
+    
+    function setCommit(
+        string repoName,
+        string branchName,
+        address parent1) public view onlyOwner accept {
+        if ((branchName == "main") || (branchName == "master")) {
+            TvmBuilder b;
+
+            uint256 id = tvm.hash(b.toCell()); 
+            uint32 startTime = now + 1*60;
+            uint32 finishTime = now + 5*60 + 7*24*60*60;
+            startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
+                           id, b.toCell(), startTime, finishTime);
+        } else {
+            address repo = _buildRepositoryAddr(repoName);
+            Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, parent1);
+        }
+    }
+    
+    function setHEAD(
+        string repoName,
+        string branchName) public view onlyOwner accept {
+        address repo = _buildRepositoryAddr(repoName);
+        Repository(repo).setHEAD{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName);
     }
     
     function tryProposalResult (address proposal) public view onlyOwner accept
@@ -230,7 +261,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string name,
         string branch,
         string diff
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept saveMsg clean {
         _deployDiff(repoName, name, branch, diff);
     }
 
@@ -265,7 +296,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string blobName,
         string fullBlob,
         string prevSha
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept saveMsg clean {
         _deployBlob(repoName, commit, blobName, fullBlob, prevSha);
     }
 
@@ -289,7 +320,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string nametag,
         string nameCommit,
         address commit
-    ) public view onlyOwner accept {
+    ) public onlyOwner accept saveMsg clean{
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
     }
@@ -312,6 +343,32 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
 
     function getWalletPubkey() external view returns(uint256) {
         return tvm.pubkey();
+    }
+    
+    function afterSignatureCheck(TvmSlice body, TvmCell message) private inline
+    returns (TvmSlice)
+    {
+        // load and drop message timestamp (uint64)
+        (, uint32 expireAt) = body.decode(uint64, uint32);
+        require(expireAt > now, 57);
+        uint256 msgHash = tvm.hash(message);
+        require(!m_messages.exists(msgHash), ERR_DOUBLE_MSG);
+        m_lastMsg = LastMsg(expireAt, msgHash);
+        return body;
+    }
+
+    /// @notice Allows to delete expired messages from dict.
+    function gc() private {
+        uint counter = 0;
+        for ((uint256 msgHash, uint32 expireAt) : m_messages) {
+            if (counter >= MAX_CLEANUP_MSGS) {
+                break;
+            }
+            counter++;
+            if (expireAt <= now) {
+                delete m_messages[msgHash];
+            }
+        }
     }
 
     //
