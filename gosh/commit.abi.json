@@ -23,12 +23,10 @@
 			]
 		},
 		{
-			"name": "deployBlob",
+			"name": "setBlobs",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
-				{"name":"nameBlob","type":"string"},
-				{"name":"fullBlob","type":"string"},
-				{"name":"prevSha","type":"string"}
+				{"name":"blobs","type":"address[]"}
 			],
 			"outputs": [
 			]

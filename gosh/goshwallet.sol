@@ -191,6 +191,48 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, parent1);
         }
     }
+        
+    function _composeBlobStateInit(string nameBlob, address repo) internal view returns(TvmCell) {
+        TvmCell deployCode = GoshLib.buildBlobCode(
+            m_BlobCode, repo, version
+        );
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});
+        //return tvm.insertPubkey(stateInit, pubkey);
+        return stateInit;
+    }
+    
+    function deployBlob(
+        string repoName, 
+        string branch,
+        string blobName, 
+        string fullBlob, 
+        string prevSha
+        ) public onlyOwner accept saveMsg clean {
+        _deployBlob(repoName, branch, blobName, fullBlob, prevSha);
+    }
+
+    function _deployBlob(
+        string repoName, 
+        string branch,
+        string blobName, 
+        string fullBlob, 
+        string prevSha) internal view
+    {
+        address repo = _buildRepositoryAddr(repoName);
+        TvmCell s1 = _composeBlobStateInit(blobName, repo);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), branch, fullBlob, prevSha);
+    }
+    
+    function setBlob(
+        string repoName,
+        string commitName,
+        address[] blobs) public view onlyOwner accept {
+        address repo = _buildRepositoryAddr(repoName);
+        TvmCell s1 = _composeCommitStateInit(commitName, repo);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        Commit(addr).setBlobs{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), blobs);
+    }
     
     function setHEAD(
         string repoName,
@@ -289,31 +331,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         tvm.accept();
         address commitAddr = _buildCommitAddr(repoName, commit);
         commitAddr.transfer(value, true, 3);
-    }
-    
-    function deployBlob(
-        string repoName,
-        string commit,
-        string blobName,
-        string fullBlob,
-        string prevSha
-    ) public onlyOwner accept saveMsg clean {
-        _deployBlob(repoName, commit, blobName, fullBlob, prevSha);
-    }
-
-    function _deployBlob(
-        string repoName,
-        string commit,
-        string blobName,
-        string fullBlob,
-        string prevSha
-    ) private view {
-        address commitAddr = _buildCommitAddr(repoName, commit);
-        /*  Commit(commitAddr).deployBlob{value: 2.8 ton}(tvm.pubkey(), blobName, fullBlob, prevSha); */
-        address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).deployBlob{
-            value: 3 ton, bounce: true, flag: 2 
-        }(tvm.pubkey(), commitAddr, blobName, fullBlob, prevSha);
     }
     
     function deployTag(

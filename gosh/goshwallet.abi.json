@@ -55,6 +55,28 @@
 			]
 		},
 		{
+			"name": "deployBlob",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branch","type":"string"},
+				{"name":"blobName","type":"string"},
+				{"name":"fullBlob","type":"string"},
+				{"name":"prevSha","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setBlob",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"commitName","type":"string"},
+				{"name":"blobs","type":"address[]"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "setHEAD",
 			"inputs": [
 				{"name":"repoName","type":"string"},
@@ -117,18 +139,6 @@
 				{"name":"repoName","type":"string"},
 				{"name":"commit","type":"string"},
 				{"name":"value","type":"uint128"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployBlob",
-			"inputs": [
-				{"name":"repoName","type":"string"},
-				{"name":"commit","type":"string"},
-				{"name":"blobName","type":"string"},
-				{"name":"fullBlob","type":"string"},
-				{"name":"prevSha","type":"string"}
 			],
 			"outputs": [
 			]

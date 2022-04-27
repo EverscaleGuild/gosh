@@ -105,14 +105,10 @@ contract Commit {
         return addr == sender;
     }
 
-    function deployBlob(uint256 pubkey, string nameBlob, string fullBlob, string prevSha) public {
-        require(msg.sender==_rootRepo);
+    function setBlobs(uint256 pubkey, address[] blobs) public {
+        require(checkAccess(pubkey, msg.sender));
         tvm.accept();
-        //require(checkAccess(pubkey, msg.sender));
-        TvmCell s1 = _composeBlobStateInit(nameBlob);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Blob{stateInit: s1, value: 1 ton, wid: 0}(pubkey, _nameBranch, fullBlob, prevSha);
-        _blob.push(addr);
+        _blob = blobs;
     }    
 /*    
     function destroy() public onlyOwner {
