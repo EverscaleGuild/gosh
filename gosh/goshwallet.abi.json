@@ -49,7 +49,7 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"parent1","type":"address"}
+				{"name":"commit","type":"string"}
 			],
 			"outputs": [
 			]

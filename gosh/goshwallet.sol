@@ -177,7 +177,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     function setCommit(
         string repoName,
         string branchName,
-        address parent1) public view onlyOwner accept {
+        string commit) public view onlyOwner accept {
         if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 
@@ -188,7 +188,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
                            id, b.toCell(), startTime, finishTime);
         } else {
             address repo = _buildRepositoryAddr(repoName);
-            Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, parent1);
+            TvmCell s0 = _composeCommitStateInit(commit, repo);
+            address addrC = address.makeAddrStd(0, tvm.hash(s0));
+            Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, addrC);
         }
     }
         
