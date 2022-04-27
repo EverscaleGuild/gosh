@@ -14,6 +14,7 @@ import "commit.sol";
 import "snapshot.sol";
 import "goshwallet.sol";
 import "tag.sol";
+import "blob.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of Repository */
@@ -201,6 +202,15 @@ contract Repository {
         new Tag {stateInit: s1, value: 5 ton, wid: 0}(nametag, nameCommit, commit);
     }
 
+    function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
+        TvmCell deployCode = GoshLib.buildBlobCode(
+            m_BlobCode, address(this), version
+        );
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});
+        //return tvm.insertPubkey(stateInit, pubkey);
+        return stateInit;
+    }
+
     //Setters
     
     //Getters
@@ -246,6 +256,11 @@ contract Repository {
     
     function getSnapAddr(string branch, string name) external view returns(address)  {
         return getSnapshotAddr(branch + "/" + name);
+    }
+
+    function getBlobAddr(string nameBlob) external view returns(address) {
+        TvmCell s1 = _composeBlobStateInit(nameBlob);
+        return address.makeAddrStd(0, tvm.hash(s1));
     }
 
     function getVersion() external view returns(string) {

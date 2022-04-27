@@ -193,6 +193,15 @@
 			]
 		},
 		{
+			"name": "getBlobAddr",
+			"inputs": [
+				{"name":"nameBlob","type":"string"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
 			"name": "getVersion",
 			"inputs": [
 			],
