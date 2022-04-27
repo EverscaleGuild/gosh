@@ -195,7 +195,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             TvmCell s0 = _composeCommitStateInit(commit, repo);
             address addrC = address.makeAddrStd(0, tvm.hash(s0));
             Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, addrC);
-            deployDiff(0, repoName, diffName, branchName, diff);
+            this.deployDiff{
+                value: 1 ton, bounce: true, flag: 2
+            }(0, repoName, diffName, branchName, diff);
         }
     }
         
