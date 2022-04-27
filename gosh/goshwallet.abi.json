@@ -18,7 +18,8 @@
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
 				{"name":"proposalCode","type":"cell"},
-				{"name":"_tip3Root","type":"address"}
+				{"name":"_tip3Root","type":"address"},
+				{"name":"me","type":"address"}
 			],
 			"outputs": [
 			]
@@ -128,10 +129,11 @@
 		{
 			"name": "deployDiff",
 			"inputs": [
+				{"name":"index","type":"uint128"},
 				{"name":"repoName","type":"string"},
-				{"name":"name","type":"string"},
+				{"name":"name","type":"string[]"},
 				{"name":"branch","type":"string"},
-				{"name":"diff","type":"string"}
+				{"name":"diff","type":"string[]"}
 			],
 			"outputs": [
 			]
@@ -455,6 +457,7 @@
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
 		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
+		{"name":"_me","type":"address"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

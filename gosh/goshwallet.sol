@@ -57,6 +57,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     TvmCell m_WalletCode;
     TvmCell m_WalletData;    
     LastMsg m_lastMsg;
+    address _me;
     
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
@@ -116,7 +117,8 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell platformCode,
         TvmCell clientCode,
         TvmCell proposalCode,
-        address _tip3Root)
+        address _tip3Root,
+        address me)
      public SMVAccount (lockerCode, tvm.hash(platformCode), platformCode.depth(),
                          tvm.hash(clientCode), clientCode.depth(), tvm.hash(proposalCode),
                          proposalCode.depth(), _tip3Root) {
@@ -128,6 +130,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         m_RepositoryData = repositoryData;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
+        _me = me;
         ///////////////////
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
@@ -178,6 +181,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string repoName,
         string branchName,
         string commit, string[] diffName, string[] diff) public view onlyOwner accept {
+        require(diffName.length == diff.length, 115);
         if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 
@@ -191,6 +195,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             TvmCell s0 = _composeCommitStateInit(commit, repo);
             address addrC = address.makeAddrStd(0, tvm.hash(s0));
             Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, addrC);
+            deployDiff(0, repoName, diffName, branchName, diff);
         }
     }
         
@@ -307,12 +312,18 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     }
     
     function deployDiff(
+        uint128 index,
         string repoName,
-        string name,
+        string[] name,
         string branch,
-        string diff
-    ) public onlyOwner accept saveMsg clean {
-        _deployDiff(repoName, name, branch, diff);
+        string[] diff
+    ) public view senderIs(_me) accept {
+        require(index < name.length, 1000);
+        _deployDiff(repoName, name[index], branch, diff[index]);
+        index += 1;
+        this.deployDiff{
+            value: 1 ton, bounce: true, flag: 2
+        }(index, repoName, name, branch, diff);
     }
 
     function _deployDiff(

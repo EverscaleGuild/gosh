@@ -110,14 +110,15 @@ contract GoshDao is TokenRootOwner {
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(_rootpubkey, pubkey);
-        _lastAccountAddress = new GoshWallet {
+        _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));
+        new GoshWallet {
             stateInit: s1, value: 60 ton, wid: 0
         }(m_CommitCode, m_CommitData, 
             m_BlobCode, m_BlobData, 
             m_RepositoryCode, m_RepositoryData,
             m_WalletCode, m_WalletData,
             m_TokenLockerCode, m_SMVPlatformCode,
-            m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
+            m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot, _lastAccountAddress);
     }
 
     //Setters
