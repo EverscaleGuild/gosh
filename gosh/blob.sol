@@ -51,6 +51,8 @@ contract Blob{
         _nameBranch = nameBranch;
         _blob = blob;
         _prevSha = prevSha;
+        m_WalletCode = WalletCode;
+        m_WalletData = WalletData;
         require(checkAccess(pubkey, msg.sender));
     }    
     
