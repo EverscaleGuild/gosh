@@ -9,6 +9,7 @@
 pragma ton-solidity >=0.58.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
+pragma AbiHeader time;
 
 import "gosh.sol";
 import "repository.sol";
