@@ -177,7 +177,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     function setCommit(
         string repoName,
         string branchName,
-        string commit) public view onlyOwner accept {
+        string commit, string[] diffName, string[] diff) public view onlyOwner accept {
         if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 

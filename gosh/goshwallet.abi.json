@@ -49,7 +49,9 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"commit","type":"string"}
+				{"name":"commit","type":"string"},
+				{"name":"diffName","type":"string[]"},
+				{"name":"diff","type":"string[]"}
 			],
 			"outputs": [
 			]
