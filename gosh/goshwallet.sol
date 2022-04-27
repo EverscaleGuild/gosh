@@ -203,25 +203,29 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     
     function deployBlob(
         string repoName, 
+        string commit,
         string branch,
         string blobName, 
         string fullBlob, 
         string prevSha
         ) public onlyOwner accept saveMsg clean {
-        _deployBlob(repoName, branch, blobName, fullBlob, prevSha);
+        _deployBlob(repoName, commit, branch, blobName, fullBlob, prevSha);
     }
 
     function _deployBlob(
         string repoName, 
+        string commit,
         string branch,
         string blobName, 
         string fullBlob, 
         string prevSha) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
+        TvmCell s0 = _composeCommitStateInit(commit, repo);
+        address addrC = address.makeAddrStd(0, tvm.hash(s0));
         TvmCell s1 = _composeBlobStateInit(blobName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), branch, fullBlob, prevSha);
+        new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), addrC, branch, fullBlob, prevSha, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode, m_WalletData);
     }
     
     function setBlob(
@@ -251,7 +255,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         //for tests
         lastVoteResult = res;
         //
-
+/*
         if (res.hasValue()) {
             if (res.get()) {
                 TvmSlice s = propData.toSlice();
@@ -275,6 +279,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
                 }
             }
         }
+*/
     }
     
     function deployBranch(

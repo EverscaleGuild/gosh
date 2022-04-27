@@ -12,6 +12,7 @@ pragma AbiHeader pubkey;
 
 import "blob.sol";
 import "goshwallet.sol";
+import "./libraries/GoshLib.sol";
 
 abstract contract ARepository {
     function deleteCommit(address parent, string nameBranch) external {}
@@ -63,9 +64,9 @@ contract Commit {
         TvmCell BlobData,
         TvmCell WalletCode,
         TvmCell WalletData) public {
+        tvm.accept();
         _parent1 = parent1;
         _parent2 = parent2;
-        tvm.accept();
         _name = nameRepo;
         _rootGosh = rootGosh;
         _goshdao = goshdao;
@@ -77,6 +78,7 @@ contract Commit {
         m_BlobData = BlobData;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
+        require(checkAccess(_pubkey, msg.sender));
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
