@@ -11,11 +11,9 @@ import (
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/frontend/gateway/grpcclient"
-	opspb "github.com/moby/buildkit/solver/pb"
 
 	"github.com/moby/buildkit/util/appcontext"
 	"github.com/moby/buildkit/util/system"
-	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -107,15 +105,79 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 	return parseConfig(df)
 }
 
+func imageHash(ctx context.Context, c client.Client, st llb.State) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "imageHash")
+	defer span.Finish()
+
+	signer := llb.Image("alpine").Dir("/out").Run(
+		llb.Args([]string{
+			"sh",
+			"-c",
+			`find . -type f -exec sha256sum -b {} + | LC_ALL=C sort | sha256sum | awk '{ printf "sha256:%s", $1 }' > /hash`,
+		}),
+		llb.AddMount(".", st, llb.SourcePath("/")),
+		llb.IgnoreCache,
+	).Root()
+
+	// debug
+	signer = signer.Run(
+		llb.Args([]string{
+			"sh",
+			"-c",
+			`find . -type f | wc -l > /debug`,
+		}),
+		llb.AddMount(".", st, llb.SourcePath("/")),
+		llb.IgnoreCache,
+	).Root()
+
+	def, err := signer.Marshal(ctx)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to marshal local source")
+	}
+
+	span.LogKV("def", dumpp(def))
+
+	res, err := c.Solve(ctx, client.SolveRequest{
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to resolve image config")
+	}
+	span.LogKV("res", dumpp(res))
+
+	ref, err := res.SingleRef()
+	if err != nil {
+		return "", err
+	}
+	span.LogKV("ref", dumpp(ref))
+
+	hash, err := ref.ReadFile(ctx, client.ReadRequest{
+		Filename: "/hash",
+	})
+
+	hashSt := string(hash)
+
+	span.LogKV("hash", hashSt)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to read /hash")
+	}
+
+	debug, err := ref.ReadFile(ctx, client.ReadRequest{
+		Filename: "/debug",
+	})
+
+	debugSt := string(debug)
+
+	span.LogKV("debug", debugSt)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to read /debug")
+	}
+
+	return hashSt, nil
+}
+
 func frontendBuild() client.BuildFunc {
 	return func(ctx context.Context, c client.Client) (*client.Result, error) {
-		c.Warn(ctx, digest.FromString("123"), "321", client.WarnOpts{
-			Level:      0,
-			SourceInfo: &opspb.SourceInfo{},
-			Range:      []*opspb.Range{},
-			Detail:     [][]byte{},
-			URL:        "",
-		})
 		span, ctx := opentracing.StartSpanFromContext(ctx, "build")
 		defer span.Finish()
 
@@ -146,6 +208,20 @@ func frontendBuild() client.BuildFunc {
 			llb.WithCustomName(fmt.Sprintf("[gosh] init image %s", config.Image)),
 		)
 
+		goshImage = goshImage.Dir("/")
+		goshImage = goshImage.Run(llb.Shlex("touch test.sock")).Root()
+
+		// // localSock := llb.Local(
+		// // 	"test.sock",
+		// // 	llb.SessionID(c.BuildOpts().SessionID),
+		// // ).File(llb.Mkfile("test.sock", 0777, []byte{}))
+		// gitSock := llb.Image("bash")
+		// 	.Dir("/")
+		// 	.File(llb.Mkfile("test.sock", 0777, []byte{}))
+		// 	.Run(llb.Shlex(
+		// 		`echo 123 > test.sock`
+		// 	)).Root()
+
 		// run steps
 		for i, step := range config.Steps {
 			stepName := fmt.Sprintf("[step %d/%d] %s", i+1, len(config.Steps), step.Name)
@@ -153,14 +229,11 @@ func frontendBuild() client.BuildFunc {
 			if step.Run != nil {
 				runoptions := []llb.RunOption{
 					llb.IgnoreCache,
-					// llb.addmount(
-					// 	"/var/gosh.sock",
-					// 	llb.scratch(),
-					// ),
-					llb.Network(opspb.NetMode_NONE), // important: disable internet
+					// llb.Network(opspb.NetMode_NONE), // important: disable internet
 					llb.WithCustomName("[gosh] " + stepName),
 					llb.Args(append(step.Run.Command, step.Run.Args...)),
 				}
+				goshImage = goshImage.Dir("/")
 				runSt := goshImage.Run(runoptions...)
 				goshImage = runSt.Root()
 				continue
@@ -177,11 +250,16 @@ func frontendBuild() client.BuildFunc {
 			return nil, err
 		}
 
+		//
+		hash, err := imageHash(ctx, c, goshImage)
+		//
+
 		span.LogKV("def", dumpp(def))
 		labels := filter(opts, labelPrefix)
 		if _, ok := labels["WALLET_PUBLIC"]; !ok {
 			labels["WALLET_PUBLIC"] = wallet_public
 		}
+		labels["HASH"] = hash
 
 		res, err := c.Solve(ctx, client.SolveRequest{
 			Definition: def.ToPB(),
