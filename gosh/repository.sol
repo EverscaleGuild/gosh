@@ -77,6 +77,7 @@ contract Repository {
     function deployBranch(uint256 pubkey, string newname, string fromname)  public {
         require(msg.value > 0.5 ton, 100);
         require(checkAccess(pubkey, msg.sender));
+        tvm.accept();
         if (_Branches.exists(newname)) { return; }
         if (_Branches.exists(fromname) == false) { return; }
         _Branches[newname] = Item(newname, _Branches[fromname].value);
@@ -121,26 +122,18 @@ contract Repository {
         return addr == sender;
     }
 
-    function setCommit(uint256 pubkey, string nameBranch, address commit) public {
-        tvm.accept();
-        require(checkAccess(pubkey, msg.sender),101);
+    function setCommit(string nameBranch, address commit) public {
         require(_Branches.exists(nameBranch), 102);
+        require(_Branches[nameBranch].value == msg.sender, 100);
+        tvm.accept();
         _Branches[nameBranch] = Item(nameBranch, commit);
     }
     
     function setHEAD(uint256 pubkey, string nameBranch) public {
-        tvm.accept();
         require(checkAccess(pubkey, msg.sender),101);
         require(_Branches.exists(nameBranch), 102);
-        _head = nameBranch;
-    }
-    
-    function deployTag(uint256 pubkey, string nametag, string nameCommit, address commit) public view {
         tvm.accept();
-        require(checkAccess(pubkey, msg.sender));
-        TvmCell deployCode = GoshLib.buildTagCode(m_codeTag, address(this), nametag, version);
-        TvmCell s1 = tvm.buildStateInit(deployCode, m_dataTag);
-        new Tag {stateInit: s1, value: 5 ton, wid: 0}(nametag, nameCommit, commit);
+        _head = nameBranch;
     }
 
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {

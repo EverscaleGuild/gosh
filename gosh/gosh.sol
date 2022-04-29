@@ -103,7 +103,7 @@ contract Gosh {
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
         _lastGoshDao = new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
-            address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData,
+            address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag,
             m_TokenLockerCode, m_SMVPlatformCode, m_SMVClientCode, m_SMVProposalCode, m_TokenRootCode, m_TokenWalletCode);
     }
 
@@ -235,6 +235,10 @@ contract Gosh {
 
     function getBlobCode() external view returns(TvmCell) {
         return m_BlobCode;
+    }
+    
+    function getTagCode() external view returns(TvmCell) {
+        return m_codeTag;
     }
 
     function getVersion() external view returns(string) {

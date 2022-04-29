@@ -25,6 +25,8 @@ contract GoshDao is TokenRootOwner {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
+    TvmCell m_TagCode;
+    TvmCell m_TagData;
     address _rootgosh;
     string _nameDao;
     
@@ -56,6 +58,8 @@ contract GoshDao is TokenRootOwner {
         TvmCell RepositoryData,
         TvmCell WalletCode, 
         TvmCell WalletData,
+        TvmCell TagCode,
+        TvmCell TagData,
         /////////////////////
         TvmCell TokenLockerCode,
         TvmCell SMVPlatformCode,
@@ -84,6 +88,8 @@ contract GoshDao is TokenRootOwner {
         m_CommitData = CommitData;
         m_BlobCode = BlobCode;
         m_BlobData = BlobData;
+        m_TagCode = TagCode;
+        m_TagData = TagData;
         /////
         m_TokenLockerCode = TokenLockerCode;
         m_SMVPlatformCode = SMVPlatformCode;
@@ -117,8 +123,9 @@ contract GoshDao is TokenRootOwner {
             m_BlobCode, m_BlobData, 
             m_RepositoryCode, m_RepositoryData,
             m_WalletCode, m_WalletData,
+            m_TagCode, m_TagData,
             m_TokenLockerCode, m_SMVPlatformCode,
-            m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot, _lastAccountAddress);
+            m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
     }
 
     //Setters

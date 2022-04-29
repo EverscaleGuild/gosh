@@ -9,6 +9,7 @@
 				{"name":"goshdao","type":"address"},
 				{"name":"rootGosh","type":"address"},
 				{"name":"value0","type":"uint256"},
+				{"name":"value1","type":"uint256"},
 				{"name":"nameRepo","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
@@ -17,7 +18,31 @@
 				{"name":"BlobCode","type":"cell"},
 				{"name":"BlobData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"}
+				{"name":"WalletData","type":"cell"},
+				{"name":"CommitCode","type":"cell"},
+				{"name":"CommitData","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "WalletCheckCommit",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"},
+				{"name":"branchName","type":"string"},
+				{"name":"number","type":"uint128"},
+				{"name":"newC","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "CommitCheckCommit",
+			"inputs": [
+				{"name":"nameCommit","type":"string"},
+				{"name":"branchName","type":"string"},
+				{"name":"number","type":"uint128"},
+				{"name":"newC","type":"address"}
 			],
 			"outputs": [
 			]
@@ -126,6 +151,8 @@
 		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
+		{"name":"m_CommitCode","type":"cell"},
+		{"name":"m_CommitData","type":"cell"},
 		{"name":"_parent1","type":"address"},
 		{"name":"_parent2","type":"address"},
 		{"name":"_rootGosh","type":"address"},

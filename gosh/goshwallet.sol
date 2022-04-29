@@ -55,9 +55,10 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;    
+    TvmCell m_WalletData;
+    TvmCell m_TagCode;
+    TvmCell m_TagData;    
     LastMsg m_lastMsg;
-    address _me;
     
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
@@ -112,13 +113,14 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell repositoryData,
         TvmCell WalletCode, 
         TvmCell WalletData,
+        TvmCell TagCode,
+        TvmCell TagData,
          //added for SMV
         TvmCell lockerCode, 
         TvmCell platformCode,
         TvmCell clientCode,
         TvmCell proposalCode,
-        address _tip3Root,
-        address me)
+        address _tip3Root)
      public SMVAccount (lockerCode, tvm.hash(platformCode), platformCode.depth(),
                          tvm.hash(clientCode), clientCode.depth(), tvm.hash(proposalCode),
                          proposalCode.depth(), _tip3Root) {
@@ -130,7 +132,8 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         m_RepositoryData = repositoryData;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
-        _me = me;
+        m_TagCode = TagCode;
+        m_TagData = TagData;
         ///////////////////
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
@@ -174,13 +177,14 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, repoName, branchName, fullCommit, parent1, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
+            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
     }
     
     function setCommit(
         string repoName,
         string branchName,
-        string commit) public view onlyOwner accept {
+        string commit, 
+        uint128 number) public view onlyOwner accept {
         if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 
@@ -193,7 +197,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             address repo = _buildRepositoryAddr(repoName);
             TvmCell s0 = _composeCommitStateInit(commit, repo);
             address addrC = address.makeAddrStd(0, tvm.hash(s0));
-            Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, addrC);
+            Commit(addrC).WalletCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, number, addrC);
         }
     }
         
@@ -319,14 +323,21 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         commitAddr.transfer(value, true, 3);
     }
     
-    function deployTag(
-        string repoName,
-        string nametag,
-        string nameCommit,
-        address commit
-    ) public onlyOwner accept saveMsg clean{
+    function deployTag(string repoName, string nametag, string nameCommit, string content, address commit) public view onlyOwner accept{
         address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).deployTag{value: 2.8 ton}(tvm.pubkey(), nametag, nameCommit, commit);
+        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, nametag, version);
+        TvmCell s1 = tvm.buildStateInit(deployCode, m_TagData);
+        new Tag {stateInit: s1, value: 5 ton, wid: 0}(_rootRepoPubkey, tvm.pubkey(), nametag, nameCommit, commit, content, _rootgosh, _goshdao, m_WalletCode, m_WalletData);
+    }
+    
+    function deleteTag(string repoName, string nametag)  public view onlyOwner accept{
+        address repo = _buildRepositoryAddr(repoName);
+        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, nametag, version);
+        TvmCell s1 = tvm.buildStateInit(deployCode, m_TagData);
+        address tagaddr = address.makeAddrStd(0, tvm.hash(s1));
+        Tag(tagaddr).destroy{
+            value: 0.1 ton, bounce: true, flag: 2 
+        }(tvm.pubkey());
     }
 
     //Setters

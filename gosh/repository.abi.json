@@ -43,7 +43,6 @@
 		{
 			"name": "setCommit",
 			"inputs": [
-				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"address"}
 			],
@@ -55,17 +54,6 @@
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"nameBranch","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployTag",
-			"inputs": [
-				{"name":"pubkey","type":"uint256"},
-				{"name":"nametag","type":"string"},
-				{"name":"nameCommit","type":"string"},
-				{"name":"commit","type":"address"}
 			],
 			"outputs": [
 			]

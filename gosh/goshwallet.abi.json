@@ -14,12 +14,13 @@
 				{"name":"repositoryData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
 				{"name":"WalletData","type":"cell"},
+				{"name":"TagCode","type":"cell"},
+				{"name":"TagData","type":"cell"},
 				{"name":"lockerCode","type":"cell"},
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
 				{"name":"proposalCode","type":"cell"},
-				{"name":"_tip3Root","type":"address"},
-				{"name":"me","type":"address"}
+				{"name":"_tip3Root","type":"address"}
 			],
 			"outputs": [
 			]
@@ -50,7 +51,8 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"commit","type":"string"}
+				{"name":"commit","type":"string"},
+				{"name":"number","type":"uint128"}
 			],
 			"outputs": [
 			]
@@ -139,7 +141,17 @@
 				{"name":"repoName","type":"string"},
 				{"name":"nametag","type":"string"},
 				{"name":"nameCommit","type":"string"},
+				{"name":"content","type":"string"},
 				{"name":"commit","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deleteTag",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"nametag","type":"string"}
 			],
 			"outputs": [
 			]
@@ -441,8 +453,9 @@
 		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
+		{"name":"m_TagCode","type":"cell"},
+		{"name":"m_TagData","type":"cell"},
 		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
-		{"name":"_me","type":"address"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}
