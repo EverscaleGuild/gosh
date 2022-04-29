@@ -12,7 +12,7 @@ ifeq "${GIT_BRANCH}" "main"
 	GIT_BRANCH := "latest"
 endif
 
-all: sign-cli git-remote-gosh goshfile
+all: sign-cli git-remote-gosh goshfile image-hash
 
 .PHONE: clean
 clean:
