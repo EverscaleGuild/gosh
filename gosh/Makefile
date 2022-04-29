@@ -1,4 +1,4 @@
-tvcs = daocreater.tvc gosh.tvc goshdao.tvc repository.tvc snapshot.tvc commit.tvc goshwallet.tvc blob.tvc tag.tvc
+tvcs = daocreater.tvc gosh.tvc goshdao.tvc repository.tvc snapshot.tvc commit.tvc goshwallet.tvc blob.tvc tag.tvc GoshConfig.tvc
 all: $(tvcs)
 
 $(tvcs): %.tvc: %.sol
@@ -9,3 +9,6 @@ clean:
 	rm -rf .solc_imports
 
 rebuild: clean all
+
+build:
+	everdev sol compile ${ARG}.sol
