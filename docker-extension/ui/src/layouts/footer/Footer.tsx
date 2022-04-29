@@ -5,8 +5,8 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { Overlay } from "./../../components";
-import { Content } from "./../../pages";
+import { Overlay } from "../../components";
+import { Content } from "../../pages";
 import { useLocation } from "react-router-dom";
 
 import styles from "./Footer.module.scss";

@@ -49,11 +49,11 @@ const Router = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(() => {
-    navigate("/");
-    location.pathname = "/";
-    return () => {}
-  }, [])
+  // useEffect(() => {
+  //   navigate("/");
+  //   location.pathname = "/";
+  //   return () => {}
+  // }, [])
   
   return (
     <div className={cn("ws-app", useLocation().pathname.split('/').filter(Boolean)[0], {"isMobile": isMobile, "main": !location.pathname.split('/').filter(Boolean)[0]})}>
