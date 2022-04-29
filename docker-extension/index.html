@@ -17,10 +17,22 @@
       <script defer="defer" src="https://extension-ui.gosh.sh/static/js/main.js?=d1ee44ac088f6b7731e9"></script>
       <link href="https://extension-ui.gosh.sh/static/css/main.css?v=d1ee44ac088f6b7731e9" rel="stylesheet">
       <style data-emotion="css" data-s=""></style>
+      <style>
+        .loading {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      </style>
     </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root"><div class="loading">Loading...</div></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

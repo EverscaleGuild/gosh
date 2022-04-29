@@ -1,8 +1,9 @@
 #!/bin/sh
 
-PUBLISHER_KEY=$1
-IMAGE_HASH=$2
+NET_ENDPOINTS=$1
+PUBLISHER_KEY=$2
+IMAGE_HASH=$3
 
 cd /command/tools/content-signature/
-node cli check --network https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev $PUBLISHER_KEY $IMAGE_HASH
+node cli check --network $NET_ENDPOINTS $PUBLISHER_KEY $IMAGE_HASH
 

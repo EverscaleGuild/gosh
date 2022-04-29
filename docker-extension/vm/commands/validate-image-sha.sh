@@ -5,14 +5,13 @@ set -e
 
 # params: repo commit_hash
 # output: gosh_hash
-
-REPOSITORY_NAME=$1
-COMMIT_HASH=$2
+NETWORKS=$1
+GOSH_NETWORK=$2
+GOSH_ROOT_CONTRACT_ADDRESS=$3
+REPOSITORY_NAME=$4
+COMMIT_HASH=$5
 
 GOSH_NETWORK="net.ton.dev"
-GOSH_ROOT_CONTRACT_ADDRESS="0:08ff47a77ba853306d234f5803dc25e5a9128aa280df44889f7d64c69f81aec8"
-
-NETWORKS="${NETWORKS:-https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev}"
 
 GOSH_REMOTE_URL=gosh::${GOSH_NETWORK}://${GOSH_ROOT_CONTRACT_ADDRESS}/"$REPOSITORY_NAME"
 
