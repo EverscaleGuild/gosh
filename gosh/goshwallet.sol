@@ -290,12 +290,11 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     function deployBranch(
         string repoName,
         string newName,
-        string fromName,
-        uint128 amountFiles
+        string fromName
     ) public view onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
-            value: amountFiles * 1.5 ton + 1 ton, bounce: true, flag: 2 
+            value: 1 ton, bounce: true, flag: 2 
         }(tvm.pubkey(), newName, fromName);
     }
 
