@@ -180,8 +180,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     function setCommit(
         string repoName,
         string branchName,
-        string commit, string[] diffName, string[] diff) public view onlyOwner accept {
-        require(diffName.length == diff.length, 115);
+        string commit) public view onlyOwner accept {
         if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 
@@ -195,9 +194,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             TvmCell s0 = _composeCommitStateInit(commit, repo);
             address addrC = address.makeAddrStd(0, tvm.hash(s0));
             Repository(repo).setCommit{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, addrC);
-            this.deployDiff{
-                value: 1 ton, bounce: true, flag: 2
-            }(0, repoName, diffName, branchName, diff);
         }
     }
         
@@ -313,35 +309,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         }(tvm.pubkey(), Name);
     }
     
-    function deployDiff(
-        uint128 index,
-        string repoName,
-        string[] name,
-        string branch,
-        string[] diff
-    ) public view senderIs(_me) accept {
-        require(index < name.length, 1000);
-        _deployDiff(repoName, name[index], branch, diff[index]);
-        index += 1;
-        this.deployDiff{
-            value: 1 ton, bounce: true, flag: 2
-        }(index, repoName, name, branch, diff);
-    }
-
-    function _deployDiff(
-        string repoName,
-        string name,
-        string branch,
-        string diff
-    ) private view  {
-        address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).deployDiff{
-            value: 2 ton, bounce: true, flag: 2 
-        }(tvm.pubkey(), name, branch, diff);
-    }
-
-
-
     function topupCommit(
         string repoName,
         string commit,

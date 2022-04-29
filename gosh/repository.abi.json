@@ -13,23 +13,10 @@
 				{"name":"CommitData","type":"cell"},
 				{"name":"BlobCode","type":"cell"},
 				{"name":"BlobData","type":"cell"},
-				{"name":"codeSnapshot","type":"cell"},
-				{"name":"dataSnapshot","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
 				{"name":"WalletData","type":"cell"},
 				{"name":"codeTag","type":"cell"},
 				{"name":"dataTag","type":"cell"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployDiff",
-			"inputs": [
-				{"name":"pubkey","type":"uint256"},
-				{"name":"name","type":"string"},
-				{"name":"branch","type":"string"},
-				{"name":"diff","type":"string"}
 			],
 			"outputs": [
 			]
@@ -40,26 +27,6 @@
 				{"name":"pubkey","type":"uint256"},
 				{"name":"newname","type":"string"},
 				{"name":"fromname","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "copySnapshot",
-			"inputs": [
-				{"name":"index","type":"uint32"},
-				{"name":"fromname","type":"string"},
-				{"name":"newname","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "addSnapshot",
-			"inputs": [
-				{"name":"addr","type":"address"},
-				{"name":"oldbranch","type":"string"},
-				{"name":"newbranch","type":"string"}
 			],
 			"outputs": [
 			]
@@ -109,7 +76,7 @@
 				{"name":"name","type":"string"}
 			],
 			"outputs": [
-				{"components":[{"name":"key","type":"string"},{"name":"value","type":"address"},{"name":"snapshot","type":"address[]"}],"name":"value0","type":"tuple"}
+				{"components":[{"name":"key","type":"string"},{"name":"value","type":"address"}],"name":"value0","type":"tuple"}
 			]
 		},
 		{
@@ -117,7 +84,7 @@
 			"inputs": [
 			],
 			"outputs": [
-				{"components":[{"name":"key","type":"string"},{"name":"value","type":"address"},{"name":"snapshot","type":"address[]"}],"name":"value0","type":"tuple[]"}
+				{"components":[{"name":"key","type":"string"},{"name":"value","type":"address"}],"name":"value0","type":"tuple[]"}
 			]
 		},
 		{
@@ -171,16 +138,6 @@
 			]
 		},
 		{
-			"name": "getSnapAddr",
-			"inputs": [
-				{"name":"branch","type":"string"},
-				{"name":"name","type":"string"}
-			],
-			"outputs": [
-				{"name":"value0","type":"address"}
-			]
-		},
-		{
 			"name": "getBlobAddr",
 			"inputs": [
 				{"name":"nameBlob","type":"string"}
@@ -213,8 +170,6 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
-		{"name":"m_codeSnapshot","type":"cell"},
-		{"name":"m_dataSnapshot","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_codeTag","type":"cell"},

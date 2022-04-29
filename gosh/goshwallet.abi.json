@@ -50,9 +50,7 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"commit","type":"string"},
-				{"name":"diffName","type":"string[]"},
-				{"name":"diff","type":"string[]"}
+				{"name":"commit","type":"string"}
 			],
 			"outputs": [
 			]
@@ -122,18 +120,6 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"Name","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployDiff",
-			"inputs": [
-				{"name":"index","type":"uint128"},
-				{"name":"repoName","type":"string"},
-				{"name":"name","type":"string[]"},
-				{"name":"branch","type":"string"},
-				{"name":"diff","type":"string[]"}
 			],
 			"outputs": [
 			]

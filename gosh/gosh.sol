@@ -24,8 +24,6 @@ contract Gosh {
     TvmCell m_BlobData;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
-    TvmCell m_codeSnapshot;
-    TvmCell m_dataSnapshot;
     TvmCell m_codeDao;
     TvmCell m_dataDao;
     TvmCell m_codeTag;
@@ -87,7 +85,7 @@ contract Gosh {
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name, goshdao);
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
-            rootpubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_codeSnapshot, m_dataSnapshot, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
+            rootpubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
     }
     
     function _composeDaoStateInit(string name) internal view returns(TvmCell) {
@@ -175,12 +173,6 @@ contract Gosh {
         m_BlobData = data;
     }
 
-    function setSnapshot(TvmCell code, TvmCell data) public  onlyOwner {
-        tvm.accept();
-        m_codeSnapshot = code;
-        m_dataSnapshot = data;
-    }
-    
     function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
         tvm.accept();
         m_WalletCode = code;
