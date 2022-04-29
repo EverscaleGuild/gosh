@@ -8,7 +8,7 @@ const logger = console;
 const ENDPOINTS="https://gra01.net.everos.dev,https://rbx01.net.everos.dev,https://eri01.net.everos.dev";
 const NETWORK_NAME="net.ton.dev";
 const GOSH_ROOT_CONTRACT_ADDRESS="0:08ff47a77ba853306d234f5803dc25e5a9128aa280df44889f7d64c69f81aec8";
-const WELL_KNOWN_ROOT_CONTRACT_ADDRESS = "gosh::"+NETWORK_NAME+"://"+CONTRACT+"/";
+const WELL_KNOWN_ROOT_CONTRACT_ADDRESS = "gosh::"+NETWORK_NAME+"://"+GOSH_ROOT_CONTRACT_ADDRESS+"/";
 
 const METADATA_KEY = {
   BUILD_PROVIDER: "WALLET_PUBLIC",
