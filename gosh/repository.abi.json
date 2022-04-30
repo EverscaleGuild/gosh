@@ -50,6 +50,16 @@
 			]
 		},
 		{
+			"name": "setFirstCommit",
+			"inputs": [
+				{"name":"nameCommit","type":"string"},
+				{"name":"nameBranch","type":"string"},
+				{"name":"commit","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "setHEAD",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
@@ -118,7 +128,6 @@
 		{
 			"name": "getCommitAddr",
 			"inputs": [
-				{"name":"nameBranch","type":"string"},
 				{"name":"nameCommit","type":"string"}
 			],
 			"outputs": [

@@ -129,6 +129,15 @@ contract Repository {
         _Branches[nameBranch] = Item(nameBranch, commit);
     }
     
+    function setFirstCommit(string nameCommit, string nameBranch, address commit) public {
+        require(_Branches.exists(nameBranch), 102);
+        require(_Branches[nameBranch].value == address.makeAddrNone(), 100);
+        TvmCell s1 = _composeCommitStateInit(nameCommit);
+        require(msg.sender == address.makeAddrStd(0, tvm.hash(s1)), 101);
+        tvm.accept();
+        _Branches[nameBranch] = Item(nameBranch, commit);
+    }
+    
     function setHEAD(uint256 pubkey, string nameBranch) public {
         require(checkAccess(pubkey, msg.sender),101);
         require(_Branches.exists(nameBranch), 102);
@@ -182,8 +191,7 @@ contract Repository {
         return _head;
     }
 
-    function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
-        require(_Branches.exists(nameBranch));
+    function getCommitAddr(string nameCommit) external view returns(address)  {
         TvmCell s1 = _composeCommitStateInit(nameCommit);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
