@@ -177,7 +177,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
+            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
     }
     
     function setCommit(

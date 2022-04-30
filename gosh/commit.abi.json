@@ -15,6 +15,7 @@
 				{"name":"commit","type":"string"},
 				{"name":"parent1","type":"address"},
 				{"name":"parent2","type":"address"},
+				{"name":"repo","type":"address"},
 				{"name":"BlobCode","type":"cell"},
 				{"name":"BlobData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},

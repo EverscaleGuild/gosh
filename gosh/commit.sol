@@ -43,14 +43,6 @@ contract Commit {
     address _rootGosh;
     uint128 _num = 1;
 
-    modifier onlyOwner {
-        bool checkOwn = false;
-        if (msg.sender == _rootRepo) { checkOwn = true; }
-        if (msg.pubkey() == _pubkey) { checkOwn = true; }
-        require(checkOwn, 500);
-        _;
-    }
-
     modifier onlyFirst {
         require(check == false, 600);
         _;
@@ -65,6 +57,7 @@ contract Commit {
         string commit, 
         address parent1,
         address parent2,
+        address repo,
         TvmCell BlobCode,
         TvmCell BlobData,
         TvmCell WalletCode,
@@ -78,7 +71,7 @@ contract Commit {
         _rootGosh = rootGosh;
         _goshdao = goshdao;
         _pubkey = value0;
-        _rootRepo = msg.sender;
+        _rootRepo = repo;
         _nameBranch = nameBranch;
         _commit = commit;
         m_BlobCode = BlobCode;
