@@ -29,6 +29,7 @@ contract GoshDao is TokenRootOwner {
     TvmCell m_TagData;
     address _rootgosh;
     string _nameDao;
+    address[] _wallets;
     
     //added for SMV
     TvmCell m_TokenLockerCode;
@@ -102,7 +103,7 @@ contract GoshDao is TokenRootOwner {
     }
 
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
-        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, pubkeyroot, version);
+        TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
         TvmCell _contractflex = tvm.buildStateInit({
             code: deployCode,
             pubkey: pubkey,
@@ -117,6 +118,7 @@ contract GoshDao is TokenRootOwner {
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(_rootpubkey, pubkey);
         _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));
+        _wallets.push(_lastAccountAddress);
         new GoshWallet {
             stateInit: s1, value: 60 ton, wid: 0
         }(m_CommitCode, m_CommitData, 
@@ -141,8 +143,8 @@ contract GoshDao is TokenRootOwner {
         return m_WalletCode;
     }
     
-    function getDaoWalletCode() external view returns(TvmCell) {
-        return GoshLib.buildWalletCode(m_WalletCode, _rootpubkey, version);
+    function getWallets() external view returns(address[]) {
+        return _wallets;
     }
 
     function getNameDao() external view returns(string) {

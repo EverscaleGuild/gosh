@@ -56,11 +56,11 @@
 			]
 		},
 		{
-			"name": "getDaoWalletCode",
+			"name": "getWallets",
 			"inputs": [
 			],
 			"outputs": [
-				{"name":"value0","type":"cell"}
+				{"name":"value0","type":"address[]"}
 			]
 		},
 		{
@@ -204,6 +204,7 @@
 		{"name":"m_TagData","type":"cell"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_nameDao","type":"string"},
+		{"name":"_wallets","type":"address[]"},
 		{"name":"m_TokenLockerCode","type":"cell"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
