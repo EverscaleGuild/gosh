@@ -17,7 +17,7 @@ import "goshwallet.sol";
 /* Root contract of tag */
 contract Tag {
     string version = "0.1.0";
-    string _nametag;
+    string static _nametag;
     string _nameCommit;
     string _content;
     address _commit;
@@ -30,7 +30,6 @@ contract Tag {
     constructor(
         uint256 value0, 
         uint256 value1,
-        string nametag, 
         string nameCommit, 
         address commit, 
         string content,
@@ -41,7 +40,6 @@ contract Tag {
         tvm.accept();
         _rootGosh = gosh;
         _goshdao = goshdao;
-        _nametag = nametag;
         _nameCommit = nameCommit;
         _commit = commit;
         _content = content;

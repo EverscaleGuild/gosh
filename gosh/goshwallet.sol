@@ -325,15 +325,15 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     
     function deployTag(string repoName, string nametag, string nameCommit, string content, address commit) public view onlyOwner accept{
         address repo = _buildRepositoryAddr(repoName);
-        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, nametag, version);
-        TvmCell s1 = tvm.buildStateInit(deployCode, m_TagData);
-        new Tag {stateInit: s1, value: 5 ton, wid: 0}(_rootRepoPubkey, tvm.pubkey(), nametag, nameCommit, commit, content, _rootgosh, _goshdao, m_WalletCode, m_WalletData);
+        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, version);
+        TvmCell s1 = tvm.buildStateInit({code: deployCode, contr: Tag, varInit: {_nametag: nametag}});
+        new Tag {stateInit: s1, value: 5 ton, wid: 0}(_rootRepoPubkey, tvm.pubkey(), nameCommit, commit, content, _rootgosh, _goshdao, m_WalletCode, m_WalletData);
     }
     
     function deleteTag(string repoName, string nametag)  public view onlyOwner accept{
         address repo = _buildRepositoryAddr(repoName);
-        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, nametag, version);
-        TvmCell s1 = tvm.buildStateInit(deployCode, m_TagData);
+        TvmCell deployCode = GoshLib.buildTagCode(m_TagCode, repo, version);
+        TvmCell s1 = tvm.buildStateInit({code: deployCode, contr: Tag, varInit: {_nametag: nametag}});
         address tagaddr = address.makeAddrStd(0, tvm.hash(s1));
         Tag(tagaddr).destroy{
             value: 0.1 ton, bounce: true, flag: 2 

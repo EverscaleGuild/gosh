@@ -8,7 +8,6 @@
 			"inputs": [
 				{"name":"value0","type":"uint256"},
 				{"name":"value1","type":"uint256"},
-				{"name":"nametag","type":"string"},
 				{"name":"nameCommit","type":"string"},
 				{"name":"commit","type":"address"},
 				{"name":"content","type":"string"},
@@ -54,6 +53,7 @@
 		}
 	],
 	"data": [
+		{"key":1,"name":"_nametag","type":"string"}
 	],
 	"events": [
 	],

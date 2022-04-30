@@ -174,6 +174,10 @@ contract Repository {
     function getCommitCode() external view returns(TvmCell) {
         return m_CommitCode;
     }
+    
+    function getTagCode() external view returns(TvmCell) {
+        return GoshLib.buildTagCode(m_codeTag, address(this), version);
+    }
 
     function getGoshAdress() external view returns(address) {
         return _rootGosh;
