@@ -126,7 +126,13 @@ contract Commit {
         require(number > 0, 102);
         tvm.accept();
         number -= 1;
-        Commit(_parent1).CommitCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, number, newC); 
+        if (_parent1 == address.makeAddrNone()) { 
+            require(number == 0, 201);
+            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+        }
+        else {
+            Commit(_parent1).CommitCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, number, newC); 
+        }
     }
     
     function CommitCheckCommit(
