@@ -61,11 +61,6 @@ BLOB_CODE=$($TVM_LINKER decode --tvc ../blob.tvc | sed -n '/code:/ s/ code: // p
 BLOB_DATA=$($TVM_LINKER decode --tvc ../blob.tvc | sed -n '/data:/ s/ data: // p')
 $TONOS_CLI -u $NETWORK call $GOSH_ADDR setBlob "{\"code\":\"$BLOB_CODE\",\"data\":\"$BLOB_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
 
-echo "load \`snapshot\`-contract"
-SNAPSHOT_CODE=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/code:/ s/ code: // p')
-SNAPSHOT_DATA=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/data:/ s/ data: // p')
-$TONOS_CLI -u $NETWORK call $GOSH_ADDR setSnapshot "{\"code\":\"$SNAPSHOT_CODE\",\"data\":\"$SNAPSHOT_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
-
 echo "load \`wallet\`-contract"
 WALLET_CODE=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/code:/ s/ code: // p')
 WALLET_DATA=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/data:/ s/ data: // p')
