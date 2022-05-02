@@ -118,8 +118,10 @@ contract Commit {
         require(checkAccess(pubkey, msg.sender), 100);
         require(address(this) == newC, 101);
         tvm.accept();
-        if (_parent1 == address.makeAddrNone()) { 
-            require(branchcommit == address(this), 200);
+        if (_parent1 == address.makeAddrNone()) {
+            if (address(this) != branchcommit){ 
+                require(branchcommit == _parent1, 200);
+            }
             require(_check[newC] == 0, 201);
             Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
         }
@@ -157,6 +159,7 @@ contract Commit {
         }
         else {
             if (_parent1 == address.makeAddrNone()) { 
+                require(branchcommit == _parent1, 200);
                 Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
             }
             else { 
