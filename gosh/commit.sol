@@ -42,6 +42,7 @@ contract Commit {
     address _parent2;
     address _rootGosh;
     uint128 _num = 1;
+    mapping(address => int32) _check;
 
     modifier onlyFirst {
         require(check == false, 600);
@@ -112,39 +113,62 @@ contract Commit {
     function WalletCheckCommit(
         uint256 pubkey, 
         string branchName,
-        uint128 number,
+        address branchcommit,
         address newC) public {
         require(checkAccess(pubkey, msg.sender), 100);
         require(address(this) == newC, 101);
-        require(number > 0, 102);
         tvm.accept();
-        number -= 1;
         if (_parent1 == address.makeAddrNone()) { 
-            require(number == 0, 201);
-            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+            require(branchcommit == address(this), 200);
+            require(_check[newC] == 0, 201);
+            Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
         }
-        else {
-            Commit(_parent1).CommitCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, number, newC); 
+        else { 
+            if (_parent2 != address.makeAddrNone()) {
+                Commit(branchcommit).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC);
+                Commit(_parent1).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                Commit(_parent2).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+            }
+            else {
+                Commit(_parent1).CommitCheckCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+            }
         }
+    }
+    
+    function addCheck(
+        string nameCommit,
+        address newC) public {
+        require(_buildCommitAddr(nameCommit) == msg.sender, 100);
+        _check[newC] += 1;
     }
     
     function CommitCheckCommit(
         string nameCommit,
         string branchName,
-        uint128 number,
+        address branchcommit,  
         address newC) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, 100);
         tvm.accept();
-        if (number == 0) {
-            Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
+        if (branchcommit == address(this)) {
+            _check[newC] -= 1;
+            if (_check[newC] == 0) {
+                Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
+            }
         }
         else {
-            number -= 1;
             if (_parent1 == address.makeAddrNone()) { 
-                require(number == 0, 201);
                 Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
             }
-            Commit(_parent1).CommitCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, number, newC); 
+            else { 
+                if (_parent2 != address.makeAddrNone()) {
+                    Commit(branchcommit).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC);
+                    Commit(_parent1).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                    Commit(_parent2).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                }
+                else {
+                    Commit(_parent1).CommitCheckCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                }
+            }
         }
     }
 

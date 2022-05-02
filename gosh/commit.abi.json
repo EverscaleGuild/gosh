@@ -31,7 +31,16 @@
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"branchName","type":"string"},
-				{"name":"number","type":"uint128"},
+				{"name":"branchcommit","type":"address"},
+				{"name":"newC","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "addCheck",
+			"inputs": [
+				{"name":"nameCommit","type":"string"},
 				{"name":"newC","type":"address"}
 			],
 			"outputs": [
@@ -42,7 +51,7 @@
 			"inputs": [
 				{"name":"nameCommit","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"number","type":"uint128"},
+				{"name":"branchcommit","type":"address"},
 				{"name":"newC","type":"address"}
 			],
 			"outputs": [
@@ -157,6 +166,7 @@
 		{"name":"_parent1","type":"address"},
 		{"name":"_parent2","type":"address"},
 		{"name":"_rootGosh","type":"address"},
-		{"name":"_num","type":"uint128"}
+		{"name":"_num","type":"uint128"},
+		{"name":"_check","type":"map(address,int32)"}
 	]
 }
