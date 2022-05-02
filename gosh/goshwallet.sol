@@ -185,7 +185,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branchName,
         string commit, 
         uint128 number) public view onlyOwner accept {
-        if ((branchName == "main") || (branchName == "master")) {
+/*        if ((branchName == "main") || (branchName == "master")) {
             TvmBuilder b;
 
             uint256 id = tvm.hash(b.toCell()); 
@@ -193,12 +193,12 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             uint32 finishTime = now + 5*60 + 7*24*60*60;
             startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
                            id, b.toCell(), startTime, finishTime);
-        } else {
+        } else {*/
             address repo = _buildRepositoryAddr(repoName);
             TvmCell s0 = _composeCommitStateInit(commit, repo);
             address addrC = address.makeAddrStd(0, tvm.hash(s0));
             Commit(addrC).WalletCheckCommit{value: 0.3 ton * number + 0.3 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, number, addrC);
-        }
+    //    }
     }
         
     function _composeBlobStateInit(string nameBlob, address repo) internal view returns(TvmCell) {
