@@ -164,6 +164,14 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         new Commit {stateInit: s1, value: 2 ton, wid: 0}(
             _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
     }
+
+    //SMV configuration 
+    
+    uint32 constant SETCOMMIT_PROPOSAL_START_AFTER = 1 minutes;
+    uint32 constant SETCOMMIT_PROPOSAL_DURATION = 1 weeks;
+    
+    
+
     
     function setCommit(
         string repoName,
