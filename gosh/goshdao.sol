@@ -102,13 +102,13 @@ contract GoshDao is TokenRootOwner {
         _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
     }
 
-    function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey) internal view returns(TvmCell) {
+    function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
         TvmCell deployCode = GoshLib.buildWalletCode(m_WalletCode, pubkey, version);
         TvmCell _contractflex = tvm.buildStateInit({
             code: deployCode,
             pubkey: pubkey,
             contr: GoshWallet,
-            varInit: {_rootRepoPubkey: pubkeyroot, _rootgosh : _rootgosh, _goshdao: address(this)}
+            varInit: {_rootRepoPubkey: _rootpubkey, _rootgosh : _rootgosh, _goshdao: address(this)}
         });
         return _contractflex;
     }
@@ -116,7 +116,7 @@ contract GoshDao is TokenRootOwner {
     function deployWallet(uint256 pubkey) public {
         require(pubkey > 0, 101);
         tvm.accept();
-        TvmCell s1 = _composeWalletStateInit(_rootpubkey, pubkey);
+        TvmCell s1 = _composeWalletStateInit(pubkey);
         _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));
         _wallets.push(_lastAccountAddress);
         new GoshWallet {
@@ -134,8 +134,8 @@ contract GoshDao is TokenRootOwner {
 
     //Getters
 
-    function getAddrWallet(uint256 pubkeyroot, uint256 pubkey) external view returns(address) {
-        TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey);
+    function getAddrWallet(uint256 pubkey) external view returns(address) {
+        TvmCell s1 = _composeWalletStateInit(pubkey);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
 

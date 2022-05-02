@@ -40,7 +40,6 @@
 		{
 			"name": "getAddrWallet",
 			"inputs": [
-				{"name":"pubkeyroot","type":"uint256"},
 				{"name":"pubkey","type":"uint256"}
 			],
 			"outputs": [
