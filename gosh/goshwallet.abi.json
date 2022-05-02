@@ -440,7 +440,6 @@
 		{"name":"lastVoteResult","type":"optional(bool)"},
 		{"name":"lockingAmount","type":"uint128"},
 		{"name":"_tokenBalance","type":"uint128"},
-		{"name":"m_messages","type":"map(uint256,uint32)"},
 		{"name":"version","type":"string"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},

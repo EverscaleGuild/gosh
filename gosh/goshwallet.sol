@@ -34,11 +34,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
     
-    // mapping to store hashes of inbound messages;
-    mapping(uint256 => uint32) m_messages;
-    // Each transaction is limited by gas, so we must limit count of iteration in loop.
-    uint8 constant MAX_CLEANUP_MSGS = 20;
-    
     struct LastMsg {
         uint32 expireAt;
         uint256 msgHash;
@@ -87,16 +82,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     modifier accept() {
         tvm.accept();
         _;
-    }
-    
-    modifier saveMsg() {
-        m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
-        _;
-    }
-    
-    modifier clean() {
-        _;
-        gc();
     }
 
     modifier minBalance(uint128 val) {
@@ -148,7 +133,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
 
     function deployRepository(
         string nameRepo
-    ) public onlyOwner accept saveMsg clean {
+    ) public onlyOwner accept {
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -161,7 +146,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string fullCommit,
         address parent1,
         address parent2
-        ) public onlyOwner accept saveMsg clean {
+        ) public onlyOwner accept {
         _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
     }
 
@@ -217,7 +202,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string blobName, 
         string fullBlob, 
         string prevSha
-        ) public onlyOwner accept saveMsg clean {
+        ) public onlyOwner accept {
         _deployBlob(repoName, commit, branch, blobName, fullBlob, prevSha);
     }
 
@@ -367,23 +352,8 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         (, uint32 expireAt) = body.decode(uint64, uint32);
         require(expireAt > now, 57);
         uint256 msgHash = tvm.hash(message);
-        require(!m_messages.exists(msgHash), ERR_DOUBLE_MSG);
         m_lastMsg = LastMsg(expireAt, msgHash);
         return body;
-    }
-
-    /// @notice Allows to delete expired messages from dict.
-    function gc() private {
-        uint counter = 0;
-        for ((uint256 msgHash, uint32 expireAt) : m_messages) {
-            if (counter >= MAX_CLEANUP_MSGS) {
-                break;
-            }
-            counter++;
-            if (expireAt <= now) {
-                delete m_messages[msgHash];
-            }
-        }
     }
 
     //
