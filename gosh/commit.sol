@@ -153,7 +153,7 @@ contract Commit {
         tvm.accept();
         if (branchcommit == address(this)) {
             _check[newC] -= 1;
-            if (_check[newC] == 0) {
+            if (_check[newC] == -1) {
                 Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
             }
         }
