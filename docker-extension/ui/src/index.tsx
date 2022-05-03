@@ -9,7 +9,7 @@ import { TonClient, BinaryLibrary } from '@eversdk/core';
 import { libWeb, libWebSetup } from '@eversdk/lib-web';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
-libWebSetup({ binaryURL: 'https://extension-ui.gosh.sh/assets/eversdk.wasm' });
+libWebSetup({ binaryURL: 'https://extension-ui.gosh.sh/assets/eversdk.wasm?v=' + Math.random().toString(36).replace(/[^a-z]+/g, '') });
 
 const queryClient = new QueryClient({
   defaultOptions: {
