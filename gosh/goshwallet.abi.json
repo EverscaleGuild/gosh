@@ -73,6 +73,7 @@
 				{"name":"branch","type":"string"},
 				{"name":"blobName","type":"string"},
 				{"name":"fullBlob","type":"string"},
+				{"name":"ipfsBlob","type":"string"},
 				{"name":"prevSha","type":"string"}
 			],
 			"outputs": [

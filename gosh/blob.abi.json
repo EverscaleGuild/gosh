@@ -10,6 +10,7 @@
 				{"name":"commit","type":"address"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"blob","type":"string"},
+				{"name":"ipfs","type":"string"},
 				{"name":"prevSha","type":"string"},
 				{"name":"rootGosh","type":"address"},
 				{"name":"goshdao","type":"address"},
@@ -59,7 +60,8 @@
 			"outputs": [
 				{"name":"sha","type":"string"},
 				{"name":"commit","type":"address"},
-				{"name":"content","type":"string"}
+				{"name":"content","type":"string"},
+				{"name":"ipfs","type":"string"}
 			]
 		},
 		{
@@ -84,6 +86,7 @@
 		{"name":"_nameBlob","type":"string"},
 		{"name":"_nameBranch","type":"string"},
 		{"name":"check","type":"bool"},
+		{"name":"_ipfsBlob","type":"string"},
 		{"name":"_blob","type":"string"},
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_prevSha","type":"string"},

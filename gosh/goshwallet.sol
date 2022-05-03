@@ -229,9 +229,10 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branch,
         string blobName, 
         string fullBlob, 
+        string ipfsBlob,
         string prevSha
         ) public onlyOwner accept {
-        _deployBlob(repoName, commit, branch, blobName, fullBlob, prevSha);
+        _deployBlob(repoName, commit, branch, blobName, fullBlob, ipfsBlob, prevSha);
     }
 
     function _deployBlob(
@@ -239,7 +240,8 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string commit,
         string branch,
         string blobName, 
-        string fullBlob, 
+        string fullBlob,
+        string ipfsBlob, 
         string prevSha) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
@@ -247,7 +249,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         address addrC = address.makeAddrStd(0, tvm.hash(s0));
         TvmCell s1 = _composeBlobStateInit(blobName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), addrC, branch, fullBlob, prevSha, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode, m_WalletData);
+        new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), addrC, branch, fullBlob, ipfsBlob, prevSha, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode, m_WalletData);
     }
     
     function setBlob(

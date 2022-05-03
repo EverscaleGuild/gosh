@@ -18,6 +18,7 @@ contract Blob{
     string static _nameBlob;
     string _nameBranch;
     bool check = false;
+    string _ipfsBlob;
     string _blob;
     uint256 _pubkey;
     string _prevSha;
@@ -36,7 +37,8 @@ contract Blob{
         uint256 pubkey, 
         address commit,
         string nameBranch, 
-        string blob, 
+        string blob,
+        string ipfs, 
         string prevSha,
         address rootGosh,
         address goshdao,
@@ -44,6 +46,7 @@ contract Blob{
         TvmCell WalletCode,
         TvmCell WalletData) public {
         tvm.accept();
+        _ipfsBlob = ipfs;
         _rootCommit = commit;
         _pubkey = rootPubkey;
         _rootGosh = rootGosh;
@@ -98,8 +101,8 @@ contract Blob{
         return _rootCommit;
     }
     
-    function getBlob() external view returns(string sha, address commit, string content) {
-        return (_nameBlob, _rootCommit, _blob);
+    function getBlob() external view returns(string sha, address commit, string content, string ipfs) {
+        return (_nameBlob, _rootCommit, _blob, _ipfsBlob);
     }
 
     function getVersion() external view returns(string) {
