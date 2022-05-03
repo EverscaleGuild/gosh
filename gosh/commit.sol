@@ -86,7 +86,7 @@ contract Commit {
     function getMoney(uint256 pubkey) private {
         TvmCell s1 = _composeWalletStateInit(pubkey);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        require (address(this).balance <= 8 ton);
+        if (address(this).balance > 8 ton) { return; }
         GoshWallet(addr).sendMoney{value : 0.2 ton}(_rootRepo, _commit);
     }
     
