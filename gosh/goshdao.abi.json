@@ -63,6 +63,22 @@
 			]
 		},
 		{
+			"name": "getProposalCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
+			"name": "getClientCode",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"cell"}
+			]
+		},
+		{
 			"name": "getWallets",
 			"inputs": [
 			],

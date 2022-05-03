@@ -153,6 +153,14 @@ contract GoshDao is TokenRootOwner {
     function getWalletCode() external view returns(TvmCell) {
         return m_WalletCode;
     }
+
+    function getProposalCode() external view returns(TvmCell) {
+        return m_SMVProposalCode;
+    }
+
+    function getClientCode() external view returns(TvmCell) {
+        return m_SMVClientCode;
+    }
     
     function getWallets() external view returns(address[]) {
         return _wallets;
