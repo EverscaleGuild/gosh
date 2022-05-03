@@ -261,7 +261,7 @@ function completeVoting (uint128 t) external check_token_root
 
     if (!currentCaller.isStdZero())
     {
-        IVotingResultRecipient(currentCaller).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
+        IVotingResultRecipient(currentCaller).isCompletedCallback {value:0, flag: 64} (platform_id, tokenLocker, votingResult, propData);
     }
 
     currentCaller = address.makeAddrStd(0,0);
@@ -280,14 +280,14 @@ function isCompleted () override external /* responsible */ /* returns (optional
 
     if ((msg.value <= SMVConstants.VOTING_COMPLETION_FEE) || (proposalBusy))
         //return {value:0, flag: 64} votingResult;
-        IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
+        IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (platform_id, tokenLocker, votingResult, propData);
     else
     {
         optional (bool) empty;
 
         if (now < startTime)
             //return {value:0, flag: 64} empty;
-            IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (empty, propData);
+            IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (platform_id, tokenLocker, empty, propData);
         else    
         {
             if (!votingResult.hasValue())
@@ -300,7 +300,7 @@ function isCompleted () override external /* responsible */ /* returns (optional
             }
             else {
                 //return {value:0, flag: 64} votingResult;
-                IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (votingResult, propData);
+                IVotingResultRecipient(msg.sender).isCompletedCallback {value:0, flag: 64} (platform_id, tokenLocker, votingResult, propData);
             }
         }
     }
@@ -320,40 +320,12 @@ function isInitialized () external override view responsible check_locker return
 
 //gosh only
 //b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
-function getProposalParams () external view 
-         returns( uint256  proposalKind,  string repoName, string  branchName,  string commitName, string fullCommit, address parent1, address parent2)
+function getGoshSetCommitProposalParams () external view 
+         returns( uint256  proposalKind,  string repoName, string  branchName,  string commit, uint128 number)
 {
     TvmSlice s = propData.toSlice();
-    TvmSlice s1 = s.loadRefAsSlice();
-    (proposalKind,  repoName,  branchName,  commitName,  fullCommit,  parent1,  parent2)
-     = s1.decode(uint256, string, string, string, string, address, address);
-}
-
-function getBlob1Params () external view 
-         returns(string blobName, string  fullBlob,  string prevSha)
-{
-    TvmSlice s = propData.toSlice();
-    s.loadRefAsSlice();
-    TvmSlice s1 = s.loadRefAsSlice();
-    (blobName, fullBlob, prevSha) = s1.decode(string, string, string);
-}
-
-function getBlob2Params () external view 
-         returns(string blobName, string  fullBlob,  string prevSha)
-{
-    TvmSlice s = propData.toSlice();
-    s.loadRefAsSlice(); s.loadRefAsSlice();
-    TvmSlice s1 = s.loadRefAsSlice();
-    (blobName, fullBlob, prevSha) = s1.decode(string, string, string);
-}
-
-function getDiffParams () external view 
-         returns(string diffName, string diff)
-{
-    TvmSlice s = propData.toSlice();
-    s.loadRefAsSlice(); s.loadRefAsSlice(); s.loadRefAsSlice();
-    TvmSlice s1 = s.loadRefAsSlice();
-    (diffName, diff) = s1.decode(string, string);
+    (proposalKind,  repoName,  branchName,  commit,  number)
+     = s.decode(uint256, string, string, string, uint128);
 }
 
 ////////////////////////////////////
@@ -374,7 +346,7 @@ function continueUpdateHead (uint256 _platform_id) external override check_clien
 
 
 /* function onProposalCompletedWhileUpdateHead (optional (bool) completed) external check_myself */
-function isCompletedCallback (optional (bool) completed, TvmCell /* data */ ) external override check_myself
+function isCompletedCallback (uint256 /* _platform_id */, address /* tokenLocker */, optional (bool) completed, TvmCell /* data */ ) external override check_myself
 {   
     if (completed.hasValue())
     {

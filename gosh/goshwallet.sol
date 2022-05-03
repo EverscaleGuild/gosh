@@ -18,6 +18,7 @@ import "tag.sol";
 import "./libraries/GoshLib.sol";
 import "../smv/SMVAccount.sol";
 import "../smv/Libraries/SMVConstants.sol";
+import "../smv/LockerPlatform.sol";
 
 /* Root contract of gosh */
 contract GoshWallet is SMVAccount , IVotingResultRecipient{
@@ -165,26 +166,47 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
     }
     
+    //SMV configuration 
+    uint32 constant SETCOMMIT_PROPOSAL_START_AFTER = 1 minutes;
+    uint32 constant SETCOMMIT_PROPOSAL_DURATION = 1 weeks;
+    uint256 constant SETCOMMIT_PROPOSAL_KIND = 1;
+    
+    function isProposalNeeded (string repoName, string branchName, address branchcommit, string commit, uint128 value) internal pure returns(bool)
+    {
+       return ((branchName == "main") || (branchName == "master"));
+    }
+
+    function _setCommit (        
+        string repoName,
+        string branchName,
+        address branchcommit,
+        string commit,
+        uint128 value) internal view
+    {
+        address repo = _buildRepositoryAddr(repoName);
+        TvmCell s0 = _composeCommitStateInit(commit, repo);
+        address addrC = address.makeAddrStd(0, tvm.hash(s0));
+        Commit(addrC).WalletCheckCommit{value: value, bounce: true, flag: 2}(tvm.pubkey(), branchName, branchcommit, addrC);
+    }
+    
     function setCommit(
         string repoName,
         string branchName,
         address branchcommit,
         string commit,
         uint128 value) public view onlyOwner accept {
-/*        if ((branchName == "main") || (branchName == "master")) {
-            TvmBuilder b;
-
-            uint256 id = tvm.hash(b.toCell()); 
-            uint32 startTime = now + 1*60;
-            uint32 finishTime = now + 5*60 + 7*24*60*60;
-            startProposal (m_SMVPlatformCode, m_SMVProposalCode,  
-                           id, b.toCell(), startTime, finishTime);
-        } else {*/
-            address repo = _buildRepositoryAddr(repoName);
-            TvmCell s0 = _composeCommitStateInit(commit, repo);
-            address addrC = address.makeAddrStd(0, tvm.hash(s0));
-            Commit(addrC).WalletCheckCommit{value: value, bounce: true, flag: 2}(tvm.pubkey(), branchName, branchcommit, addrC);
-    //    }
+        if (isProposalNeeded (repoName, branchName, branchcommit, commit, value)) {
+            TvmBuilder proposalBuilder;
+            uint256 proposalKind = SETCOMMIT_PROPOSAL_KIND;
+            proposalBuilder.store(proposalKind, repoName, branchName, branchcommit, commit, value);
+            TvmCell c = proposalBuilder.toCell();
+            uint256 prop_id = tvm.hash(c); 
+            uint32 startTime = now + SETCOMMIT_PROPOSAL_START_AFTER;
+            uint32 finishTime = now + SETCOMMIT_PROPOSAL_START_AFTER + SETCOMMIT_PROPOSAL_DURATION;
+            startProposal (m_SMVPlatformCode, m_SMVProposalCode, prop_id, c, startTime, finishTime);
+        } else {
+            _setCommit(repoName, branchName, branchcommit, commit, value);
+        }
     }
         
     function _composeBlobStateInit(string nameBlob, address repo) internal view returns(TvmCell) {
@@ -245,36 +267,46 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         ISMVProposal(proposal).isCompleted{
             value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.EPSILON_FEE} ();    
     }
+    
+        function calcClientAddress (uint256 _platform_id, address _tokenLocker) internal view returns(uint256)
+    {
+        TvmCell dataCell = tvm.buildDataInit ( {contr:LockerPlatform,
+                                                varInit: {
+                                                tokenLocker: _tokenLocker,
+                                                platform_id: _platform_id } } );
+        uint256 dataHash = tvm.hash (dataCell);
+        uint16 dataDepth = dataCell.depth();
 
-    function isCompletedCallback(optional(bool) res, TvmCell propData) external override {
+        uint256 add_std_address = tvm.stateInitHash (tvm.hash(m_SMVPlatformCode), 
+                                                     dataHash , 
+                                                     m_SMVPlatformCode.depth(), 
+                                                     dataDepth);
+        return add_std_address ;
+    }
+
+    modifier check_client (uint256 _platform_id, address _tokenLocker) {
+        uint256 expected = calcClientAddress (_platform_id, _tokenLocker);
+        require ( msg.sender.value == expected, SMVErrors.error_not_my_client) ;
+        _ ;
+    }
+
+    function isCompletedCallback(uint256 _platform_id, 
+                                 address _tokenLocker,    
+                                 optional(bool) res, 
+                                 TvmCell propData) external override check_client(_platform_id, _tokenLocker) {
         //for tests
         lastVoteResult = res;
-        //
-/*
-        if (res.hasValue()) {
-            if (res.get()) {
-                TvmSlice s = propData.toSlice();
-                TvmSlice commitSlice = s.loadRefAsSlice();
-                uint256 kind = commitSlice.decode(uint256);
-                TvmSlice blob1Slice = s.loadRefAsSlice();
-                TvmSlice blob2Slice = s.loadRefAsSlice();
-                TvmSlice diff1Slice = s.loadRefAsSlice();
-                if (kind == 0)
-                {
-                    (string repoName, string branchName, string commitName, string fullCommit, address parent1, address parent2) =
-                        commitSlice.decode(string, string, string, string, address, address);
-                    _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+        ////////////////////
 
-                    (string diffName, string diff) =  diff1Slice.decode(string, string);
-                    _deployDiff(repoName, diffName, branchName, diff);
-                    (string blobName, string fullBlob, string prevSha) = blob1Slice.decode(string, string, string);
-                    _deployBlob(repoName, commitName, blobName, fullBlob, prevSha);
-                    ( blobName,  fullBlob,  prevSha) = blob2Slice.decode(string, string, string);
-                    _deployBlob(repoName, commitName, blobName, fullBlob, prevSha);
-                }
+        if (res.hasValue() && res.get()) {
+            TvmSlice s = propData.toSlice();
+            uint256 kind = s.decode(uint256);
+            if (kind == SETCOMMIT_PROPOSAL_KIND) {
+                (string repoName, string branchName, address branchcommit, string commit, uint128 value) =
+                    s.decode(string, string, address, string, uint128);
+                _setCommit(repoName, branchName, branchcommit, commit, value);
             }
         }
-*/
     }
     
     function deployBranch(

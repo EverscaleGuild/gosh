@@ -181,7 +181,7 @@ function continueUpdateHead (uint256 _platform_id) external override check_clien
 }
 
 
-function isCompletedCallback (optional (bool) completed, TvmCell /* data */ ) external override check_proposal
+function isCompletedCallback (uint256 /* _platform_id */, address /* _tokenLocker */, optional (bool) completed, TvmCell /* data */ ) external override check_proposal
 {   
     if (completed.hasValue())
     {
