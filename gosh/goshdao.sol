@@ -95,8 +95,12 @@ contract GoshDao is TokenRootOwner {
         /////
         m_TokenLockerCode = TokenLockerCode;
         m_SMVPlatformCode = SMVPlatformCode;
-        m_SMVClientCode = SMVClientCode;
-        m_SMVProposalCode = SMVProposalCode;
+
+        TvmBuilder b;
+        b.store(address(this));
+        m_SMVProposalCode = tvm.setCodeSalt(SMVProposalCode, b.toCell());
+        m_SMVClientCode = tvm.setCodeSalt(SMVClientCode, b.toCell());
+
         m_TokenRootCode = TokenRootCode;
         m_TokenWalletCode = TokenWalletCode;
         ///////////////////////////////////////
