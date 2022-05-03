@@ -31,14 +31,6 @@
 			]
 		},
 		{
-			"name": "getMoney",
-			"inputs": [
-				{"name":"creator","type":"address"}
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "deployWallet",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"}

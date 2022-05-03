@@ -81,6 +81,7 @@ contract GoshDao is TokenRootOwner {
         address remainingGasTo,
         uint256 randomNonce */ ) public TokenRootOwner (TokenRootCode, TokenWalletCode) {
         tvm.accept();
+        getMoney();
         _creator = creator;
         _rootgosh = rootgosh;
         _rootpubkey = pubkey;
@@ -110,10 +111,10 @@ contract GoshDao is TokenRootOwner {
         _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
     }
     
-    function getMoney(address creator) public onlyOwner {
-        require (address(this).balance <= 10000 ton);
+    function getMoney() private {
+        if (address(this).balance <= 10000 ton) { return; }
         tvm.accept();
-        DaoCreator(creator).sendMoneyDao{value : 0.2 ton}(_nameDao, 10000 ton);
+        DaoCreator(_creator).sendMoneyDao{value : 0.2 ton}(_nameDao, 10000 ton);
     }
 
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
@@ -142,6 +143,7 @@ contract GoshDao is TokenRootOwner {
             m_TagCode, m_TagData,
             m_TokenLockerCode, m_SMVPlatformCode,
             m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
+        getMoney();
     }
 
     //Setters
