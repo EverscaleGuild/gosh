@@ -87,8 +87,10 @@ export const Home = ({action}: {action?: string}) => {
         />
         {/* <img src={Logo}/> */}
         <div className={cnb("logo-main")}></div>
-        <Typography variant="h4">Git Onchain Source Hodler</Typography>
-        <Typography>GOSH — a scalable blockchain reducing the risks and resources spent on protecting code. Build composable, censorship-resistant repositories. Collaborate and realize great ideas. All in a decentralized way.</Typography>
+        <Typography variant="h4">Git Open Source Hodler</Typography>
+        <Typography>
+          GOSH secures delivery and decentralization of your code. The first development platform blockchain, purpose-built for securing the software supply chain and extracting the value locked in your projects.
+        </Typography>
 
         <div className={cnb("button-flex")}>
         {userState && userState.phrase 

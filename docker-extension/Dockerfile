@@ -1,17 +1,3 @@
-FROM node:16.14-alpine AS build
-
-RUN apk --no-cache add curl coreutils docker yarn \
-    ca-certificates file iptables libc6-compat libgcc libstdc++ wget && \
-    update-ca-certificates && \
-    ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2 && \
-    mkdir /ui-build
-
-WORKDIR /ui-build
-COPY --chown=root ./ui/package*.json /ui-build/
-RUN yarn install --silent
-COPY --chown=root ./ui/ /ui-build/
-RUN  npm run build --silent
-
 FROM node:16.14-alpine
 ARG content_signature_local_dir
 ARG git_remote_gosh_local_dir
@@ -27,9 +13,11 @@ RUN ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2 \
     && apk add git docker bash \
     && mkdir /assets
 
-COPY --from=build /ui-build/build /ui 
-COPY --from=build /ui-build/build/assets/eversdk.wasm /eversdk.wasm
-COPY --from=build /ui-build/build/assets/eversdk.wasm /assets/eversdk.wasm
+COPY index.html /ui/index.html
+#COPY --from=build /ui-build/build /ui 
+
+#COPY --from=build /ui-build/build/assets/eversdk.wasm /eversdk.wasm
+#COPY --from=build /ui-build/build/assets/eversdk.wasm /assets/eversdk.wasm
 COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 COPY metadata.json /

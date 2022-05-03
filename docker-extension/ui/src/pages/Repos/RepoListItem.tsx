@@ -4,6 +4,12 @@ import CopyClipboard from "./../../components/CopyClipboard";
 import { IGoshRepository } from "./../../types/types";
 import { shortString } from "./../../utils";
 
+import { Loader, LoaderDotsText, FlexContainer, Flex, Icon } from "./../../components";
+import { CodeIcon, UsersIcon, ArrowRightIcon } from '@heroicons/react/outline';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
+
 
 type TRepositoryListItemProps = {
     daoName: string;
@@ -15,52 +21,83 @@ const RepositoryListItem = (props: TRepositoryListItemProps) => {
 
     return (
         <div className="py-3">
+
             <Link
-                className="text-xl font-semibold hover:underline"
                 to={`/organizations/${daoName}/repositories/${repository.meta?.name}`}
             >
-                {repository.meta?.name}
-            </Link>
+                <FlexContainer
+                  className="organization"
+                  direction="column"
+                  justify="space-between"
+                  align="stretch"
+                >
+                  <Flex>
+                    <div className="arrow"><ArrowRightIcon/></div>
+                    <div className="organization-title">
+                        {repository.meta?.name}
+                    </div>
+                    <div className="organization-description">
+                      This is a Gosh test repository
+                    </div>
 
-            <div className="text-sm text-gray-606060">
-                Gosh test repository
-            </div>
-
-            <div className="flex gap-1 mt-2">
-                {['gosh', 'vcs', 'ever', 'use', 'enjoy'].map((value, index) => (
-                    <button
-                        key={index}
-                        type="button"
-                        className="rounded-2xl bg-extblue/25 text-xs text-extblue px-2 py-1 hover:bg-extblue hover:text-white"
+                    <FlexContainer
+                      direction="row"
+                      justify="justify-content"
+                      align="center"
                     >
-                        {value}
-                    </button>
-                ))}
-            </div>
+                        <Flex
+                            grow={100}
+                            >
+                            <div className="organization-badges">
+                                {['gosh', 'vcs', 'ever', 'use', 'enjoy'].map((value, index) => (
+                                    <Chip
+                                        size="small"
+                                        key={index}
+                                        className="tag-badge"
+                                        label={value}
+                                    />
+                                ))}
+                            </div>
+                        </Flex>
+                        <Flex
+                            onClick={e => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            }}
+                        >
+                            <CopyClipboard
+                                componentProps={{
+                                    text: repository.address
+                                }}
+                                label={<Typography>{shortString(repository.address)}</Typography>}
+                            />
+                      </Flex>
 
-            <div className="flex gap-4 mt-3 text-xs text-gray-606060 justify-between">
-                <div className="flex gap-4">
-                    <div>
+                    </FlexContainer>
 
-                        Language
-                    </div>
-                    <div>
+                  </Flex>
+                  <Flex
+                    className="organization-footer"
+                  >
+                    <FlexContainer
+                      direction="row"
+                      justify="flex-start"
+                      align="center"
+                    >
+                      <Flex>
+                        <div className="badge"><CodeIcon/> <LoaderDotsText className={"badge-loader"}/> language</div>
+                      </Flex>
+                      <Flex>
+                        <div className="badge"><Icon icon="branches"/>{repository.meta?.branchCount} {(repository.meta?.branchCount && repository.meta?.branchCount === 1) ? "branch" : "branches"}</div>
+                      </Flex>
+                      <Flex>
+                        <div className="badge"><UsersIcon/> <LoaderDotsText className={"badge-loader"}/> commits</div>
+                      </Flex>
+                    </FlexContainer>
+                  </Flex>
+                </FlexContainer>
+              </Link>
 
-                        {repository.meta?.branchCount}
-                    </div>
-                    <div>
-
-                        22
-                    </div>
-                </div>
-                <CopyClipboard
-                    componentProps={{
-                        text: repository.address
-                    }}
-                    className="hover:text-gray-050a15"
-                    label={shortString(repository.address)}
-                />
-            </div>
         </div>
     );
 }

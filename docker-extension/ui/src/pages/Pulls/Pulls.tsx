@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import BranchSelect from "./../../components/BranchSelect";
-import { goshBranchesAtom, goshCurrBranchSelector } from "./../../store/gosh.state";
-import { TGoshBranch } from "./../../types/types";
+import BranchSelect from "../../components/BranchSelect";
+import { goshBranchesAtom, goshCurrBranchSelector } from "../../store/gosh.state";
+import { TGoshBranch } from "../../types/types";
 
+import Button from '@mui/material/Button';
+import { Modal, Loader, FlexContainer, Flex, Icon } from "./../../components";
+
+import { Typography } from "@mui/material";
+import styles from './Pulls.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 const PullsPage = () => {
     const { daoName, repoName } = useParams();
@@ -14,46 +22,63 @@ const PullsPage = () => {
     const [branchFrom, setBranchFrom] = useState<TGoshBranch | undefined>(defaultBranch);
     const [branchTo, setBranchTo] = useState<TGoshBranch | undefined>(defaultBranch);
 
-    return (
-        <div className="bordered-block px-7 py-8">
-            <div className="flex items-center gap-x-4">
-                <BranchSelect
-                    branch={branchFrom}
-                    branches={branches}
-                    onChange={(selected) => {
-                        if (selected) {
-                            setBranchFrom(selected);
-                        }
-                    }}
-                />
-                <span>
-                </span>
-                <BranchSelect
-                    branch={branchTo}
-                    branches={branches}
-                    onChange={(selected) => {
-                        if (selected) {
-                            setBranchTo(selected);
-                        }
-                    }}
-                />
-                <button
-                    className="btn btn--body px-3 py-1.5 !font-normal !text-sm"
-                    disabled={branchFrom?.name === branchTo?.name}
-                    onClick={() => {
-                        navigate(`/organizations/${daoName}/repositories/${repoName}/pulls/create?from=${branchFrom?.name}&to=${branchTo?.name}`);
-                    }}
+    return (<>
+        <div className="actions">
+            
+            <FlexContainer
+                    direction="row"
+                    justify="flex-start"
+                    align="center"
+                    className={cnb("repository-actions")}
                 >
-                    Create pull request
-                </button>
-            </div>
+                    <Flex>
+                        <BranchSelect
+                            branch={branchFrom}
+                            branches={branches}
+                            onChange={(selected) => {
+                                if (selected) {
+                                    setBranchFrom(selected);
+                                }
+                            }}
+                        />
+                    </Flex>
+                    <Flex>
+                        <BranchSelect
+                            branch={branchTo}
+                            branches={branches}
+                            onChange={(selected) => {
+                                if (selected) {
+                                    setBranchTo(selected);
+                                }
+                            }}
+                        />
+                    </Flex>
+                    <Flex
+                        grow={1000}
+                    >
 
-            <div className="mt-5">
-                <div className="text-rose-400 mt-5">
-                    <p>Generic only pull requests are available now</p>
+                        <Button
+                            color="primary"
+                            size="small"
+                            variant="contained"
+                            className={cnb("button-create", "btn-icon")}
+                            disableElevation
+                            disabled={branchFrom?.name === branchTo?.name}
+                            onClick={() => {
+                                navigate(`/${daoName}/${repoName}/pulls/create?from=${branchFrom?.name}&to=${branchTo?.name}`);
+                            }}
+                        >
+                            Create pull request
+                        </Button>
+                
+                    </Flex>
+                </FlexContainer>
                 </div>
+            <div className={cnb("tree")}>
+
+                        <Typography>Generic only pull requests are available now</Typography>
             </div>
-        </div>
+        </>
     );
 }
 

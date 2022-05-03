@@ -20,6 +20,11 @@
         margin-top1: 2rem;
     }
 }
+.modal-wide {
+    [role="dialog"] {
+        min-width: 500px;
+    }
+}
 .modal-fullscreen {
     [role="dialog"] {
         padding: 1.5rem;

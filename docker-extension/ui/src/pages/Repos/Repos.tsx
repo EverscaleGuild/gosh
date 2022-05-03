@@ -65,7 +65,6 @@ const RepositoriesPage = () => {
           navigate("/account/organizations");
         }}
       /> */}
-      <Outlet/>
       <div className="page-header">
         <FlexContainer
             direction="row"
@@ -77,8 +76,7 @@ const RepositoriesPage = () => {
           </Flex>
           <Flex>
                 <Link
-                    className="btn btn--body px-4 py-1.5 text-sm !font-normal"
-                    to={`/organizations/repositories/create`}
+                  to={`/organizations/${goshDao.meta?.name}/repositories/create`}
                 >
                   <Button
                       color="primary"
@@ -94,7 +92,7 @@ const RepositoriesPage = () => {
           </Flex>
       </FlexContainer>
       <InputBase
-        className="search-field"
+        className="input-field"
         type="text"
         placeholder="Search repositories"
         autoComplete={'off'}
@@ -104,64 +102,22 @@ const RepositoriesPage = () => {
     </div>
       <div className="divider"></div>
       <div className="mt-8">
+
         {(repoListQuery.isIdle || repoListQuery.isLoading) && (
-            <p className="text-sm text-gray-500 text-center py-3">
-                Loading repositories...
-            </p>
+          <div className="loader">
+            <Loader />
+            Loading {"repositories"}...
+          </div>
         )}
 
         {repoListQuery.isFetched && !repoListQuery.data?.length && (
-            <p className="text-sm text-gray-500 text-center py-3">
-                There are no repositories
-            </p>
+          <div className="no-data"><EmojiSadIcon/>There are no repositories</div>
         )}
 
         {repoListQuery.data?.map((repository, index) => (
             daoName && <RepoListItem key={index} daoName={daoName} repository={repository} />
         ))}
-{/* 
-        <div className="divide-y divide-gray-c4c4c4">
-            {goshDaos?.map((item, index) => (
-              <Link
-                key={index}
-                to={`/organizations/${item.meta?.name}`}
-                className="text-xl font-semibold hover:underline"
-              >
-                <FlexContainer
-                  className="organization"
-                  direction="column"
-                  justify="space-between"
-                  align="flex-start"
-                >
-                  <Flex>
-                    <div className="arrow"><ArrowRightIcon/></div>
-                    <div className="organization-title">
-                      {item.meta?.name}
-                    </div>
-                    <div className="organization-description">
-                      Organization description
-                    </div>
-                  </Flex>
-                  <Flex
-                    className="organization-footer"
-                  >
-                    <FlexContainer
-                      direction="row"
-                      justify="flex-start"
-                      align="center"
-                    >
-                      <Flex>
-                        <div className="badge"><CollectionIcon/> <LoaderDotsText className={"badge-loader"}/> repositories</div>
-                      </Flex>
-                      <Flex>
-                        <div className="badge"><UsersIcon/> <LoaderDotsText className={"badge-loader"}/> members</div>
-                      </Flex>
-                    </FlexContainer>
-                  </Flex>
-                </FlexContainer>
-              </Link>
-            ))}
-        </div> */}
+
       </div>
     </>
     );

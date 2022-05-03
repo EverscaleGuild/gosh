@@ -34,6 +34,7 @@ import CommitsPage from "./../pages/Commits";
 import CommitPage from "./../pages/Commit";
 import PullsPage from "./../pages/Pulls";
 import PullCreatePage from "./../pages/PullCreate";
+import RepoLayoutClear from "../pages/RepoLayout/RepoLayoutClear";
 
 const Router = () => {
   const client = useEverClient();
@@ -48,11 +49,11 @@ const Router = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(() => {
-    navigate("/");
-    location.pathname = "/";
-    return () => {}
-  }, [])
+  // useEffect(() => {
+  //   navigate("/");
+  //   location.pathname = "/";
+  //   return () => {}
+  // }, [])
   
   return (
     <div className={cn("ws-app", useLocation().pathname.split('/').filter(Boolean)[0], {"isMobile": isMobile, "main": !location.pathname.split('/').filter(Boolean)[0]})}>
@@ -77,22 +78,28 @@ const Router = () => {
               </Route>
           </Route>
           <Route path="/organizations/:daoName" element={<ProtectedLayout />}>
-            <Route path="repositories/create" element={<RepoCreatePage />} />
-            <Route path="repositories/:repoName" element={<RepoLayout />}>
-                <Route index element={<RepoPage />} />
-                <Route path="tree/:branchName" element={<RepoPage />} />
-                <Route path="branches" element={<BranchesPage />} />
-                <Route path="blobs/create/:branchName" element={<BlobCreatePage />} />
-                <Route path="blobs/update/:branchName/:blobName" element={<BlobUpdatePage />} />
-                <Route path="blob/:branchName/:blobName" element={<BlobPage />} />
-                <Route path="commits/:branchName" element={<CommitsPage />} />
-                <Route path="commit/:branchName/:commitName" element={<CommitPage />} />
-                <Route path="pulls/create" element={<PullCreatePage />} />
-                <Route path="pulls" element={<PullsPage />} />
-            </Route>
             <Route element={<DaoLayout />}>
-                <Route index element={<DaoPage />} />
-                <Route path="repositories" element={<ReposPage />} />
+              <Route element={<DaoPage />} >
+                <Route index element={null} />
+                <Route path="repositories/create" element={<RepoCreatePage />} />
+              </Route>
+              <Route path="repositories" element={<ReposPage />}/>
+            </Route>
+            <Route path="repositories/:repoName/blobs" element={<RepoLayoutClear />}>
+              <Route path="create/:branchName" element={<BlobCreatePage />} />
+              <Route path="update/:branchName/:blobName" element={<BlobUpdatePage />} />
+            </Route>
+            <Route path="repositories/:repoName" element={<RepoLayout />}>
+              <Route element={<RepoPage />}>
+                <Route index element={null} />
+                <Route path="branches" element={<BranchesPage />} />
+              </Route>
+              <Route path="tree/:branchName" element={<RepoPage />} />
+              <Route path="blob/:branchName/:blobName" element={<BlobPage />} />
+              <Route path="commits/:branchName" element={<CommitsPage />} />
+              <Route path="commit/:branchName/:commitName" element={<CommitPage />} />
+              <Route path="pulls/create" element={<PullCreatePage />} />
+              <Route path="pulls" element={<PullsPage />} />
             </Route>
           </Route>
           <Route path="/containers" element={<Containers />} />

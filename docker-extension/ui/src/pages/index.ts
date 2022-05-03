@@ -15,6 +15,7 @@ export * from "./PullCreate";
 export * from "./Pulls";
 export * from "./Repo";
 export * from "./RepoCreate";
+export * from "./RepoLayout";
 export * from "./Repos";
 export * from "./Settings";
 export * from "./Signin";

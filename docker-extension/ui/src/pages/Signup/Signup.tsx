@@ -85,6 +85,7 @@ export const SignupPage = () => {
 
                         <FormControlLabel
                             control={<Checkbox
+                                disabled={!values.phrase}
                                 {...label}
                                 name="isConfirmed"
                                 onChange={handleChange}

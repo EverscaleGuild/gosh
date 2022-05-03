@@ -1,10 +1,10 @@
 import { KeyPair } from "@eversdk/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { goshBranchesAtom } from "./../store/gosh.state";
-import { userStateAtom } from "./../store/user.state";
-import { GoshDao, GoshRoot, GoshWallet, GoshRepository } from "./../types/classes";
-import { IGoshDao, IGoshRepository, IGoshRoot, IGoshWallet } from "./../types/types";
+import { goshBranchesAtom } from "../store/gosh.state";
+import { userStateAtom } from "../store/user.state";
+import { GoshDao, GoshRoot, GoshWallet, GoshRepository } from "../types/classes";
+import { IGoshDao, IGoshRepository, IGoshRoot, IGoshWallet } from "../types/types";
 import { useEverClient } from "./ever.hooks";
 
 
@@ -72,8 +72,7 @@ export const useGoshRepo = (daoName?: string, name?: string) => {
 
     useEffect(() => {
         const createRepo = async (root: IGoshRoot, daoName: string, name: string) => {
-            const daoAddr = await root.getDaoAddr(daoName);
-            const repoAddr = await root.getRepoAddr(name, daoAddr);
+            const repoAddr = await root.getRepoAddr(name, daoName);
             const repository = new GoshRepository(root.account.client, repoAddr);
             setGoshRepo(repository);
         }

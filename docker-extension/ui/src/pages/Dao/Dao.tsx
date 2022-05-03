@@ -7,9 +7,18 @@ import ReposPage from "./../Repos";
 import Button from '@mui/material/Button';
 import { PlusIcon, CollectionIcon, UsersIcon, ArrowRightIcon, EmojiSadIcon } from '@heroicons/react/outline';
 import InputBase from '@mui/material/InputBase';
+import { useGoshWallet } from "../../hooks/gosh.hooks";
+import { Typography } from "@mui/material";
+
+import styles from './Dao.module.scss';
+import classnames from "classnames/bind";
+
+const cnb = classnames.bind(styles);
 
 const DaoPage = () => {
     const { goshDao } = useOutletContext<TDaoLayoutOutletContext>();
+
+    const goshWallet = useGoshWallet(goshDao && goshDao.meta?.name);
 
     return (
         <>
@@ -23,20 +32,43 @@ const DaoPage = () => {
           /> */}
           <div className="left-column">
           {/* <h2 className="font-semibold text-2xl mb-5">User account</h2> */}
+          {!goshDao && <div className="loader">
+            <Loader />
+            Loading {"organization"}...
+            </div>}
           {goshDao && (<>
             <h2 className="color-faded">{goshDao.meta?.name}</h2>
             <Outlet context={{ goshDao }} />
-            <p className="text-sm text-gray-606060">
-                    This is a Gosh test organization
-                </p>
+            <Typography>
+              This is a Gosh test organization
+            </Typography>
+              <CopyClipboard
+                className={cnb("address")}
+                label={shortString(goshDao.address)}
+                componentProps={{
+                    text: goshDao.address
+                }}
+              />
+              <div className={cnb("wallet-address")}>
 
-                <CopyClipboard
-                    label={shortString(goshDao.address)}
-                    className="mt-2"
-                    componentProps={{
-                        text: goshDao.address
-                    }}
-                />
+                <Typography>User wallet address</Typography>
+
+                <div className={cnb("wallet-address-copy-wrapper")}>
+                  <InputBase
+                    className="input-field"
+                    type="text"
+                    value={goshWallet?.address || ""}
+                    onChange={() => {}}
+                    disabled
+                    />
+                    <CopyClipboard
+                        componentProps={{
+                            text: goshWallet?.address || ""
+                        }}
+                    />
+
+                </div>
+              </div>
             </>
           )}
   
@@ -71,13 +103,14 @@ const DaoPage = () => {
                         </Link>
                     </Flex>
                 </FlexContainer>
-                {/* <InputBase
-                  className="search-field"
+                <InputBase
+                  className="input-field"
                   type="text"
                   placeholder="Search repositories"
                   autoComplete={'off'}
-                  onChange={(event) => setSearch(event.target.value)}
-                /> */}
+                  onChange={() =>{}}
+                />
+                <div className="divider"></div>
           
               </div>
             <div className="loader">
