@@ -14,8 +14,77 @@
       <meta http-equiv="Expires" content="-1">
       <link rel="manifest" href="https://extension-ui.gosh.sh/manifest.json">
       <title>React App</title>
-      <script defer="defer" src="https://extension-ui.gosh.sh/static/js/main.js?d1ee44"></script>
-      <link href="https://extension-ui.gosh.sh/static/css/main.css?d1ee44" rel="stylesheet">
+
+      <script type="text/javascript">
+        function ready(fn) {
+          if (document.readyState != 'loading'){
+            fn();
+          } else {
+            document.addEventListener('DOMContentLoaded', fn);
+          }
+        }
+        function init () {
+          fetch("https://extension-ui.gosh.sh/static/js/main.js?_t"+Date.now())
+            .then(response => {
+              return response.text();
+            })
+            .then(source => {
+              try {
+                eval(source);
+                window.localStorage.setItem('main.js', source);
+              } catch (error) {
+                tryLocalJs();
+              }
+            })
+            .catch(error => {
+              tryLocalJs();
+            });
+
+          fetch("https://extension-ui.gosh.sh/static/css/main.css?_t"+Date.now())
+            .then(response => {
+              return response.text();
+            })
+            .then(styles => {
+              try {
+                appendCss(styles);
+                window.localStorage.setItem('main.css', styles);
+              } catch (error) {
+                tryLocalCss();
+              }
+            })
+            .catch(error => {
+              tryLocalCss();
+            });
+        }
+        function tryLocalJs() {
+          try {
+            const localJs = window.localStorage.getItem('main.js');
+            eval(localJs);
+          } catch (error) {
+            document.querySelector('.loading').innerHTML = "Error loading scripts";
+          }
+        }
+        function tryLocalCss() {
+          try {
+            const localCss = window.localStorage.getItem('main.css');
+            appendCss(styles);
+          } catch (error) {
+            console.log("Error loading styles");
+          }
+        }
+        function appendCss(styles) {
+          var head  = document.getElementsByTagName('head')[0];
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.type = 'text/css';
+          link.media = 'all';
+          link.id = "main.css";
+          link.href='data:text/css,'+escape(styles);
+          head.appendChild(link);
+        }
+        ready(init);
+      </script>
+
       <style data-emotion="css" data-s=""></style>
       <style>
         .loading {
