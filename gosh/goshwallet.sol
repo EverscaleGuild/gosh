@@ -137,7 +137,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         return stateInit;
     }
     
-    function getMoney() public onlyOwner accept {
+    function getMoney() private {
         if (address(this).balance > 10000 ton) { return; }
         DaoCreator(_creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
     }

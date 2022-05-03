@@ -27,13 +27,6 @@
 			]
 		},
 		{
-			"name": "getMoney",
-			"inputs": [
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"nameRepo","type":"string"}
