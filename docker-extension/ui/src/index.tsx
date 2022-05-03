@@ -9,6 +9,8 @@ import { TonClient, BinaryLibrary } from '@eversdk/core';
 import { libWeb, libWebSetup } from '@eversdk/lib-web';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
+console.log("Version: 0.1.15");
+
 libWebSetup({ binaryURL: 'https://extension-ui.gosh.sh/assets/eversdk.wasm?v=' + Math.random().toString(36).replace(/[^a-z]+/g, '') });
 
 const queryClient = new QueryClient({
@@ -37,8 +39,6 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
-
-console.log("Version: 0.1.15");
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 TonClient.useBinaryLibrary(() => {
