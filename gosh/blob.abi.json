@@ -53,7 +53,8 @@
 			"outputs": [
 				{"name":"sha","type":"string"},
 				{"name":"commit","type":"address"},
-				{"name":"content","type":"string"}
+				{"name":"content","type":"string"},
+				{"name":"ipfs","type":"string"}
 			]
 		},
 		{
