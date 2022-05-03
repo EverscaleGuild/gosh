@@ -11,6 +11,7 @@ pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
 import "goshwallet.sol";
+import "daocreator.sol";
 import "./libraries/GoshLib.sol";
 import "../smv/TokenRootOwner.sol";
 
@@ -100,6 +101,12 @@ contract GoshDao is TokenRootOwner {
         m_TokenWalletCode = TokenWalletCode;
         ///////////////////////////////////////
         _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
+    }
+    
+    function getMoney(address creator) public onlyOwner {
+        require (address(this).balance <= 10000 ton);
+        tvm.accept();
+        DaoCreator(creator).sendMoneyDao{value : 0.2 ton}(_nameDao, 10000 ton);
     }
 
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {

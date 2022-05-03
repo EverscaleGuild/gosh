@@ -15,6 +15,7 @@ import "gosh.sol";
 import "repository.sol";
 import "commit.sol";
 import "tag.sol";
+import "daocreator.sol";
 import "./libraries/GoshLib.sol";
 import "../smv/SMVAccount.sol";
 import "../smv/Libraries/SMVConstants.sol";
@@ -130,6 +131,11 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, repo, version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
         return stateInit;
+    }
+    
+    function getMoney(address creator) public onlyOwner accept {
+        require (address(this).balance <= 10000 ton);
+        DaoCreator(creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
     }
 
     function deployRepository(

@@ -26,6 +26,14 @@
 			]
 		},
 		{
+			"name": "getMoney",
+			"inputs": [
+				{"name":"creator","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"nameRepo","type":"string"}
