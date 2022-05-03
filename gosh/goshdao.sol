@@ -112,7 +112,7 @@ contract GoshDao is TokenRootOwner {
     }
     
     function getMoney() private {
-        if (address(this).balance <= 10000 ton) { return; }
+        if (address(this).balance > 10000 ton) { return; }
         tvm.accept();
         DaoCreator(_creator).sendMoneyDao{value : 0.2 ton}(_nameDao, 10000 ton);
     }
