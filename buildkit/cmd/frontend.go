@@ -105,7 +105,7 @@ func loadConfig(ctx context.Context, c client.Client) (*Config, error) {
 	return parseConfig(df)
 }
 
-func imageHash(ctx context.Context, c client.Client, st llb.State) (string, error) {
+func imageHash(ctx context.Context, c client.Client, st *llb.State) (string, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "imageHash")
 	defer span.Finish()
 
@@ -115,7 +115,7 @@ func imageHash(ctx context.Context, c client.Client, st llb.State) (string, erro
 			"-c",
 			`find . -type f -exec sha256sum -b {} + | LC_ALL=C sort | sha256sum | awk '{ printf "sha256:%s", $1 }' > /hash`,
 		}),
-		llb.AddMount(".", st, llb.SourcePath("/")),
+		llb.AddMount(".", *st, llb.SourcePath("/")),
 		llb.IgnoreCache,
 	).Root()
 
@@ -124,9 +124,9 @@ func imageHash(ctx context.Context, c client.Client, st llb.State) (string, erro
 		llb.Args([]string{
 			"sh",
 			"-c",
-			`find . -type f | wc -l > /debug`,
+			`find . -type f > /debug`,
 		}),
-		llb.AddMount(".", st, llb.SourcePath("/")),
+		llb.AddMount(".", *st, llb.SourcePath("/")),
 		llb.IgnoreCache,
 	).Root()
 
@@ -251,22 +251,24 @@ func frontendBuild() client.BuildFunc {
 		}
 
 		//
-		hash, err := imageHash(ctx, c, goshImage)
 		//
 
 		span.LogKV("def", dumpp(def))
+
+		res, err := c.Solve(ctx, client.SolveRequest{
+			Definition: def.ToPB(),
+		})
+
+		hash, err := imageHash(ctx, c, goshImage)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve dockerfile")
+		}
+
 		labels := filter(opts, labelPrefix)
 		if _, ok := labels["WALLET_PUBLIC"]; !ok {
 			labels["WALLET_PUBLIC"] = wallet_public
 		}
 		labels["HASH"] = hash
-
-		res, err := c.Solve(ctx, client.SolveRequest{
-			Definition: def.ToPB(),
-		})
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve dockerfile")
-		}
 
 		ref, err := res.SingleRef()
 		if err != nil {
