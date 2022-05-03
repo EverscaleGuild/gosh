@@ -182,7 +182,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     uint32 constant SETCOMMIT_PROPOSAL_DURATION = 1 weeks;
     uint256 constant SETCOMMIT_PROPOSAL_KIND = 1;
     
-    function isProposalNeeded (string repoName, string branchName, address branchcommit, string commit, uint128 value) internal pure returns(bool)
+    function isProposalNeeded (string repoName, string branchName, address branchcommit, string commit) internal pure returns(bool)
     {
        return ((branchName == "main") || (branchName == "master"));
     }
@@ -191,32 +191,30 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string repoName,
         string branchName,
         address branchcommit,
-        string commit,
-        uint128 value) internal view
+        string commit) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s0 = _composeCommitStateInit(commit, repo);
         address addrC = address.makeAddrStd(0, tvm.hash(s0));
-        Commit(addrC).WalletCheckCommit{value: value, bounce: true, flag: 2}(tvm.pubkey(), branchName, branchcommit, addrC);
+        Commit(addrC).WalletCheckCommit{value: 0.5 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, branchcommit, addrC);
     }
     
     function setCommit(
         string repoName,
         string branchName,
         address branchcommit,
-        string commit,
-        uint128 value) public onlyOwner accept {
-        if (isProposalNeeded (repoName, branchName, branchcommit, commit, value)) {
+        string commit) public onlyOwner accept {
+        if (isProposalNeeded (repoName, branchName, branchcommit, commit)) {
             TvmBuilder proposalBuilder;
             uint256 proposalKind = SETCOMMIT_PROPOSAL_KIND;
-            proposalBuilder.store(proposalKind, repoName, branchName, branchcommit, commit, value);
+            proposalBuilder.store(proposalKind, repoName, branchName, branchcommit, commit);
             TvmCell c = proposalBuilder.toCell();
             uint256 prop_id = tvm.hash(c); 
             uint32 startTime = now + SETCOMMIT_PROPOSAL_START_AFTER;
             uint32 finishTime = now + SETCOMMIT_PROPOSAL_START_AFTER + SETCOMMIT_PROPOSAL_DURATION;
             startProposal (m_SMVPlatformCode, m_SMVProposalCode, prop_id, c, startTime, finishTime);
         } else {
-            _setCommit(repoName, branchName, branchcommit, commit, value);
+            _setCommit(repoName, branchName, branchcommit, commit);
         }
         getMoney();
     }
@@ -328,9 +326,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
             TvmSlice s = propData.toSlice();
             uint256 kind = s.decode(uint256);
             if (kind == SETCOMMIT_PROPOSAL_KIND) {
-                (string repoName, string branchName, address branchcommit, string commit, uint128 value) =
-                    s.decode(string, string, address, string, uint128);
-                _setCommit(repoName, branchName, branchcommit, commit, value);
+                (string repoName, string branchName, address branchcommit, string commit) =
+                    s.decode(string, string, address, string);
+                _setCommit(repoName, branchName, branchcommit, commit);
             }
         }
     }
