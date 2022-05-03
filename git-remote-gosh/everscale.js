@@ -318,7 +318,7 @@ function saveToIPFS(path, content) {
     throw new Error("Save for large files is not implemented yet.");
 }
 
-function loadFromIPFS(path, cid) {
+function loadFromIPFS(cid) {
     // TODO:
     // const content = ...
     // return content;
