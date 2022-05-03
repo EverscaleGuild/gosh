@@ -17,6 +17,8 @@ let CURRENT_REPO
 let Gosh, Repository, Snapshot, Commit, Blob, Dao, Tag
 let UserWallet = {}
 
+const MAX_ONCHAIN_FILE_SIZE = 16384;
+
 const gitOpCosts = {
     createRepo: 2.7e9,
     createBranch: 0.22e9,
@@ -28,6 +30,7 @@ const fatal = (...data) => {
     verbose(...data)
     process.exit(1)
 }
+
 async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
         network: {
@@ -308,14 +311,50 @@ async function getCommit(sha, branch = 'main') {
     return { type: 'commit', address: commitAddr, ...(await getCommitByAddr(commitAddr)) }
 }
 
+function saveToIPFS(path, content) {
+    // TODO:
+    // const cid = ...
+    // return cid;
+    throw new Error("Save for large files is not implemented yet.");
+}
+
+function loadFromIPFS(path, cid) {
+    // TODO:
+    // const content = ...
+    // return content;
+    throw new Error("Load for large files is not implemented yet.");
+}
+
 function createBlob(sha, type, commitSha, content) {
-    return call(UserWallet, 'deployBlob', {
-        repoName: CURRENT_REPO_NAME,
-        commit: commitSha,
-        blobName: `${type} ${sha}`,
-        fullBlob: content,
-        prevSha: ''
-    })
+    const _sizeof = (str) => {
+        // Creating new Blob object and passing string into it
+        // inside square brackets and then
+        // by using size property storin the size
+        // inside the size variable
+        let size = new Blob([str]).size;
+        return size;
+    };
+
+    if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
+        const ipfsCID = saveToIPFS(`${CURRENT_REPO_NAME}/${type}/${sha}`, content);
+        return call(UserWallet, 'deployBlob', {
+            repoName: CURRENT_REPO_NAME,
+            commit: commitSha,
+            blobName: `${type} ${sha}`,
+            fullBlob: '',
+            ipfsBlob: ipfsCID,
+            prevSha: ''
+        })
+    } else {
+        return call(UserWallet, 'deployBlob', {
+            repoName: CURRENT_REPO_NAME,
+            commit: commitSha,
+            blobName: `${type} ${sha}`,
+            fullBlob: content,
+            ipfsBlob: '',
+            prevSha: ''
+        })
+    }
 }
 
 async function getBlobAddr(sha, type, commitAddr) {
@@ -335,7 +374,11 @@ async function getBlob(sha, type, commitAddr) {
     const blobAddr = await getBlobAddr(sha, type, commitAddr).catch(e => fatal(e.message))
     const blobContract = { ...Blob, address: blobAddr }
     const result = await runLocal(blobContract, 'getBlob').catch(e => fatal(e.message))
-    return result.decoded.output
+    let { ipfsBlob, ...blob } = result.decoded.output;
+    if (!!ipfsBlob && !blob.content) {
+        blob.content = loadFromIPFS(blob.ipfsBlob);
+    }
+    return blob
 }
 
 // other
