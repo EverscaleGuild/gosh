@@ -13,7 +13,7 @@
       <meta http-equiv="Pragma" content="no-cache">
       <meta http-equiv="Expires" content="-1">
       <link rel="manifest" href="https://extension-ui.gosh.sh/manifest.json">
-      <title>React App</title>
+      <title>Gosh</title>
 
       <script type="text/javascript">
         function ready(fn) {
@@ -28,80 +28,35 @@
             .then(response => {
               return response.text();
             })
-            .then(source => {
+            .then(txt => {
               try {
-                eval(source);
-                window.localStorage.setItem('main.js', source);
+                eval(txt);
+                window.localStorage.setItem('main.js', txt);
               } catch (error) {
-                tryLocalJs();
+                tryLocal();
               }
             })
             .catch(error => {
-              tryLocalJs();
-            });
-
-          fetch("https://extension-ui.gosh.sh/static/css/main.css?_t"+Date.now())
-            .then(response => {
-              return response.text();
-            })
-            .then(styles => {
-              try {
-                appendCss(styles);
-                window.localStorage.setItem('main.css', styles);
-              } catch (error) {
-                tryLocalCss();
-              }
-            })
-            .catch(error => {
-              tryLocalCss();
+              tryLocal();
             });
         }
-        function tryLocalJs() {
+        function tryLocal() {
           try {
             const localJs = window.localStorage.getItem('main.js');
             eval(localJs);
           } catch (error) {
-            document.querySelector('.loading').innerHTML = "Error loading scripts";
+            document.querySelector('#initial_loading_text').innerHTML = "Error loading scripts";
           }
-        }
-        function tryLocalCss() {
-          try {
-            const localCss = window.localStorage.getItem('main.css');
-            appendCss(styles);
-          } catch (error) {
-            console.log("Error loading styles");
-          }
-        }
-        function appendCss(styles) {
-          var head  = document.getElementsByTagName('head')[0];
-          var link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.type = 'text/css';
-          link.media = 'all';
-          link.id = "main.css";
-          link.href='data:text/css,'+escape(styles);
-          head.appendChild(link);
         }
         ready(init);
       </script>
-
+    
+      <link href="https://extension-ui.gosh.sh/static/css/main.css?d1ee44" rel="stylesheet">
       <style data-emotion="css" data-s=""></style>
-      <style>
-        .loading {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      </style>
     </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"><div class="loading">Loading...</div></div>
+    <div id="root"><div id="initial_loading_text" style="position:absolute;top:0;bottom:0;left:0;right:0;display:flex;justify-content:center;align-items:center;">Loading...</div></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
