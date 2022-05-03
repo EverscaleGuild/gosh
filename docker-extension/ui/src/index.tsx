@@ -9,7 +9,7 @@ import { TonClient, BinaryLibrary } from '@eversdk/core';
 import { libWeb, libWebSetup } from '@eversdk/lib-web';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
-libWebSetup({ binaryURL: 'https://buy.ton.surf/eversdk.wasm' });
+libWebSetup({ binaryURL: 'https://extension-ui.gosh.sh/assets/eversdk.wasm' });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,5 +43,4 @@ TonClient.useBinaryLibrary(() => {
   const promise = libWeb();
   return promise as unknown as Promise<BinaryLibrary>;
 });
-
 
