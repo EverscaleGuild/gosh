@@ -38,6 +38,8 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
+console.log("Version: 0.1.15");
+
 // eslint-disable-next-line react-hooks/rules-of-hooks
 TonClient.useBinaryLibrary(() => {
   const promise = libWeb();
