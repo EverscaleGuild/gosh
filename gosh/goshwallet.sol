@@ -42,6 +42,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     }
 
     string version = "0.1.0";
+    address _creator;
     uint256 static _rootRepoPubkey;
     address static _rootgosh;
     address static _goshdao;
@@ -92,6 +93,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     }
 
     constructor(
+        address creator,
         TvmCell commitCode,
         TvmCell commitData,
         TvmCell blobCode,
@@ -111,6 +113,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
      public SMVAccount (lockerCode, tvm.hash(platformCode), platformCode.depth(),
                          tvm.hash(clientCode), clientCode.depth(), tvm.hash(proposalCode),
                          proposalCode.depth(), _tip3Root) {
+        _creator = creator;
         m_CommitCode = commitCode;
         m_BlobCode = blobCode;
         m_RepositoryCode = repositoryCode;
@@ -125,6 +128,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
         m_SMVProposalCode = proposalCode;
+        getMoney();
     }
     
     function _composeCommitStateInit(string _commit, address repo) internal view returns(TvmCell) {
@@ -133,9 +137,9 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         return stateInit;
     }
     
-    function getMoney(address creator) public onlyOwner accept {
+    function getMoney() public onlyOwner accept {
         require (address(this).balance <= 10000 ton);
-        DaoCreator(creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
+        DaoCreator(_creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
     }
 
     function deployRepository(
@@ -144,6 +148,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true, flag: 2
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
+        getMoney();
     }
     
     function deployCommit(
@@ -162,13 +167,14 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branchName,
         string commitName,
         string fullCommit,
-        address[] parents) internal view
+        address[] parents) internal
     {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
+        new Commit {stateInit: s1, value: 10 ton, wid: 0}(
             _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
+        getMoney();
     }
     
     //SMV configuration 
@@ -199,7 +205,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branchName,
         address branchcommit,
         string commit,
-        uint128 value) public view onlyOwner accept {
+        uint128 value) public onlyOwner accept {
         if (isProposalNeeded (repoName, branchName, branchcommit, commit, value)) {
             TvmBuilder proposalBuilder;
             uint256 proposalKind = SETCOMMIT_PROPOSAL_KIND;
@@ -212,6 +218,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         } else {
             _setCommit(repoName, branchName, branchcommit, commit, value);
         }
+        getMoney();
     }
         
     function _composeBlobStateInit(string nameBlob, address repo) internal view returns(TvmCell) {
@@ -242,7 +249,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string blobName, 
         string fullBlob,
         string ipfsBlob, 
-        string prevSha) internal view
+        string prevSha) internal 
     {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s0 = _composeCommitStateInit(commit, repo);
@@ -250,23 +257,26 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         TvmCell s1 = _composeBlobStateInit(blobName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Blob{stateInit: s1, value: 1 ton, wid: 0}(tvm.pubkey(), addrC, branch, fullBlob, ipfsBlob, prevSha, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode, m_WalletData);
+        getMoney();
     }
     
     function setBlob(
         string repoName,
         string commitName,
-        address[] blobs) public view onlyOwner accept {
+        address[] blobs) public onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         Commit(addr).setBlobs{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), blobs);
+        getMoney();
     }
     
     function setHEAD(
         string repoName,
-        string branchName) public view onlyOwner accept {
+        string branchName) public onlyOwner accept {
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).setHEAD{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName);
+        getMoney();
     }
     
     function tryProposalResult (address proposal) public view onlyOwner accept
@@ -289,6 +299,15 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
                                                      m_SMVPlatformCode.depth(), 
                                                      dataDepth);
         return add_std_address ;
+    }
+    
+    function sendMoney(address repo, string commit) public {
+        TvmCell s0 = _composeCommitStateInit(commit, repo);
+        address addr = address.makeAddrStd(0, tvm.hash(s0));
+        require(addr == msg.sender, 101);
+        tvm.accept();
+        addr.transfer(10 ton);
+        getMoney();
     }
 
     modifier check_client (uint256 _platform_id, address _tokenLocker) {

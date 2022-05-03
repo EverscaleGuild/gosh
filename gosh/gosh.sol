@@ -16,6 +16,7 @@ import "goshdao.sol";
 /* Root contract of gosh */
 contract Gosh {
     string version = "0.1.0";
+    address _creator;
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
@@ -46,8 +47,9 @@ contract Gosh {
         _;
     }
 
-    constructor() public {
+    constructor(address creator) public {
         tvm.accept();
+        _creator = creator;
     }
 
     function _composeRepoStateInit(string name, address goshdao) internal view returns(TvmCell) {
@@ -103,7 +105,7 @@ contract Gosh {
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
         _lastGoshDao = new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
-            address(this), root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag,
+            address(this), _creator, root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag,
             m_TokenLockerCode, m_SMVPlatformCode, m_SMVClientCode, m_SMVProposalCode, m_TokenRootCode, m_TokenWalletCode);
     }
 

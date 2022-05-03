@@ -6,6 +6,7 @@
 		{
 			"name": "constructor",
 			"inputs": [
+				{"name":"creator","type":"address"}
 			],
 			"outputs": [
 			]
@@ -257,6 +258,7 @@
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"version","type":"string"},
+		{"name":"_creator","type":"address"},
 		{"name":"m_RepositoryCode","type":"cell"},
 		{"name":"m_RepositoryData","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},

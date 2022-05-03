@@ -80,6 +80,14 @@ contract Commit {
         m_CommitCode = CommitCode;
         m_CommitData = CommitData;
         require(checkAccess(value1, msg.sender));
+        getMoney(tvm.pubkey());
+    }
+    
+    function getMoney(uint256 pubkey) private {
+        TvmCell s1 = _composeWalletStateInit(pubkey);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        require (address(this).balance <= 8 ton);
+        GoshWallet(addr).sendMoney{value : 0.2 ton}(_rootRepo, _commit);
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
@@ -121,16 +129,17 @@ contract Commit {
                 require(branchCommit  == address.makeAddrNone(), 200);
             }
             require(_check[newC] == 0, 201);
-            Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
         }
         else { 
             if (_parents.length != 1) {
-                Commit(branchCommit ).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
             }
             for (address a : _parents) {
-                Commit(a).CommitCheckCommit{value: (msg.value - 0.3 ton) / uint128(_parents.length), bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
             }
         }
+        getMoney(msg.pubkey());
     }
     
     function addCheck(
@@ -139,6 +148,7 @@ contract Commit {
         uint128 value) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, 100);
         _check[newC] += int128(value);
+        getMoney(msg.pubkey());
     }
     
     function CommitCheckCommit(
@@ -160,23 +170,25 @@ contract Commit {
                     require(branchCommit  == address.makeAddrNone(), 200);
                 }
                 require(_check[newC] == 0, 201);
-                Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
             }
             else { 
                 if (_parents.length != 1) {
-                    Commit(branchCommit ).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+                    Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
                 }
                 for (address a : _parents) {
-                    Commit(a).CommitCheckCommit{value: (msg.value - 0.3 ton) / uint128(_parents.length), bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+                    Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
                 }
             }
         }
+        getMoney(msg.pubkey());
     }
 
     function setBlobs(uint256 pubkey, address[] blobs) public {
         require(checkAccess(pubkey, msg.sender));
         tvm.accept();
         _blob = blobs;
+        getMoney(tvm.pubkey());
     }    
 /*    
     function destroy() public onlyOwner {

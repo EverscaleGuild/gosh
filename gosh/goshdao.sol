@@ -18,6 +18,7 @@ import "../smv/TokenRootOwner.sol";
 /* Root contract of gosh */
 contract GoshDao is TokenRootOwner {
     string version = "0.1.0";
+    address _creator;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;    
     TvmCell m_RepositoryCode;
@@ -50,6 +51,7 @@ contract GoshDao is TokenRootOwner {
 
     constructor(
         address rootgosh, 
+        address creator,
         uint256 pubkey, 
         string name, 
         TvmCell CommitCode,
@@ -79,6 +81,7 @@ contract GoshDao is TokenRootOwner {
         address remainingGasTo,
         uint256 randomNonce */ ) public TokenRootOwner (TokenRootCode, TokenWalletCode) {
         tvm.accept();
+        _creator = creator;
         _rootgosh = rootgosh;
         _rootpubkey = pubkey;
         _nameDao = name;
@@ -132,7 +135,7 @@ contract GoshDao is TokenRootOwner {
         _wallets.push(_lastAccountAddress);
         new GoshWallet {
             stateInit: s1, value: 60 ton, wid: 0
-        }(m_CommitCode, m_CommitData, 
+        }(_creator, m_CommitCode, m_CommitData, 
             m_BlobCode, m_BlobData, 
             m_RepositoryCode, m_RepositoryData,
             m_WalletCode, m_WalletData,

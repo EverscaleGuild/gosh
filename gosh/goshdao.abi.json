@@ -7,6 +7,7 @@
 			"name": "constructor",
 			"inputs": [
 				{"name":"rootgosh","type":"address"},
+				{"name":"creator","type":"address"},
 				{"name":"pubkey","type":"uint256"},
 				{"name":"name","type":"string"},
 				{"name":"CommitCode","type":"cell"},
@@ -215,6 +216,7 @@
 		{"components":[{"name":"ProjectTokenRoot","type":"address"},{"name":"ReverueTokenRoot","type":"address"},{"name":"RevenueTokenWallet","type":"address"}],"name":"projectTokens","type":"map(address,tuple)"},
 		{"name":"lastWalletDeployed","type":"address"},
 		{"name":"version","type":"string"},
+		{"name":"_creator","type":"address"},
 		{"name":"m_WalletCode","type":"cell"},
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_RepositoryCode","type":"cell"},
