@@ -38,11 +38,10 @@ contract Commit {
     TvmCell m_WalletData;
     TvmCell m_CommitCode;
     TvmCell m_CommitData;
-    address _parent1;
-    address _parent2;
+    address[] _parents;
     address _rootGosh;
     uint128 _num = 1;
-    mapping(address => int32) _check;
+    mapping(address => int128) _check;
 
     modifier onlyFirst {
         require(check == false, 600);
@@ -56,8 +55,7 @@ contract Commit {
         string nameRepo, 
         string nameBranch, 
         string commit, 
-        address parent1,
-        address parent2,
+        address[] parents,
         address repo,
         TvmCell BlobCode,
         TvmCell BlobData,
@@ -65,9 +63,9 @@ contract Commit {
         TvmCell WalletData,
         TvmCell CommitCode,
         TvmCell CommitData) public {
+        require(parents.length > 0, 51);
         tvm.accept();
-        _parent1 = parent1;
-        _parent2 = parent2;
+        _parents = parents;
         _name = nameRepo;
         _rootGosh = rootGosh;
         _goshdao = goshdao;
@@ -113,63 +111,63 @@ contract Commit {
     function WalletCheckCommit(
         uint256 pubkey, 
         string branchName,
-        address branchcommit,
+        address branchCommit ,
         address newC) public {
         require(checkAccess(pubkey, msg.sender), 100);
         require(address(this) == newC, 101);
         tvm.accept();
-        if (_parent1 == address.makeAddrNone()) {
-            if (address(this) != branchcommit){ 
-                require(branchcommit == _parent1, 200);
+        if (_parents[0] == address.makeAddrNone()) {
+            if (address(this) != branchCommit ){ 
+                require(branchCommit  == address.makeAddrNone(), 200);
             }
             require(_check[newC] == 0, 201);
             Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
         }
         else { 
-            if (_parent2 != address.makeAddrNone()) {
-                Commit(branchcommit).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC);
-                Commit(_parent1).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
-                Commit(_parent2).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+            if (_parents.length != 1) {
+                Commit(branchCommit ).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
             }
-            else {
-                Commit(_parent1).CommitCheckCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+            for (address a : _parents) {
+                Commit(a).CommitCheckCommit{value: (msg.value - 0.3 ton) / uint128(_parents.length), bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
             }
         }
     }
     
     function addCheck(
         string nameCommit,
-        address newC) public {
+        address newC,
+        uint128 value) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, 100);
-        _check[newC] += 1;
+        _check[newC] += int128(value);
     }
     
     function CommitCheckCommit(
         string nameCommit,
         string branchName,
-        address branchcommit,  
+        address branchCommit ,  
         address newC) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, 100);
         tvm.accept();
-        if (branchcommit == address(this)) {
+        if (branchCommit  == address(this)) {
             _check[newC] -= 1;
             if (_check[newC] == -1) {
                 Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
             }
         }
         else {
-            if (_parent1 == address.makeAddrNone()) { 
-                require(branchcommit == _parent1, 200);
-                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+            if (_parents[0] == address.makeAddrNone()) {
+                if (address(this) != branchCommit ){ 
+                    require(branchCommit  == address.makeAddrNone(), 200);
+                }
+                require(_check[newC] == 0, 201);
+                Repository(_rootRepo).setFirstCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
             }
             else { 
-                if (_parent2 != address.makeAddrNone()) {
-                    Commit(branchcommit).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC);
-                    Commit(_parent1).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
-                    Commit(_parent2).CommitCheckCommit{value: msg.value / 2 - 0.15 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                if (_parents.length != 1) {
+                    Commit(branchCommit ).addCheck{value: 0.1 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
                 }
-                else {
-                    Commit(_parent1).CommitCheckCommit{value: msg.value - 0.2 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchcommit, newC);
+                for (address a : _parents) {
+                    Commit(a).CommitCheckCommit{value: (msg.value - 0.3 ton) / uint128(_parents.length), bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
                 }
             }
         }
@@ -222,8 +220,8 @@ contract Commit {
         return _blob;
     }
 
-     function getParent() external view returns(address, address) {
-        return (_parent1, _parent2);
+     function getParents() external view returns(address[]) {
+        return (_parents);
     }
 
     function getNameCommit() external view returns(string) {
@@ -242,11 +240,10 @@ contract Commit {
         address repo,
         string branch,
         string sha,
-        address parent1,
-        address parent2,
+        address[] parents,
         string content
     ) {
-        return (_rootRepo, _nameBranch, _nameCommit, _parent1, _parent2, _commit);
+        return (_rootRepo, _nameBranch, _nameCommit, _parents, _commit);
     }
 
     function getBlobAddr(string nameBlob) external view returns(address) {

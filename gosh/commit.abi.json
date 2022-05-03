@@ -13,8 +13,7 @@
 				{"name":"nameRepo","type":"string"},
 				{"name":"nameBranch","type":"string"},
 				{"name":"commit","type":"string"},
-				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"},
+				{"name":"parents","type":"address[]"},
 				{"name":"repo","type":"address"},
 				{"name":"BlobCode","type":"cell"},
 				{"name":"BlobData","type":"cell"},
@@ -31,7 +30,7 @@
 			"inputs": [
 				{"name":"pubkey","type":"uint256"},
 				{"name":"branchName","type":"string"},
-				{"name":"branchcommit","type":"address"},
+				{"name":"branchCommit","type":"address"},
 				{"name":"newC","type":"address"}
 			],
 			"outputs": [
@@ -41,7 +40,8 @@
 			"name": "addCheck",
 			"inputs": [
 				{"name":"nameCommit","type":"string"},
-				{"name":"newC","type":"address"}
+				{"name":"newC","type":"address"},
+				{"name":"value","type":"uint128"}
 			],
 			"outputs": [
 			]
@@ -51,7 +51,7 @@
 			"inputs": [
 				{"name":"nameCommit","type":"string"},
 				{"name":"branchName","type":"string"},
-				{"name":"branchcommit","type":"address"},
+				{"name":"branchCommit","type":"address"},
 				{"name":"newC","type":"address"}
 			],
 			"outputs": [
@@ -75,12 +75,11 @@
 			]
 		},
 		{
-			"name": "getParent",
+			"name": "getParents",
 			"inputs": [
 			],
 			"outputs": [
-				{"name":"value0","type":"address"},
-				{"name":"value1","type":"address"}
+				{"name":"value0","type":"address[]"}
 			]
 		},
 		{
@@ -115,8 +114,7 @@
 				{"name":"repo","type":"address"},
 				{"name":"branch","type":"string"},
 				{"name":"sha","type":"string"},
-				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"},
+				{"name":"parents","type":"address[]"},
 				{"name":"content","type":"string"}
 			]
 		},
@@ -163,10 +161,9 @@
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},
 		{"name":"m_CommitData","type":"cell"},
-		{"name":"_parent1","type":"address"},
-		{"name":"_parent2","type":"address"},
+		{"name":"_parents","type":"address[]"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_num","type":"uint128"},
-		{"name":"_check","type":"map(address,int32)"}
+		{"name":"_check","type":"map(address,int128)"}
 	]
 }

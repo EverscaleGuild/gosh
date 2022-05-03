@@ -145,10 +145,10 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branchName,
         string commitName,
         string fullCommit,
-        address parent1,
-        address parent2
+        address[] parents
         ) public onlyOwner accept {
-        _deployCommit(repoName, branchName, commitName, fullCommit, parent1, parent2);
+        require(parents.length > 0, 51);
+        _deployCommit(repoName, branchName, commitName, fullCommit, parents);
     }
 
     function _deployCommit(
@@ -156,14 +156,13 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string branchName,
         string commitName,
         string fullCommit,
-        address parent1,
-        address parent2) internal view
+        address[] parents) internal view
     {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parent1, parent2, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
+            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
     }
     
     //SMV configuration 
