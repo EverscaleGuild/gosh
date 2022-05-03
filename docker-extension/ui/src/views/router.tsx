@@ -51,7 +51,7 @@ const Router = () => {
   const location = useLocation();
   useEffect(() => {
     navigate("/");
-    location.pathname = "/";
+    //location.pathname = "/";
     return () => {}
   }, [])
   
