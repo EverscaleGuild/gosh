@@ -127,7 +127,7 @@ contract GoshDao is TokenRootOwner {
         return _contractflex;
     }
 
-    function deployWallet(uint256 pubkey) public {
+    function deployWallet(uint256 pubkey) public onlyOwner {
         require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkey);
