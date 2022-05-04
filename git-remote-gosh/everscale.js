@@ -4,6 +4,7 @@ const { createHash } = require('crypto')
 
 const { TonClient } = require('@eversdk/core')
 const { libNode } = require("@eversdk/lib-node")
+const { saveToIPFS, loadFromIPFS } = require('./ipfs')
 TonClient.useBinaryLibrary(libNode)
 
 const pathGoshArtifacts = '../gosh'
@@ -311,19 +312,6 @@ async function getCommit(sha, branch = 'main') {
     return { type: 'commit', address: commitAddr, ...(await getCommitByAddr(commitAddr)) }
 }
 
-function saveToIPFS(path, content) {
-    // TODO:
-    // const cid = ...
-    // return cid;
-    throw new Error("Save for large files is not implemented yet.");
-}
-
-function loadFromIPFS(cid) {
-    // TODO:
-    // const content = ...
-    // return content;
-    throw new Error("Load for large files is not implemented yet.");
-}
 
 function createBlob(sha, type, commitSha, content) {
     const _sizeof = (str) => {
@@ -336,7 +324,7 @@ function createBlob(sha, type, commitSha, content) {
     };
 
     if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
-        const ipfsCID = saveToIPFS(`${CURRENT_REPO_NAME}/${type}/${sha}`, content);
+        const ipfsCID = saveToIPFS(content);
         return call(UserWallet, 'deployBlob', {
             repoName: CURRENT_REPO_NAME,
             commit: commitSha,
