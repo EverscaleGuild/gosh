@@ -77,7 +77,6 @@ contract GoshDao is Modifiers, TokenRootOwner {
         address remainingGasTo,
         uint256 randomNonce */ ) public onlyOwner TokenRootOwner (TokenRootCode, TokenWalletCode) {
         tvm.accept();
-        getMoney();
         _creator = creator;
         _rootgosh = rootgosh;
         _rootpubkey = pubkey;
@@ -103,6 +102,7 @@ contract GoshDao is Modifiers, TokenRootOwner {
 
         m_TokenRootCode = TokenRootCode;
         m_TokenWalletCode = TokenWalletCode;
+        getMoney();
         ///////////////////////////////////////
         _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
     }
@@ -124,7 +124,7 @@ contract GoshDao is Modifiers, TokenRootOwner {
         return _contractflex;
     }
 
-    function deployWallet(uint256 pubkey) public {
+    function deployWallet(uint256 pubkey) public onlyOwner {
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkey);
         _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));
