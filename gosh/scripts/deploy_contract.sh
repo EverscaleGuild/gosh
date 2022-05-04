@@ -21,7 +21,7 @@ TWO_EVERS=2000000000
 BALANCE=${3:-$TWO_EVERS}
 
 echo "[$0] genaddr..."
-CONTRACT_ADDRESS=$($TONOS_CLI genaddr $1.tvc $1.abi.json --${KEYOPT:-genkey} $1.keys.json | grep "Raw address:" | cut -d ' ' -f 3)
+CONTRACT_ADDRESS=$($TONOS_CLI genaddr $1.tvc --abi $1.abi.json --${KEYOPT:-genkey} $1.keys.json | grep "Raw address:" | cut -d ' ' -f 3)
 echo ADDR=$CONTRACT_ADDRESS
 
 echo "[$0] request giver..."

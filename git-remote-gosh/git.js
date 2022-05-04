@@ -27,8 +27,9 @@ const sizeObject = (object) => execCmd(`git cat-file -s ${object}`).then(([size,
 const objectData = (object) => {
     return Promise.all([
         typeObject(object),
+        sizeObject(object),
         catObject(object),
-    ]).then(([type, content]) => ({ type, content }))
+    ]).then(([type, size, content]) => ({ type, size, content }))
 }
 
 const objectData2 = (object) => {
@@ -50,6 +51,8 @@ const blobPrevSha = (name, commit) =>
                 ? execCmd(`git rev-parse ${sha}`).then(([commit,]) => commit)
                 : ''
         })
+
+const diff = (aSha, bSha) => execCmd(`git diff --no-color ${aSha} ${bSha} | sed 1,1d`, true)
 
 const isExistsObject = (object) =>
     execCmd(`git cat-file -e ${object}`).then(() => true).catch(() => false)
@@ -142,6 +145,7 @@ module.exports = {
     objectData,
     objectData2,
     blobPrevSha,
+    diff,
     isExistsObject,
     extractRefs,
     getReferenced,
