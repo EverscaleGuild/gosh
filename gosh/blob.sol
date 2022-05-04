@@ -10,10 +10,11 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
+import "./modifiers/modifiers.sol";
 import "./libraries/GoshLib.sol";
 import "goshwallet.sol";
 /* Root contract of Blob */
-contract Blob{
+contract Blob is Modifiers {
     string version = "0.1.0";
     string static _nameBlob;
     string _nameBranch;
@@ -28,11 +29,6 @@ contract Blob{
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
     
-    modifier onlyOwner { 
-        require(msg.pubkey() == _pubkey, 500);
-        _;
-    }
-    
     constructor(
         uint256 pubkey, 
         address commit,
@@ -44,7 +40,8 @@ contract Blob{
         address goshdao,
         uint256 rootPubkey,
         TvmCell WalletCode,
-        TvmCell WalletData) public {
+        TvmCell WalletData) public onlyOwner {
+        require(_nameBlob != "", ERR_NO_DATA);
         tvm.accept();
         _ipfsBlob = ipfs;
         _rootCommit = commit;
@@ -56,7 +53,7 @@ contract Blob{
         _prevSha = prevSha;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
-        require(checkAccess(pubkey, msg.sender));
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
     }    
     
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
@@ -75,12 +72,11 @@ contract Blob{
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         return addr == sender;
     }
-
-/*    
-    function destroy(address addr) public onlyOwner {
-        selfdestruct(addr);
+  
+    function destroy() public {
+        require(checkAccess(msg.pubkey(), msg.sender), ERR_SENDER_NO_ALLOWED);
+        selfdestruct(msg.sender);
     }
-*/
     
     //Setters
     

@@ -9,7 +9,7 @@
 pragma ton-solidity >=0.58.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
-import "modifiers.sol";
+import "./modifiers/modifiers.sol";
 import "Upgradable.sol";
 
 contract GoshConfig is Modifiers, Upgradable {

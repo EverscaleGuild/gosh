@@ -69,6 +69,13 @@
 			]
 		},
 		{
+			"name": "destroy",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "getAddrBranch",
 			"inputs": [
 				{"name":"name","type":"string"}
