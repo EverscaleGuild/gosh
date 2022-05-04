@@ -63,7 +63,6 @@ contract Commit {
         TvmCell WalletData,
         TvmCell CommitCode,
         TvmCell CommitData) public {
-        require(parents.length > 0, 51);
         tvm.accept();
         _parents = parents;
         _name = nameRepo;
@@ -124,7 +123,7 @@ contract Commit {
         require(checkAccess(pubkey, msg.sender), 100);
         require(address(this) == newC, 101);
         tvm.accept();
-        if (_parents[0] == address.makeAddrNone()) {
+        if (_parents.length == 0) {
             if (address(this) != branchCommit ){ 
                 require(branchCommit  == address.makeAddrNone(), 200);
             }
@@ -165,7 +164,7 @@ contract Commit {
             }
         }
         else {
-            if (_parents[0] == address.makeAddrNone()) {
+            if (_parents.length == 0) {
                 if (address(this) != branchCommit ){ 
                     require(branchCommit  == address.makeAddrNone(), 200);
                 }
