@@ -117,7 +117,8 @@ contract Commit is Modifiers {
         uint256 pubkey, 
         string branchName,
         address branchCommit ,
-        address newC) public senderIs(newC) {
+        address newC) public {
+        require(address(this) == newC, ERR_WRONG_COMMIT_ADDR);
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         if (_parents.length == 0) {

@@ -28,4 +28,5 @@ abstract contract Errors {
     uint constant ERR_SECOND_CHANGE = 117;
     uint constant ERR_NOT_LAST_CHECK = 118;
     uint constant ERR_DONT_PASS_CHECK = 119;
+    uint constant ERR_WRONG_COMMIT_ADDR = 120;
 }
