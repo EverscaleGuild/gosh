@@ -42,7 +42,10 @@ export NETWORK=${1:-localhost}
 
 echo "[deploy $fn]"
 
-CTOR_PARAMS={}
+
+DAO_CREATOR_ADDR=$(cat $DAO_CREATOR.addr)
+
+CTOR_PARAMS={\"creator\":\"$DAO_CREATOR_ADDR\"}
 ./deploy_contract.sh $fn $CTOR_PARAMS 90000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
 
