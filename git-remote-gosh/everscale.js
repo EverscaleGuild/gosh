@@ -324,7 +324,8 @@ function createBlob(sha, type, commitSha, content) {
     };
 
     if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
-        const ipfsCID = saveToIPFS(content);
+        // TODO: wrap and push to queue
+        const ipfsCID = await saveToIPFS(content);
         return call(UserWallet, 'deployBlob', {
             repoName: CURRENT_REPO_NAME,
             commit: commitSha,
