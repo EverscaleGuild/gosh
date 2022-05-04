@@ -1,4 +1,4 @@
-tvcs = daocreater.tvc gosh.tvc goshdao.tvc repository.tvc snapshot.tvc commit.tvc goshwallet.tvc blob.tvc tag.tvc GoshConfig.tvc
+tvcs = daocreator.tvc gosh.tvc goshdao.tvc repository.tvc commit.tvc goshwallet.tvc blob.tvc tag.tvc goshconfig.tvc
 all: $(tvcs)
 
 $(tvcs): %.tvc: %.sol
