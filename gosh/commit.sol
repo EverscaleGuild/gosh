@@ -64,6 +64,8 @@ contract Commit {
         TvmCell CommitCode,
         TvmCell CommitData) public {
         tvm.accept();
+        // check whether _nameCommit is present
+        // check whether salt is ok
         _parents = parents;
         _name = nameRepo;
         _rootGosh = rootGosh;
@@ -124,6 +126,7 @@ contract Commit {
         require(address(this) == newC, 101);
         tvm.accept();
         if (_parents.length == 0) {
+            // TODO it's always true or false: delete if and require leave
             if (address(this) != branchCommit ){ 
                 require(branchCommit  == address.makeAddrNone(), 200);
             }

@@ -46,6 +46,8 @@ contract Blob{
         TvmCell WalletCode,
         TvmCell WalletData) public {
         tvm.accept();
+        // check whether _nameBlob is present
+        // check whether salt is ok
         _ipfsBlob = ipfs;
         _rootCommit = commit;
         _pubkey = rootPubkey;
@@ -83,6 +85,8 @@ contract Blob{
 */
     
     //Setters
+
+    // need we change the field ipfs
     
     //Getters
     function getNameBlob() external view returns(string) {

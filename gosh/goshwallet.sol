@@ -158,6 +158,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string fullCommit,
         address[] parents
         ) public onlyOwner accept {
+        // TODO parents.length <= 7
         _deployCommit(repoName, branchName, commitName, fullCommit, parents);
     }
 

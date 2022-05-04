@@ -122,6 +122,7 @@ contract Repository {
         return addr == sender;
     }
 
+    // TODO rename function?
     function setCommit(string nameBranch, address commit) public {
         require(_Branches.exists(nameBranch), 102);
         require(_Branches[nameBranch].value == msg.sender, 100);

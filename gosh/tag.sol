@@ -37,6 +37,8 @@ contract Tag {
         address goshdao,
         TvmCell WalletCode,
         TvmCell WalletData) public {
+        // TODO check whether _nametag is not empty
+        // TODO check whether salt is present or not?
         tvm.accept();
         _rootGosh = gosh;
         _goshdao = goshdao;

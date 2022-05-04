@@ -16,6 +16,7 @@ import "goshdao.sol";
 /* Root contract of gosh */
 contract Gosh {
     string version = "0.1.0";
+    // DaoCreator's address
     address _creator;
     TvmCell m_RepositoryCode;
     TvmCell m_RepositoryData;
@@ -47,6 +48,8 @@ contract Gosh {
         _;
     }
 
+    // TODO check msg.pubkey() == tvm.pubkey() and tvm.pubkey() != 0
+    // TODO check it out in another contracts
     constructor(address creator) public {
         tvm.accept();
         _creator = creator;
@@ -83,6 +86,7 @@ contract Gosh {
     function deployRepository(uint256 pubkey, uint256 rootpubkey, string name, address goshdao) public view {
         require(msg.value > 3 ton, 100);
         require(rootpubkey > 0, 101);
+        // TODO add exit code
         require(checkAccess(pubkey, rootpubkey, msg.sender, goshdao));
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name, goshdao);
@@ -100,6 +104,7 @@ contract Gosh {
     }
     
     function deployDao(string name, uint256 root_pubkey) public {
+        // TODO check whether msg.value >= 90 ever
         require(msg.value > 3 ton, 100);
         require(root_pubkey > 0, 101);
         tvm.accept();
