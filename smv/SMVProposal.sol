@@ -321,11 +321,11 @@ function isInitialized () external override view responsible check_locker return
 //gosh only
 //b.store(proposalKind, repoName, branchName, commitName, fullCommit, parent1, parent2);
 function getGoshSetCommitProposalParams () external view 
-         returns( uint256  proposalKind,  string repoName, string  branchName,  string commit, uint128 number)
+         returns( uint256  proposalKind,  string repoName, string  branchName,  string commit)
 {
     TvmSlice s = propData.toSlice();
-    (proposalKind,  repoName,  branchName,  commit,  number)
-     = s.decode(uint256, string, string, string, uint128);
+    (proposalKind,  repoName,  branchName,  commit)
+     = s.decode(uint256, string, string, string);
 }
 
 ////////////////////////////////////
