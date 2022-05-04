@@ -124,7 +124,7 @@ contract GoshDao is Modifiers, TokenRootOwner {
         return _contractflex;
     }
 
-    function deployWallet(uint256 pubkey) public onlyOwner {
+    function deployWallet(uint256 pubkey) public onlyOwnerPubkey(_rootpubkey) {
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkey);
         _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));

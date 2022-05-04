@@ -16,6 +16,11 @@ abstract contract Modifiers is Errors {
         _;
     }
 
+    modifier onlyOwnerPubkey(uint256 rootpubkey) {
+        require(msg.pubkey() == rootpubkey, ERR_NOT_OWNER);
+        _;
+    }
+
     modifier accept() {
         tvm.accept();
         _;
