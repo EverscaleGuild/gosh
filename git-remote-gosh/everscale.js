@@ -302,38 +302,6 @@ async function getCommit(sha, branch = 'main') {
     return { type: 'commit', address: commitAddr, ...(await getCommitByAddr(commitAddr)) }
 }
 
-
-function createBlob(sha, type, commitSha, content) {
-    const _sizeof = (str) => {
-        // Creating new Blob object and passing string into it
-        // inside square brackets and then
-        // by using size property storin the size
-        // inside the size variable
-        let size = new Blob([str]).size;
-        return size;
-    };
-
-    if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
-        // TODO: wrap and push to queue
-        const ipfsCID = await saveToIPFS(content);
-        return call(UserWallet, 'deployBlob', {
-            repoName: CURRENT_REPO_NAME,
-            commit: commitSha,
-            blobName: `${type} ${sha}`,
-            fullBlob: '',
-            ipfsBlob: ipfsCID,
-            prevSha: ''
-        })
-    } else {
-        return call(UserWallet, 'deployBlob', {
-            repoName: CURRENT_REPO_NAME,
-            commit: commitSha,
-            blobName: `${type} ${sha}`,
-            fullBlob: content,
-            ipfsBlob: '',
-            prevSha: ''
-        })
-    }
 function setCommit(branch, branchCommit, commit, depth) {
     const value = FEE_SET_COMMIT + FEE_SET_COMMIT * depth
     return call(UserWallet, 'setCommit', {
@@ -346,17 +314,41 @@ function setCommit(branch, branchCommit, commit, depth) {
 }
 
 function createBlob(sha, type, commitSha, prevSha, branch, content) {
-    return compress(content).then(compressed => {
-        return call(UserWallet, 'deployBlob', {
-            repoName: CURRENT_REPO_NAME,
-            commit: commitSha,
-            branch,
-            blobName: `${type} ${sha}`,
-            fullBlob: compressed,
-            ipfsBlob: '',
-            prevSha,
+    const _sizeof = (str) => {
+        // Creating new Blob object and passing string into it
+        // inside square brackets and then
+        // by using size property storin the size
+        // inside the size variable
+        let size = new Blob([str]).size;
+        return size;
+    };
+
+    if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
+        // TODO: wrap and push to queue
+        return compress(content).then(compressed => {
+            const ipfsCID = await saveToIPFS(content);
+            return call(UserWallet, 'deployBlob', {
+                repoName: CURRENT_REPO_NAME,
+                commit: commitSha,
+                blobName: `${type} ${sha}`,
+                fullBlob: compressed,
+                ipfsBlob: ipfsCID,
+                prevSha: ''
+            })
         })
-    })
+    } else {
+        return compress(content).then(compressed => {
+            return call(UserWallet, 'deployBlob', {
+                repoName: CURRENT_REPO_NAME,
+                commit: commitSha,
+                branch,
+                blobName: `${type} ${sha}`,
+                fullBlob: compressed,
+                ipfsBlob: '',
+                prevSha,
+            })
+        })
+    }
 }
 
 async function getBlobAddr(sha, type) {
