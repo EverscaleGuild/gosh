@@ -27,6 +27,14 @@
 			]
 		},
 		{
+			"name": "destroyObject",
+			"inputs": [
+				{"name":"obj","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"nameRepo","type":"string"}

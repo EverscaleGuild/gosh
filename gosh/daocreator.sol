@@ -10,12 +10,13 @@ pragma ton-solidity >=0.58.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
+import "./modifiers/modifiers.sol";
 import "gosh.sol";
 import "goshwallet.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
-contract DaoCreator {
+contract DaoCreator is Modifiers{
     string version = "0.1.0";
     address _gosh;
     TvmCell m_WalletCode;
@@ -25,17 +26,12 @@ contract DaoCreator {
 
     uint128 constant FEE_DEPLOY_DAO = 100 ton;
 
-    modifier accept() {
-        tvm.accept();
-        _;
-    }
-
     constructor(
         address gosh, 
         TvmCell WalletCode,
         TvmCell WalletData,
         TvmCell codeDao,
-        TvmCell dataDao) public {
+        TvmCell dataDao) public onlyOwner {
         tvm.accept();
         _gosh = gosh;
         m_WalletCode = WalletCode;
@@ -61,7 +57,7 @@ contract DaoCreator {
     function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view {
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey, goshdao);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        require(addr == msg.sender, 101);
+        require(addr == msg.sender, ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         addr.transfer(value);
     }
@@ -69,7 +65,7 @@ contract DaoCreator {
     function sendMoneyDao(string name, uint128 value) public view {
         TvmCell s1 = _composeDaoStateInit(name);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        require(addr == msg.sender, 101);
+        require(addr == msg.sender, ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         addr.transfer(value);
     }

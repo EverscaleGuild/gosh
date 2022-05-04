@@ -15,6 +15,7 @@ import "goshwallet.sol";
 import "tag.sol";
 import "blob.sol";
 import "./libraries/GoshLib.sol";
+import "./modifiers/modifiers.sol";
 
 /* Root contract of Repository */
 struct Item {
@@ -22,7 +23,7 @@ struct Item {
         address value;
 }
 
-contract Repository {
+contract Repository is Modifiers{
     string version = "0.1.0";
     uint256 _pubkey;
     TvmCell m_CommitCode;
@@ -39,11 +40,6 @@ contract Repository {
     string _head;
     mapping(string => Item) _Branches;
 
-    modifier onlyOwner {
-        require(msg.sender == _rootGosh, 500);
-        _;
-    }
-
     constructor(
         uint256 value0, 
         string name, 
@@ -56,7 +52,8 @@ contract Repository {
         TvmCell WalletData,
         TvmCell codeTag,
         TvmCell dataTag
-        ) public {
+        ) public onlyOwner {
+        require(_name != "", ERR_NO_DATA);
         tvm.accept();
         _pubkey = value0;
         _rootGosh = msg.sender;
@@ -74,30 +71,20 @@ contract Repository {
         _head = "main";
     }
 
-    function deployBranch(uint256 pubkey, string newname, string fromname)  public {
-        require(msg.value > 0.5 ton, 100);
-        require(checkAccess(pubkey, msg.sender));
+    function deployBranch(uint256 pubkey, string newname, string fromname)  public minValue(0.5 ton) {
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
-        if (_Branches.exists(newname)) { return; }
-        if (_Branches.exists(fromname) == false) { return; }
+        require(_Branches.exists(newname) == false, ERR_BRANCH_EXIST);
+        require(_Branches.exists(fromname), ERR_BRANCH_NOT_EXIST);
         _Branches[newname] = Item(newname, _Branches[fromname].value);
     }
     
-    function deleteBranch(uint256 pubkey, string name) public {
-        require(msg.value > 0.3 ton, 100);
+    function deleteBranch(uint256 pubkey, string name) public minValue(0.3 ton){
         tvm.accept();
-        require(_Branches.exists(name), 102);
-        require(checkAccess(pubkey, msg.sender));
+        require(_Branches.exists(name), ERR_BRANCH_NOT_EXIST);
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         delete _Branches[name]; 
     }
-/*    
-    function deleteCommit(address parent, string nameBranch) public {
-        require(msg.sender == _Branches[nameBranch].value,101);
-        if (parent == address.makeAddrNone()) { delete _Branches[nameBranch]; return; }
-        _Branches[nameBranch].value = parent;
-        Commit(parent).destroy{value: 0.1 ton, bounce: true, flag: 1}();
-    }
-*/
 
     function _composeCommitStateInit(string _commit) internal view returns(TvmCell) {
         TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, address(this), version);
@@ -122,25 +109,24 @@ contract Repository {
         return addr == sender;
     }
 
-    function setCommit(string nameBranch, address commit) public {
-        require(_Branches.exists(nameBranch), 102);
-        require(_Branches[nameBranch].value == msg.sender, 100);
+    function setCommit(string nameBranch, address commit) public senderIs(_Branches[nameBranch].value) {
+        require(_Branches.exists(nameBranch), ERR_BRANCH_NOT_EXIST);
         tvm.accept();
         _Branches[nameBranch] = Item(nameBranch, commit);
     }
     
     function setFirstCommit(string nameCommit, string nameBranch, address commit) public {
-        require(_Branches.exists(nameBranch), 102);
-        require(_Branches[nameBranch].value == address.makeAddrNone(), 100);
+        require(_Branches.exists(nameBranch), ERR_BRANCH_NOT_EXIST);
+        require(_Branches[nameBranch].value == address.makeAddrNone(), ERR_NOT_EMPTY_BRANCH);
         TvmCell s1 = _composeCommitStateInit(nameCommit);
-        require(msg.sender == address.makeAddrStd(0, tvm.hash(s1)), 101);
+        require(msg.sender == address.makeAddrStd(0, tvm.hash(s1)), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         _Branches[nameBranch] = Item(nameBranch, commit);
     }
     
     function setHEAD(uint256 pubkey, string nameBranch) public {
-        require(checkAccess(pubkey, msg.sender),101);
-        require(_Branches.exists(nameBranch), 102);
+        require(checkAccess(pubkey, msg.sender),ERR_SENDER_NO_ALLOWED);
+        require(_Branches.exists(nameBranch), ERR_BRANCH_NOT_EXIST);
         tvm.accept();
         _head = nameBranch;
     }
@@ -150,8 +136,11 @@ contract Repository {
             m_BlobCode, address(this), version
         );
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});
-        //return tvm.insertPubkey(stateInit, pubkey);
         return stateInit;
+    }
+    
+    function destroy() public onlyOwner {
+        selfdestruct(msg.sender);
     }
 
     //Setters

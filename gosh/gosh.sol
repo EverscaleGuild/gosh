@@ -10,11 +10,12 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
+import "./modifiers/modifiers.sol";
 import "repository.sol";
 import "goshdao.sol";
 
 /* Root contract of gosh */
-contract Gosh {
+contract Gosh is Modifiers{
     string version = "0.1.0";
     address _creator;
     TvmCell m_RepositoryCode;
@@ -42,12 +43,7 @@ contract Gosh {
 
     address public _lastGoshDao;
 
-    modifier onlyOwner {
-        require(msg.pubkey() == tvm.pubkey(), 500);
-        _;
-    }
-
-    constructor(address creator) public {
+    constructor(address creator) public onlyOwner {
         tvm.accept();
         _creator = creator;
     }
@@ -80,10 +76,8 @@ contract Gosh {
         return addr == sender;
     }
 
-    function deployRepository(uint256 pubkey, uint256 rootpubkey, string name, address goshdao) public view {
-        require(msg.value > 3 ton, 100);
-        require(rootpubkey > 0, 101);
-        require(checkAccess(pubkey, rootpubkey, msg.sender, goshdao));
+    function deployRepository(uint256 pubkey, uint256 rootpubkey, string name, address goshdao) public view minValue(3 ton) {
+        require(checkAccess(pubkey, rootpubkey, msg.sender, goshdao), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name, goshdao);
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
@@ -99,9 +93,7 @@ contract Gosh {
         return tvm.buildStateInit(deployCode, m_dataDao);
     }
     
-    function deployDao(string name, uint256 root_pubkey) public {
-        require(msg.value > 3 ton, 100);
-        require(root_pubkey > 0, 101);
+    function deployDao(string name, uint256 root_pubkey) public minValue(91 ton) {
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
         _lastGoshDao = new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(

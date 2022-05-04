@@ -10,13 +10,14 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
+import "./modifiers/modifiers.sol";
 import "goshwallet.sol";
 import "daocreator.sol";
 import "./libraries/GoshLib.sol";
 import "../smv/TokenRootOwner.sol";
 
 /* Root contract of gosh */
-contract GoshDao is TokenRootOwner {
+contract GoshDao is Modifiers, TokenRootOwner {
     string version = "0.1.0";
     address _creator;
     TvmCell m_WalletCode;
@@ -43,11 +44,6 @@ contract GoshDao is TokenRootOwner {
     TvmCell m_TokenWalletCode;
     address public _rootTokenRoot;
     address public _lastAccountAddress;
-
-    modifier onlyOwner {
-        require(msg.pubkey() == _rootpubkey, 500);
-        _;
-    }
 
     constructor(
         address rootgosh, 
@@ -79,7 +75,7 @@ contract GoshDao is TokenRootOwner {
         bool burnByRootDisabled,
         bool burnPaused,
         address remainingGasTo,
-        uint256 randomNonce */ ) public TokenRootOwner (TokenRootCode, TokenWalletCode) {
+        uint256 randomNonce */ ) public onlyOwner TokenRootOwner (TokenRootCode, TokenWalletCode) {
         tvm.accept();
         getMoney();
         _creator = creator;
@@ -129,7 +125,6 @@ contract GoshDao is TokenRootOwner {
     }
 
     function deployWallet(uint256 pubkey) public onlyOwner {
-        require(pubkey > 0, 101);
         tvm.accept();
         TvmCell s1 = _composeWalletStateInit(pubkey);
         _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));

@@ -11,6 +11,7 @@ pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 pragma AbiHeader time;
 
+import "./modifiers/modifiers.sol";
 import "gosh.sol";
 import "repository.sol";
 import "commit.sol";
@@ -21,18 +22,12 @@ import "../smv/SMVAccount.sol";
 import "../smv/Libraries/SMVConstants.sol";
 import "../smv/LockerPlatform.sol";
 
-/* Root contract of gosh */
-contract GoshWallet is SMVAccount , IVotingResultRecipient{
-    uint constant ERR_NO_SALT = 100;
-    uint constant ERR_SENDER_NOT_DAO = 102;
-    uint constant ERR_ZERO_ROOT_KEY = 103;
-    uint constant ERR_ZERO_ROOT_GOSH = 106;
-    uint constant ERR_LOW_VALUE = 104;
-    uint constant ERR_NOT_ROOT_REPO = 105;
-    uint constant ERR_INVALID_SENDER = 107;
-    uint constant ERR_LOW_BALANCE = 108;
-    uint constant ERR_DOUBLE_MSG = 109;
+abstract contract Object {
+    function destroy() external {}
+}
 
+/* Root contract of gosh */
+contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     uint128 constant FEE_DEPLOY_REPO = 4 ton;
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
     
@@ -61,36 +56,6 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
     TvmCell m_SMVProposalCode;
-    
-    modifier onlyOwner {
-        require(msg.pubkey() == tvm.pubkey(), 100);
-        _;
-    }
-
-    modifier onlyRootRepoKey {
-        require(msg.pubkey() == _rootRepoPubkey, ERR_NOT_ROOT_REPO);
-        _;
-    }
-
-    modifier minValue(uint128 val) {
-        require(msg.value >= val, ERR_LOW_VALUE);
-        _;
-    }
-
-    modifier senderIs(address sender) {
-        require(msg.sender == sender, ERR_INVALID_SENDER);
-        _;
-    }
-
-    modifier accept() {
-        tvm.accept();
-        _;
-    }
-
-    modifier minBalance(uint128 val) {
-        require(address(this).balance > val + 1 ton, ERR_LOW_BALANCE);
-        _;
-    }
 
     constructor(
         address creator,
@@ -131,6 +96,10 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         getMoney();
     }
     
+    function destroyObject(address obj) public onlyOwner accept {
+        Object(obj).destroy{value : 0.2 ton}();
+    }
+    
     function _composeCommitStateInit(string _commit, address repo) internal view returns(TvmCell) {
         TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, repo, version);
         TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Commit, varInit: {_nameCommit: _commit}});
@@ -158,6 +127,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
         string fullCommit,
         address[] parents
         ) public onlyOwner accept {
+        require(parents.length <= 7, ERR_TOO_MANY_PARENTS);
         _deployCommit(repoName, branchName, commitName, fullCommit, parents);
     }
 
@@ -301,7 +271,7 @@ contract GoshWallet is SMVAccount , IVotingResultRecipient{
     function sendMoney(address repo, string commit) public {
         TvmCell s0 = _composeCommitStateInit(commit, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s0));
-        require(addr == msg.sender, 101);
+        require(addr == msg.sender, ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         addr.transfer(10 ton);
         getMoney();
