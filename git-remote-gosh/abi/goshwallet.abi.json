@@ -6,12 +6,17 @@
 		{
 			"name": "constructor",
 			"inputs": [
+				{"name":"creator","type":"address"},
 				{"name":"commitCode","type":"cell"},
 				{"name":"commitData","type":"cell"},
 				{"name":"blobCode","type":"cell"},
 				{"name":"blobData","type":"cell"},
 				{"name":"repositoryCode","type":"cell"},
 				{"name":"repositoryData","type":"cell"},
+				{"name":"WalletCode","type":"cell"},
+				{"name":"WalletData","type":"cell"},
+				{"name":"TagCode","type":"cell"},
+				{"name":"TagData","type":"cell"},
 				{"name":"lockerCode","type":"cell"},
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
@@ -36,16 +41,51 @@
 				{"name":"branchName","type":"string"},
 				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
-				{"name":"parent1","type":"address"},
-				{"name":"parent2","type":"address"},
-				{"name":"blobName1","type":"string"},
-				{"name":"fullBlob1","type":"string"},
-				{"name":"prevSha1","type":"string"},
-				{"name":"blobName2","type":"string"},
-				{"name":"fullBlob2","type":"string"},
-				{"name":"prevSha2","type":"string"},
-				{"name":"diffName","type":"string"},
-				{"name":"diff","type":"string"}
+				{"name":"parents","type":"address[]"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setCommit",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"},
+				{"name":"branchcommit","type":"address"},
+				{"name":"commit","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deployBlob",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"commit","type":"string"},
+				{"name":"branch","type":"string"},
+				{"name":"blobName","type":"string"},
+				{"name":"fullBlob","type":"string"},
+				{"name":"ipfsBlob","type":"string"},
+				{"name":"prevSha","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setBlob",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"commitName","type":"string"},
+				{"name":"blobs","type":"address[]"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setHEAD",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"}
 			],
 			"outputs": [
 			]
@@ -59,8 +99,19 @@
 			]
 		},
 		{
+			"name": "sendMoney",
+			"inputs": [
+				{"name":"repo","type":"address"},
+				{"name":"commit","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "isCompletedCallback",
 			"inputs": [
+				{"name":"_platform_id","type":"uint256"},
+				{"name":"_tokenLocker","type":"address"},
 				{"name":"res","type":"optional(bool)"},
 				{"name":"propData","type":"cell"}
 			],
@@ -72,8 +123,7 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"newName","type":"string"},
-				{"name":"fromName","type":"string"},
-				{"name":"amountFiles","type":"uint128"}
+				{"name":"fromName","type":"string"}
 			],
 			"outputs": [
 			]
@@ -83,17 +133,6 @@
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"Name","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
-			"name": "deployDiff",
-			"inputs": [
-				{"name":"repoName","type":"string"},
-				{"name":"name","type":"string"},
-				{"name":"branch","type":"string"},
-				{"name":"diff","type":"string"}
 			],
 			"outputs": [
 			]
@@ -109,24 +148,22 @@
 			]
 		},
 		{
-			"name": "deployBlob",
-			"inputs": [
-				{"name":"repoName","type":"string"},
-				{"name":"commit","type":"string"},
-				{"name":"blobName","type":"string"},
-				{"name":"fullBlob","type":"string"},
-				{"name":"prevSha","type":"string"}
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "deployTag",
 			"inputs": [
 				{"name":"repoName","type":"string"},
 				{"name":"nametag","type":"string"},
 				{"name":"nameCommit","type":"string"},
+				{"name":"content","type":"string"},
 				{"name":"commit","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "deleteTag",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"nametag","type":"string"}
 			],
 			"outputs": [
 			]
@@ -397,7 +434,6 @@
 	],
 	"fields": [
 		{"name":"_pubkey","type":"uint256"},
-		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
 		{"name":"tip3Root","type":"address"},
 		{"name":"nonce","type":"uint256"},
@@ -417,6 +453,7 @@
 		{"name":"lockingAmount","type":"uint128"},
 		{"name":"_tokenBalance","type":"uint128"},
 		{"name":"version","type":"string"},
+		{"name":"_creator","type":"address"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
@@ -426,6 +463,11 @@
 		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
 		{"name":"m_BlobData","type":"cell"},
+		{"name":"m_WalletCode","type":"cell"},
+		{"name":"m_WalletData","type":"cell"},
+		{"name":"m_TagCode","type":"cell"},
+		{"name":"m_TagData","type":"cell"},
+		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

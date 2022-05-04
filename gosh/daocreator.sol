@@ -11,10 +11,11 @@ pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
 import "gosh.sol";
+import "goshwallet.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
-contract DaoCreater {
+contract DaoCreator {
     string version = "0.1.0";
     address _gosh;
     TvmCell m_WalletCode;
@@ -57,15 +58,19 @@ contract DaoCreater {
     }
     */
 
-    function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view accept {
+    function sendMoney(uint256 pubkeyroot, uint256 pubkey, address goshdao, uint128 value) public view {
         TvmCell s1 = _composeWalletStateInit(pubkeyroot, pubkey, goshdao);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
+        require(addr == msg.sender, 101);
+        tvm.accept();
         addr.transfer(value);
     }
     
-    function sendMoneyDao(string name, uint128 value) public view accept {
+    function sendMoneyDao(string name, uint128 value) public view {
         TvmCell s1 = _composeDaoStateInit(name);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
+        require(addr == msg.sender, 101);
+        tvm.accept();
         addr.transfer(value);
     }
     

@@ -25,17 +25,6 @@ library GoshLib {
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
 
-    function buildSnapshotCode(
-        TvmCell originalCode,
-        address repo,
-        string version
-    ) public returns (TvmCell) {
-        TvmBuilder b;
-        b.store(repo);
-        b.store(version);
-        return tvm.setCodeSalt(originalCode, b.toCell());
-    }
-    
     function buildCommitCode(
         TvmCell originalCode,
         address repo,
@@ -61,12 +50,10 @@ library GoshLib {
     function buildTagCode(
         TvmCell originalCode,
         address repo,
-        string nametag,
         string version
     ) public returns (TvmCell) {
         TvmBuilder b;
         b.store(repo);
-        b.store(nametag);
         b.store(version);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }

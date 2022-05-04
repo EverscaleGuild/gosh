@@ -11,16 +11,15 @@ pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
 import "commit.sol";
-import "snapshot.sol";
 import "goshwallet.sol";
 import "tag.sol";
+import "blob.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of Repository */
 struct Item {
         string key;
         address value;
-        address[] snapshot;
 }
 
 contract Repository {
@@ -30,8 +29,6 @@ contract Repository {
     TvmCell m_CommitData;
     TvmCell m_BlobCode;
     TvmCell m_BlobData;
-    TvmCell m_codeSnapshot;
-    TvmCell m_dataSnapshot;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
     TvmCell m_codeTag;
@@ -39,6 +36,7 @@ contract Repository {
     address _rootGosh;
     string static _name;
     address _goshdao;
+    string _head;
     mapping(string => Item) _Branches;
 
     modifier onlyOwner {
@@ -54,8 +52,6 @@ contract Repository {
         TvmCell CommitData,
         TvmCell BlobCode,
         TvmCell BlobData,
-        TvmCell codeSnapshot,
-        TvmCell dataSnapshot,
         TvmCell WalletCode,
         TvmCell WalletData,
         TvmCell codeTag,
@@ -70,80 +66,29 @@ contract Repository {
         m_CommitData = CommitData;
         m_BlobCode = BlobCode;
         m_BlobData = BlobData;
-        m_codeSnapshot = codeSnapshot;
-        m_dataSnapshot = dataSnapshot;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
         m_codeTag = codeTag;
         m_dataTag = dataTag;
-        address[] files;
-        _Branches["main"] = Item("main", address.makeAddrNone(), files);
-    }
-
-    function deployNewSnapshot(string name, string branch, string diff) private {
-        tvm.accept();
-        TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
-        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Snapshot, varInit: {NameOfFile: branch + "/" + name}});
-        address addr = address.makeAddrStd(0, tvm.hash(stateInit));
-        new Snapshot{stateInit:stateInit, value: 1 ton, wid: 0}(_pubkey, address(this), m_codeSnapshot, m_dataSnapshot, branch, name);
-        Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}(diff);
-        _Branches[branch].snapshot.push(addr);
-    }
-    
-    function deployDiff(uint256 pubkey, string name, string branch, string diff) public {
-        require(_Branches.exists(branch), 110);
-        require(checkAccess(pubkey, msg.sender));
-        address addr = getSnapshotAddr(branch + "/" + name);
-        for (address a : _Branches[branch].snapshot) {
-            if (a == addr) { Snapshot(addr).setSnapshot{value: 0.1 ton, bounce: true, flag: 1}(diff); return; }
-        }
-        deployNewSnapshot(name,  branch, diff);
-    }
-
-    function deployBlob(uint256 pubkey, address commitAddr, string blobName, string fullBlob, string prevSha) public {
-        require(checkAccess(pubkey, msg.sender));
-        Commit(commitAddr).deployBlob{value: 2.8 ton}(pubkey, blobName, fullBlob, prevSha);
-    }
-
-    function getSnapshotAddr(string name) private view returns(address) {
-        TvmCell deployCode = GoshLib.buildSnapshotCode(m_codeSnapshot, address(this), version);
-        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Snapshot, varInit: {NameOfFile: name}});
-        address addr = address.makeAddrStd(0, tvm.hash(stateInit));
-        return addr;
+        _Branches["main"] = Item("main", address.makeAddrNone());
+        _head = "main";
     }
 
     function deployBranch(uint256 pubkey, string newname, string fromname)  public {
-        require(msg.value > _Branches[fromname].snapshot.length * 1.5 ton, 100);
+        require(msg.value > 0.5 ton, 100);
         require(checkAccess(pubkey, msg.sender));
+        tvm.accept();
         if (_Branches.exists(newname)) { return; }
         if (_Branches.exists(fromname) == false) { return; }
-        address[] files;
-        _Branches[newname] = Item(newname, _Branches[fromname].value, files);
-        this.copySnapshot(0, fromname, newname);
+        _Branches[newname] = Item(newname, _Branches[fromname].value);
     }
     
-    function copySnapshot(uint32 index, string fromname, string newname)  public view {
-        require(msg.sender == address(this));
-        require(index <= _Branches[fromname].snapshot.length - 1);
-        tvm.accept();
-        Snapshot(_Branches[fromname].snapshot[index]).deployNewSnapshot{value: 1.4 ton, bounce: true, flag: 1}(newname);
-        this.copySnapshot(index + 1, fromname, newname);
-    }
-    
-    function addSnapshot(address addr, string oldbranch, string newbranch) public {
-        require(msg.value > 0.5 ton, 105);
-        for (address a : _Branches[oldbranch].snapshot) {
-            if (a == msg.sender) { _Branches[newbranch].snapshot.push(addr); return; }
-        }
-    }
-
     function deleteBranch(uint256 pubkey, string name) public {
         require(msg.value > 0.3 ton, 100);
         tvm.accept();
         require(_Branches.exists(name), 102);
         require(checkAccess(pubkey, msg.sender));
         delete _Branches[name]; 
-//        Commit(_Branches[name].value).destroy{value: 0.1 ton, bounce: true, flag: 1}();
     }
 /*    
     function deleteCommit(address parent, string nameBranch) public {
@@ -177,24 +122,36 @@ contract Repository {
         return addr == sender;
     }
 
-    function deployCommit(uint256 pubkey, string nameBranch, string nameCommit, string fullCommit, address parent1, address parent2) public {
+    function setCommit(string nameBranch, address commit) public {
+        require(_Branches.exists(nameBranch), 102);
+        require(_Branches[nameBranch].value == msg.sender, 100);
         tvm.accept();
-        require(checkAccess(pubkey, msg.sender));
-        require(_Branches.exists(nameBranch));
-        require(_Branches[nameBranch].value == parent1, 120);
-        TvmCell s1 = _composeCommitStateInit(nameCommit);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 2 ton, wid: 0}(
-            _goshdao, _rootGosh, _pubkey, _name, nameBranch, fullCommit, _Branches[nameBranch].value, parent2, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData);
-        _Branches[nameBranch] = Item(nameBranch, addr, _Branches[nameBranch].snapshot);
+        _Branches[nameBranch] = Item(nameBranch, commit);
     }
     
-    function deployTag(uint256 pubkey, string nametag, string nameCommit, address commit) public view {
+    function setFirstCommit(string nameCommit, string nameBranch, address commit) public {
+        require(_Branches.exists(nameBranch), 102);
+        require(_Branches[nameBranch].value == address.makeAddrNone(), 100);
+        TvmCell s1 = _composeCommitStateInit(nameCommit);
+        require(msg.sender == address.makeAddrStd(0, tvm.hash(s1)), 101);
         tvm.accept();
-        require(checkAccess(pubkey, msg.sender));
-        TvmCell deployCode = GoshLib.buildTagCode(m_codeTag, address(this), nametag, version);
-        TvmCell s1 = tvm.buildStateInit(deployCode, m_dataTag);
-        new Tag {stateInit: s1, value: 5 ton, wid: 0}(nametag, nameCommit, commit);
+        _Branches[nameBranch] = Item(nameBranch, commit);
+    }
+    
+    function setHEAD(uint256 pubkey, string nameBranch) public {
+        require(checkAccess(pubkey, msg.sender),101);
+        require(_Branches.exists(nameBranch), 102);
+        tvm.accept();
+        _head = nameBranch;
+    }
+
+    function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
+        TvmCell deployCode = GoshLib.buildBlobCode(
+            m_BlobCode, address(this), version
+        );
+        TvmCell stateInit = tvm.buildStateInit({code: deployCode, contr: Blob, varInit: {_nameBlob: nameBlob}});
+        //return tvm.insertPubkey(stateInit, pubkey);
+        return stateInit;
     }
 
     //Setters
@@ -217,6 +174,10 @@ contract Repository {
     function getCommitCode() external view returns(TvmCell) {
         return m_CommitCode;
     }
+    
+    function getTagCode() external view returns(TvmCell) {
+        return GoshLib.buildTagCode(m_codeTag, address(this), version);
+    }
 
     function getGoshAdress() external view returns(address) {
         return _rootGosh;
@@ -229,15 +190,19 @@ contract Repository {
     function getName() external view returns(string) {
         return _name;
     }
+    
+    function getHEAD() external view returns(string) {
+        return _head;
+    }
 
-    function getCommitAddr(string nameBranch, string nameCommit) external view returns(address)  {
-        require(_Branches.exists(nameBranch));
+    function getCommitAddr(string nameCommit) external view returns(address)  {
         TvmCell s1 = _composeCommitStateInit(nameCommit);
         return address.makeAddrStd(0, tvm.hash(s1));
     }
     
-    function getSnapAddr(string branch, string name) external view returns(address)  {
-        return getSnapshotAddr(branch + "/" + name);
+    function getBlobAddr(string nameBlob) external view returns(address) {
+        TvmCell s1 = _composeBlobStateInit(nameBlob);
+        return address.makeAddrStd(0, tvm.hash(s1));
     }
 
     function getVersion() external view returns(string) {

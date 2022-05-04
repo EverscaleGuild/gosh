@@ -12,6 +12,9 @@ pragma AbiHeader pubkey;
 
 import "blob.sol";
 import "goshwallet.sol";
+import "commit.sol";
+import "repository.sol";
+import "./libraries/GoshLib.sol";
 
 abstract contract ARepository {
     function deleteCommit(address parent, string nameBranch) external {}
@@ -33,18 +36,12 @@ contract Commit {
     TvmCell m_BlobData;
     TvmCell m_WalletCode;
     TvmCell m_WalletData;
-    address _parent1;
-    address _parent2;
+    TvmCell m_CommitCode;
+    TvmCell m_CommitData;
+    address[] _parents;
     address _rootGosh;
     uint128 _num = 1;
-
-    modifier onlyOwner {
-        bool checkOwn = false;
-        if (msg.sender == _rootRepo) { checkOwn = true; }
-        if (msg.pubkey() == _pubkey) { checkOwn = true; }
-        require(checkOwn, 500);
-        _;
-    }
+    mapping(address => int128) _check;
 
     modifier onlyFirst {
         require(check == false, 600);
@@ -53,30 +50,43 @@ contract Commit {
 
     constructor(address goshdao, 
         address rootGosh, 
-        uint256 value0, 
+        uint256 value0,
+        uint256 value1, 
         string nameRepo, 
         string nameBranch, 
         string commit, 
-        address parent1,
-        address parent2,
+        address[] parents,
+        address repo,
         TvmCell BlobCode,
         TvmCell BlobData,
         TvmCell WalletCode,
-        TvmCell WalletData) public {
-        _parent1 = parent1;
-        _parent2 = parent2;
+        TvmCell WalletData,
+        TvmCell CommitCode,
+        TvmCell CommitData) public {
         tvm.accept();
+        _parents = parents;
         _name = nameRepo;
         _rootGosh = rootGosh;
         _goshdao = goshdao;
         _pubkey = value0;
-        _rootRepo = msg.sender;
+        _rootRepo = repo;
         _nameBranch = nameBranch;
         _commit = commit;
         m_BlobCode = BlobCode;
         m_BlobData = BlobData;
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
+        m_CommitCode = CommitCode;
+        m_CommitData = CommitData;
+        require(checkAccess(value1, msg.sender));
+        getMoney(tvm.pubkey());
+    }
+    
+    function getMoney(uint256 pubkey) private {
+        TvmCell s1 = _composeWalletStateInit(pubkey);
+        address addr = address.makeAddrStd(0, tvm.hash(s1));
+        if (address(this).balance > 8 ton) { return; }
+        GoshWallet(addr).sendMoney{value : 0.2 ton}(_rootRepo, _commit);
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
@@ -104,15 +114,80 @@ contract Commit {
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         return addr == sender;
     }
-
-    function deployBlob(uint256 pubkey, string nameBlob, string fullBlob, string prevSha) public {
-        require(msg.sender==_rootRepo);
+    
+    function WalletCheckCommit(
+        uint256 pubkey, 
+        string branchName,
+        address branchCommit ,
+        address newC) public {
+        require(checkAccess(pubkey, msg.sender), 100);
+        require(address(this) == newC, 101);
         tvm.accept();
-        //require(checkAccess(pubkey, msg.sender));
-        TvmCell s1 = _composeBlobStateInit(nameBlob);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Blob{stateInit: s1, value: 1 ton, wid: 0}(pubkey, _nameBranch, fullBlob, prevSha);
-        _blob.push(addr);
+        if (_parents.length == 0) {
+            if (address(this) != branchCommit ){ 
+                require(branchCommit  == address.makeAddrNone(), 200);
+            }
+            require(_check[newC] == 0, 201);
+            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+        }
+        else { 
+            if (_parents.length != 1) {
+                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+            }
+            for (address a : _parents) {
+                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+            }
+        }
+        getMoney(msg.pubkey());
+    }
+    
+    function addCheck(
+        string nameCommit,
+        address newC,
+        uint128 value) public {
+        require(_buildCommitAddr(nameCommit) == msg.sender, 100);
+        _check[newC] += int128(value);
+        getMoney(msg.pubkey());
+    }
+    
+    function CommitCheckCommit(
+        string nameCommit,
+        string branchName,
+        address branchCommit ,  
+        address newC) public {
+        require(_buildCommitAddr(nameCommit) == msg.sender, 100);
+        tvm.accept();
+        if (branchCommit  == address(this)) {
+            _check[newC] -= 1;
+            if (_check[newC] == -1) {
+                Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
+            }
+        }
+        else {
+            if (_parents.length == 0) {
+                if (address(this) != branchCommit ){ 
+                    require(branchCommit  == address.makeAddrNone(), 200);
+                }
+                require(_check[newC] == 0, 201);
+                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+            }
+            else { 
+                if (_parents.length != 1) {
+                    Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+                }
+                for (address a : _parents) {
+                    Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+                }
+            }
+        }
+        getMoney(msg.pubkey());
+    }
+
+    function setBlobs(uint256 pubkey, address[] blobs) public {
+        require(checkAccess(pubkey, msg.sender));
+        tvm.accept();
+        _blob = blobs;
+        getMoney(tvm.pubkey());
     }    
 /*    
     function destroy() public onlyOwner {
@@ -139,12 +214,25 @@ contract Commit {
     //Setters
     
     //Getters
+    
+    function _buildCommitAddr(
+        string commit
+    ) private view returns(address) {
+        TvmCell deployCode = GoshLib.buildCommitCode(m_CommitCode, _rootRepo, version);
+        TvmCell state = tvm.buildStateInit({
+            code: deployCode, 
+            contr: Commit,
+            varInit: {_nameCommit: commit}
+        });
+        return address(tvm.hash(state));
+    }
+    
     function getBlobs() external view returns(address[]) {
         return _blob;
     }
 
-     function getParent() external view returns(address, address) {
-        return (_parent1, _parent2);
+     function getParents() external view returns(address[]) {
+        return (_parents);
     }
 
     function getNameCommit() external view returns(string) {
@@ -163,11 +251,10 @@ contract Commit {
         address repo,
         string branch,
         string sha,
-        address parent1,
-        address parent2,
+        address[] parents,
         string content
     ) {
-        return (_rootRepo, _nameBranch, _nameCommit, _parent1, _parent2, _commit);
+        return (_rootRepo, _nameBranch, _nameCommit, _parents, _commit);
     }
 
     function getBlobAddr(string nameBlob) external view returns(address) {

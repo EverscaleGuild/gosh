@@ -1,5 +1,5 @@
-const { writeFileSync: writeFile } = require('fs')
-const { verbose, execCmd, fatal, hexToUtf8, hexToAscii } = require('./utils')
+const { assert } = require('console')
+const { verbose, execCmd, fatal } = require('./utils')
 
 const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904' // $ echo -n '' | git hash-object --stdin -t tree
 const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391' // $ echo -n '' | git hash-object --stdin -t blob
@@ -24,7 +24,32 @@ const catObject = (object, type) => {
 const typeObject = (object) => execCmd(`git cat-file -t ${object}`).then(([type,]) => type)
 const sizeObject = (object) => execCmd(`git cat-file -s ${object}`).then(([size,]) => size)
 
-const blobPrevSha = (name) => execCmd(`git log --follow -p --oneline -n 1 $name | awk -F"[ .]" '/index.*100644/{print $2}`)
+const objectData = (object) => {
+    return Promise.all([
+        typeObject(object),
+        catObject(object),
+    ]).then(([type, content]) => ({ type, content }))
+}
+
+const objectData2 = (object) => {
+    return execCmd('git cat-file --batch', true, { input: object })
+        .then(output => {
+            const notch = output.indexOf('\n')
+            const [sha, type, size] = output.slice(0, notch).split(' ')
+            const content = output.slice(notch + 1)
+            verbose(size, content.length)
+            assert(size == content.length)
+            return { sha, type, size, content }
+        })
+}
+
+const blobPrevSha = (name, commit) =>
+    execCmd(`git log --follow -p --oneline -n 1 ${commit} -- ${name} | awk -F"[ .]" '/index.*/{print ($2==0000000)? \"\" : $2}'`)
+        .then(({ 0: sha }) => {
+            return sha
+                ? execCmd(`git rev-parse ${sha}`).then(([commit,]) => commit)
+                : ''
+        })
 
 const isExistsObject = (object) =>
     execCmd(`git cat-file -e ${object}`).then(() => true).catch(() => false)
@@ -80,12 +105,6 @@ const writeObject = async (type, content, options = {}) => {
         input = Buffer.concat(entries)
         // verbose('tree length:', input.length)
     }
-    // dirty fix
-    const wtf = [
-        'd1105a6a48b55529a58049bf69733a1702b1b7b3',
-        '5e1aa554511f1a24fbbfcba90e3c14d4577f9637'
-    ]
-    if (wtf.includes(sha)) input = `${content}\n\n`
     const [computedSha,] = await execCmd(
         `git hash-object --stdin -t ${type} ${!dryRun ? '-w': ''}`,
         null,
@@ -120,6 +139,9 @@ module.exports = {
     catObject,
     typeObject,
     sizeObject,
+    objectData,
+    objectData2,
+    blobPrevSha,
     isExistsObject,
     extractRefs,
     getReferenced,

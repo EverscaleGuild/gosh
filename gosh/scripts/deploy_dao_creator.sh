@@ -8,7 +8,7 @@
 
 source utils.sh
 
-fn=../daocreater
+fn=../daocreator
 fn_src=$fn.sol
 fn_abi=$fn.abi.json
 fn_code=$fn.tvc

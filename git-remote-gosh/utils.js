@@ -1,6 +1,8 @@
 const { Buffer } = require('buffer')
-const { spawn, execSync: exec } = require('child_process')
+const { spawn } = require('child_process')
 const zlib = require('zlib')
+
+const bufLF = Buffer.from([0x0a])
 
 let _verbosity = false
 let _progress = false
@@ -93,7 +95,7 @@ function execCmd(cmd, raw = false, options = {}) {
     const [command, ...args] = cmd.trimEnd().split(' ')
 
     return new Promise((resolve, reject) => {
-        const subprocess = spawn(command, args/* , { stdio: [null, null, null] } */)
+        const subprocess = spawn(command, args, { shell: true })
         if (options.input) {
             subprocess.stdin.write(options.input)
             subprocess.stdin.end()
@@ -115,7 +117,11 @@ function execCmd(cmd, raw = false, options = {}) {
 
         subprocess.on('close', (code) => {
             if (code === 0) {
-                const result = Buffer.concat(output).toString('utf-8').trimEnd()
+                if (output.length === 0) return resolve('')
+
+                const lastChar = output.at(-1).slice(-1)
+                if (lastChar.equals(bufLF)) output[output.length - 1] = output[output.length - 1].slice(0, -1)
+                const result = Buffer.concat(output).toString('utf-8')
                 resolve(raw ? result : result.split('\n'))
             } else {
                 reject(new Error(`child: process exited with code ${code}`))
@@ -143,6 +149,7 @@ const deflate = (data) => {
         })
     })
 }
+
 const inflate = async (data) => {
     const input = Buffer.from(data, 'base64')
 

@@ -16,3 +16,12 @@ account_status() {
 account_data() {
     echo "$(account_status $1 $2) / $(account_balance $1 $2) EVER"
 }
+
+make_keypair() {
+    if [ -z $1 ]; then
+        echo file name required!
+        exit 1
+    fi
+    SEED_PHRASE=$($TONOS_CLI genphrase | sed -n '/Seed phrase:/ p' | cut -d "\"" -f 2)
+    echo $($TONOS_CLI getkeypair $1 "$SEED_PHRASE")
+}

@@ -33,13 +33,13 @@ $TONOS_CLI getkeypair $WALLET_KEYS "$WALLET_SEED_PHRASE" > /dev/null
 DAO_PUBKEY=$(cat $DAO_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 WALLET_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 
-NINETY_EVERS=90000000000
+ONE_K_EVERS=1000000000000
 
-CALLED="deployWallet {\"pubkeyroot\":\"$DAO_PUBKEY\",\"pubkey\":\"$WALLET_PUBKEY\"}"
-$TONOS_CLI -u $NETWORK call $DAO_ADDR $CALLED --abi $DAO_ABI > /dev/null || exit 1
-WALLET_ADDR=$($TONOS_CLI -j -u $NETWORK run $DAO_ADDR getAddrWallet "{\"pubkeyroot\":\"$DAO_PUBKEY\",\"pubkey\":\"$WALLET_PUBKEY\"}" --abi $DAO_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
+CALLED="deployWallet {\"pubkey\":\"$WALLET_PUBKEY\"}"
+$TONOS_CLI -u $NETWORK call $DAO_ADDR $CALLED --abi $DAO_ABI --sign $DAO_KEYS > /dev/null || exit 1
+WALLET_ADDR=$($TONOS_CLI -j -u $NETWORK run $DAO_ADDR getAddrWallet "{\"pubkey\":\"$WALLET_PUBKEY\"}" --abi $DAO_ABI | sed -n '/value0/ p' | cut -d'"' -f 4)
 echo -n $WALLET_ADDR > $WALLET.addr
-./giver.sh $WALLET_ADDR $NINETY_EVERS
+./giver.sh $WALLET_ADDR $ONE_K_EVERS
 
 sleep 5
 
