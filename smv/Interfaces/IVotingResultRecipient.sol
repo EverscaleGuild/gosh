@@ -1,3 +1,3 @@
 interface IVotingResultRecipient {
-    function isCompletedCallback(optional(bool), TvmCell) external;
+    function isCompletedCallback(uint256, address, optional(bool), TvmCell) external;
 }

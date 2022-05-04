@@ -19,11 +19,10 @@ const {
 const helper = require('./everscale')
 const git = require('./git')
 
-// TODO: remove hardcode
-const GOSH = '0:36765cc695d7bd410a976666d666aee15373205a7c5b9d15a83c301b9c0d7ad7'
 const CAPABILITIES_LIST = ['list', 'push', 'fetch', 'option']
 
-let firstPush
+const _pushCommitsQ = {}
+const _pushBlobsQ = {}
 const _remoteRefs = {} // remote refs: ref_name => sha1, addr
 const _pushed = {} // pushed refs
 const received = []
@@ -55,7 +54,6 @@ const userCredentials = async (account) => (await loadCredentials())[account]
 
 async function getRefs() {
     const branches = await helper.branchList()
-    verbose(branches)
     return branches.reduce((acc, { branch, address, sha }) => {
         if (address) {
             _remoteRefs[branch] = { address, sha }
@@ -65,41 +63,36 @@ async function getRefs() {
     }, [])
 }
 
-function objectData(object) {
-    return Promise.all([
-        git.typeObject(object),
-        git.catObject(object),
-    ]).then(([type, content]) => ({ type, content }))
-}
-
 async function deleteRemoteRef(ref) {
     verbose('WARN: delete branch not implemented yet')
 }
 
-async function pushObject(sha, currentCommit, branch) {
-    const { type, content } = await objectData(sha)
-    verbose(`object ${type} "${content}"`)
+async function pushObject(obj, currentCommit, branch) {
+    const [sha, filename] = obj.split(' ')
+    const { type, content } = await git.objectData(sha)
     if (type === 'commit') {
-        verbose('commit...')
-        const address = await helper.getCommitAddr(sha, branch)
-        verbose({ address })
-        currentCommit = { sha, address }
-        // verbose('set current commit:', currentCommit)
-        const diffName = (await git.lsCommitedBlobNames(sha))[0]
-        const result = await helper.createCommit(branch, sha, content, diffName)
-        verbose(`uploading ${type}(${sha}): ${address}`)
+        // const address = await helper.getCommitAddr(sha, branch)
+        currentCommit = { sha, address: '' }
+        if (!_pushCommitsQ[sha]) {
+            _pushCommitsQ[sha] = helper.createCommit(branch, sha, content)
+        }
+        // verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
-        verbose(`${type}...`)
-        const result = await helper.createBlob(sha, type, currentCommit.sha, content)
-        const address = await helper.getBlobAddr(sha, type, currentCommit.address)
-        verbose(`uploading ${type}(${sha}): ${address}`)
+        const prevSha = type === 'blob' && filename
+            ? await git.blobPrevSha(filename, currentCommit.sha)
+            : ''
+        if (!_pushBlobsQ[sha]) {
+            _pushBlobsQ[sha] = helper.createBlob(sha, type, currentCommit.sha, prevSha, branch, content)
+        }
+        // const address = await helper.getBlobAddr(sha, type)
+        // verbose(`uploading ${type}(${sha}): ${address}`)
     }
-    verbose(`writing: ${sha} (${type})`)
+    verbose(`queued ${type}(${sha})`) //: ${address}`)
+    // verbose(`writing: ${sha} (${type})`)
     return currentCommit
 }
 
 async function pushRef(localRef, remoteRef) {
-    //return new Promise(async (resolve) => {
     let result
     try {
         const branch = localRef.slice('refs/heads/'.length)
@@ -107,29 +100,36 @@ async function pushRef(localRef, remoteRef) {
         if (branchAddr === helper.ZERO_ADDRESS) {
             await helper.createBranch(branch, 'main')
         }
-        // verbose(`pushRef(${localRef}, ${remoteRef})`)
         const exists = Object.values(_remoteRefs).map(ref => ref.sha)
-        const output = await git.lsObjects(localRef, exists)
-        // verbose(`listed ${output.length} object(s):`)
-        // verbose(output)
-        const objects = output.map(o => o.split(' ')[0])
-        let currentCommit = {}
-        for (let sha of objects) {
-            currentCommit = await pushObject(sha, currentCommit, branch)
+        const objects = await git.lsObjects(localRef, exists)
+        // const objects = output.map(o => o.split(' ')[0])
+        // verbose('objects:', objects)
+        let commit = {}
+        for (let obj of objects) {
+            commit = await pushObject(obj, commit, branch)
         }
-        _pushed[remoteRef] = currentCommit.sha
-        // resolve(`error ${remoteRef} ${emoji_shrug}`)
+        const commitChainDepth = Object.keys(_pushCommitsQ).length
+        verbose('commits Q:', commitChainDepth)
+        verbose('  blobs Q:', Object.keys(_pushBlobsQ).length)
+        await Promise.all(Object.values(_pushCommitsQ))
+            .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+        await Promise.all(Object.values(_pushBlobsQ))
+            .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+
+        await helper.setCommit(branch, branchAddr, commit.sha, commitChainDepth)
+            .then(result => verbose('setComit:', result))
+        // TODO check setCommit and update ref if ok
+        _pushed[remoteRef] = commit.sha
         result = `ok ${remoteRef}`
     } catch (err) {
         verbose('debug: Error!', err.message)
         result = `error ${remoteRef} ${emoji_shrug}`
     }
     return result
-    //})
 }
 
 function doCapabilities() {
-    CAPABILITIES_LIST.forEach(cap => send(cap))
+    CAPABILITIES_LIST.forEach(send)
     send()
 }
 
@@ -149,15 +149,12 @@ function doOption(input) {
 
 async function doList(forPush = false) {
     const refs = await getRefs()
-    // verbose('debug: remote refs:', refs)
-    // verbose('debug: remote refs:', _remoteRefs)
     refs.forEach(ref => send(ref))
 
     if (!forPush) {
         // const remoteHead = helper.getRemoteHead()
         // send(`@${remoteHead} HEAD`)
         if (refs.length) {
-            // 7974047d961a77798581fee8bfaa8b3c29530508 refs/heads/dev-0
             const headBranch = refs[0].split(' ')[1].slice('refs/heads/'.length)
             send(`@refs/heads/${headBranch} HEAD`)
         }
@@ -184,7 +181,6 @@ async function doFetch(input) {
     
     const queue = [{ type: 'commit', sha: commitSha }]
     const notQueued = obj => !queue.find(elem => elem.sha === obj.sha)
-    // const received = []
     const serializationQueue = []
     const commits = {}
 
@@ -196,41 +192,35 @@ async function doFetch(input) {
         // if (await git.isExistsObject(sha)) {
         //     verbose(`already downloaded: ${sha}`)
         // } else {
-            if (type === 'commit') {
-                const object = await helper.getCommit(sha, branch)
-                verbose(`got: ${sha}`)
-                commits[object.sha] = object
-                const refList = git.extractRefs(type, object.content)
-                    .map(o => ({ ...o, commit: sha }))
-                    .filter(notQueued)
-                queue.push(...refList)
-                // verbose('after load commit:', queue)
-                if (!serializationQueue.includes(sha)) {
-                    promises.push(git.writeObject(type, object.content, { sha }))
-                    serializationQueue.push(sha)
-                }
-            } else if (type === 'tag') {
-                verbose(`warning: retrieving ${type}-object not supported yet`)
-                continue
-            } else {
-                const commitAddr = commits[commit]
-                    ? commits[commit].address
-                    : await helper.getCommitAddr(commit, branch)
-                const object = await helper.getBlob(sha, type, commitAddr)
-                verbose(`got: ${sha}`)
-                const refList = git.extractRefs(type, object.content)
-                    .map(o => ({ ...o, commit }))
-                    .filter(notQueued)
-                queue.push(...refList)
-                // verbose(`debug: after load ${type}:`, queue)
-                // verbose({ type, sha, content: object.content })
-                if (!serializationQueue.includes(sha)) {
-                    promises.push(git.writeObject(type, object.content, { sha }))
-                    serializationQueue.push(sha)
-                }
+        if (type === 'commit') {
+            const object = await helper.getCommit(sha, branch)
+            verbose(`got: commit (${sha})`)
+            commits[object.sha] = object
+            const refList = git.extractRefs(type, object.content)
+                .map(o => ({ ...o, commit: sha }))
+                .filter(notQueued)
+            queue.push(...refList)
+            if (!serializationQueue.includes(sha)) {
+                promises.push(git.writeObject(type, object.content, { sha }))
+                serializationQueue.push(sha)
             }
-            // received.push(sha)
-            // verbose(`debug: wrote: ${sha}`)
+        } else if (type === 'tag') {
+            verbose(`warning: retrieving ${type}-object not supported yet`)
+            continue
+        } else {
+            const object = await helper.getBlob(sha, type)
+            verbose(`got: ${type} (${sha})`)
+            const refList = git.extractRefs(type, object.content)
+                .map(o => ({ ...o, commit }))
+                .filter(notQueued)
+            queue.push(...refList)
+            if (!serializationQueue.includes(sha)) {
+                promises.push(git.writeObject(type, object.content, { sha }))
+                serializationQueue.push(sha)
+            }
+        }
+        // received.push(sha)
+        // verbose(`debug: wrote: ${sha}`)
         // }
     }
     verbose(`collected ${promises.length} objects`)

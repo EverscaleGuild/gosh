@@ -6,6 +6,9 @@
 #
 #       Copyright 2019-2022 (c) EverX
 
+export TVM_LINKER=tvm_linker
+export TONOS_CLI=tonos-cli
+
 source utils.sh
 
 fn=../gosh
@@ -13,36 +16,38 @@ fn_src=$fn.sol
 fn_abi=$fn.abi.json
 fn_code=$fn.tvc
 fn_keys=$fn.keys.json
+DAO_CREATOR_KEYS=../daocreator.keys.json
 
 while getopts "fh" opt; do
-  case $opt in
-    f)
-    if [ -f $fn_keys ]; then
-      rm $fn_keys
-    fi
-    shift
-    ;;
-    h)
-    echo Usage: $0 -f NETWORK
-    echo
-    echo "  -f (optional) - force to redeploy GOSH"
-    echo "  NETWORK (optional) - points to network endpoint:"
-    echo "      localhost - Evernode SE (default)"
-    echo "      net.ton.dev - devnet"
-    echo "      main.ton.dev - mainnet"
-    echo
-    exit 0
-    ;;
-  esac
+    case $opt in
+        f)
+        if [ -f $fn_keys ]; then
+            rm $fn_keys && rm $DAO_CREATOR_KEYS
+        fi
+        make_keypair $fn_keys > /dev/null
+        cp -f $fn_keys $DAO_CREATOR_KEYS
+        shift
+        ;;
+        h)
+        echo Usage: $0 -f NETWORK
+        echo
+        echo "  -f (optional) - force to redeploy GOSH"
+        echo "  NETWORK (optional) - points to network endpoint:"
+        echo "      localhost - Evernode SE (default)"
+        echo "      net.ton.dev - devnet"
+        echo "      main.ton.dev - mainnet"
+        echo
+        exit 0
+        ;;
+    esac
 done
 
-export TVM_LINKER=tvm_linker
-export TONOS_CLI=tonos-cli
 export NETWORK=${1:-localhost}
 
 echo "[deploy $fn]"
 
-CTOR_PARAMS={}
+DAO_CREATOR_ADDR=$($TONOS_CLI genaddr ../daocreator.tvc ../daocreator.abi.json --setkey $DAO_CREATOR_KEYS | grep "Raw address:" | cut -d ' ' -f 3)
+CTOR_PARAMS={\"creator\":\"$DAO_CREATOR_ADDR\"}
 ./deploy_contract.sh $fn $CTOR_PARAMS 90000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
 
@@ -60,11 +65,6 @@ echo "load \`blob\`-contract"
 BLOB_CODE=$($TVM_LINKER decode --tvc ../blob.tvc | sed -n '/code:/ s/ code: // p')
 BLOB_DATA=$($TVM_LINKER decode --tvc ../blob.tvc | sed -n '/data:/ s/ data: // p')
 $TONOS_CLI -u $NETWORK call $GOSH_ADDR setBlob "{\"code\":\"$BLOB_CODE\",\"data\":\"$BLOB_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
-
-echo "load \`snapshot\`-contract"
-SNAPSHOT_CODE=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/code:/ s/ code: // p')
-SNAPSHOT_DATA=$($TVM_LINKER decode --tvc ../snapshot.tvc | sed -n '/data:/ s/ data: // p')
-$TONOS_CLI -u $NETWORK call $GOSH_ADDR setSnapshot "{\"code\":\"$SNAPSHOT_CODE\",\"data\":\"$SNAPSHOT_DATA\"}" --abi $fn_abi --sign $fn_keys > /dev/null || exit 1
 
 echo "load \`wallet\`-contract"
 WALLET_CODE=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/code:/ s/ code: // p')

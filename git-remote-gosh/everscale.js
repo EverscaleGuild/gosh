@@ -7,15 +7,17 @@ const { libNode } = require("@eversdk/lib-node")
 const { saveToIPFS, loadFromIPFS } = require('./ipfs')
 TonClient.useBinaryLibrary(libNode)
 
+const { verbose, fatal } = require('./utils')
 const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
 const ZERO_ADDRESS = '0:0000000000000000000000000000000000000000000000000000000000000000'
+const FEE_SET_COMMIT = 3e8
 
 let ES_CLIENT
 let CURRENT_DAO
 let CURRENT_REPO_NAME
 let CURRENT_REPO
-let Gosh, Repository, Snapshot, Commit, Blob, Dao, Tag
+let Gosh, Repository, Commit, Blob, Dao, Tag
 let UserWallet = {}
 
 const MAX_ONCHAIN_FILE_SIZE = 16384;
@@ -50,12 +52,11 @@ async function init(network, repo, goshAddress, credentials = {}) {
     CURRENT_DAO = dao
     CURRENT_REPO_NAME = tail.join('/')
     
-    const promises = ['gosh', 'repository', 'snapshot', 'commit', 'blob', 'goshdao', 'tag'].map(name => loadContract(name))
+    const promises = ['gosh', 'repository', 'commit', 'blob', 'goshdao', 'tag'].map(name => loadContract(name))
     promises.push(loadContract('goshwallet', './abi'))
     ;[
         Gosh,
         Repository,
-        Snapshot,
         Commit,
         Blob,
         Dao,
@@ -75,7 +76,6 @@ async function loadContract(name, dir = pathGoshArtifacts) {
     const fullBaseName = pathJoin(__dirname, dir, name)
     return {
         abi: JSON.parse(await fs.readFile(`${fullBaseName}.abi.json`, 'utf8')),
-        //tvc: (await fs.readFile(`${fullBaseName}.tvc`)).toString('base64'),
     }
 }
 
@@ -111,7 +111,7 @@ async function waitTrxCompletion(transaction) {
     await ES_CLIENT.net.query_transaction_tree({in_msg: transaction.in_msg, timeout: 60000 * 5})
 }
 
-function call(contract, function_name, input = {}, keys) {
+function call(contract, function_name, input = {}, keys, wait = false) {
     let signer = signerNone
     if (keys || contract.keys) {
         signer = {
@@ -136,9 +136,11 @@ function call(contract, function_name, input = {}, keys) {
     }
     return ES_CLIENT.processing.process_message(params)
         .then(async ({ transaction, decoded }) => {
-            process.stderr.write(`wait trx ${transaction.id}... `)
-            await waitTrxCompletion(transaction)
-            verbose('ok')
+            if (wait) {
+                process.stderr.write(`waiting trx ${transaction.id}... `)
+                await waitTrxCompletion(transaction)
+                console.error('ok')
+            }
             return { transaction_id: transaction.id, output: decoded.output }
         })
         .catch(err => {
@@ -221,7 +223,7 @@ async function createBranch(name, from, repoName = CURRENT_REPO_NAME) {
     return call(
         UserWallet,
         'deployBranch',
-        { repoName, newName: name, fromName: from, amountFiles: 10 },
+        { repoName, newName: name, fromName: from },
     )
 }
 
@@ -257,36 +259,25 @@ function getRemoteHead(repo = CURRENT_REPO_NAME) {
     return 'refs/heads/main'
 }
 
-async function createCommit(branch, sha, content, diffName = '') {
-    verbose({ branch, sha, content })
-    const parents = []
+async function createCommit(branch, sha, content) {
+    const promises = []
     for (const line of content.split('\n')) {
         const [key, value] = line.split(' ', 2)
         if (key === 'parent') {
-            parents.push(value)
+            promises.push(getCommitAddr(value, branch))
         }
     }
-    const [parent1 = '', parent2 = ''] = parents
-    // const repoContract = await getRepo(CURRENT_REPO_NAME)
+    const parents = await Promise.all(promises)
     return call(UserWallet, 'deployCommit', {
         repoName: CURRENT_REPO_NAME,
         branchName: branch,
         commitName: sha,
         fullCommit: content,
-        parent1: parent1 ? await getCommitAddr(parent1, branch) : '',
-        parent2: parent2 ? await getCommitAddr(parent2, branch) : '',
-        blobName1: '',
-        fullBlob1: '',
-        prevSha1: '',
-        blobName2: '',
-        fullBlob2: '',
-        prevSha2: '',
-        diffName,
-        diff: '',
+        parents,
     })
 }
 
-async function getCommitAddr(sha, branch = 'main') {
+async function getCommitAddr(sha, branch) {
     const repoContract = await getRepo(CURRENT_REPO_NAME)
     const result = await runLocal(repoContract, 'getCommitAddr', { nameBranch: branch, nameCommit: sha }).catch(err => fatal(err))
     return result.decoded.output.value0
@@ -296,13 +287,12 @@ async function getCommitAddr(sha, branch = 'main') {
 async function getCommitByAddr(commitAddr) {
     const commitContract = { ...Commit, address: commitAddr }
     const result = await runLocal(commitContract, 'getCommit')
-    const [repo, _branch, _id, parent1, parent2, content] = Object.values(result.decoded.output)
+    const [repo, _branch, _id, parents, content] = Object.values(result.decoded.output)
     return {
         repo,
         branch: _branch,
         sha: _id,
-        parent: parent1,
-        parent2,
+        parents,
         content,
     }
 }
@@ -344,11 +334,34 @@ function createBlob(sha, type, commitSha, content) {
             prevSha: ''
         })
     }
+function setCommit(branch, branchCommit, commit, depth) {
+    const value = FEE_SET_COMMIT + FEE_SET_COMMIT * depth
+    return call(UserWallet, 'setCommit', {
+        repoName: CURRENT_REPO_NAME,
+        branchName: branch,
+        branchcommit: branchCommit === ZERO_ADDRESS ? '' : branchCommit,
+        commit,
+        value,
+    })
 }
 
-async function getBlobAddr(sha, type, commitAddr) {
-    const commitContract = { ...Commit, address: commitAddr }
-    const result = await runLocal(commitContract, 'getBlobAddr', { nameBlob: `${type} ${sha}` }).catch(e => fatal(e.message))
+function createBlob(sha, type, commitSha, prevSha, branch, content) {
+    return compress(content).then(compressed => {
+        return call(UserWallet, 'deployBlob', {
+            repoName: CURRENT_REPO_NAME,
+            commit: commitSha,
+            branch,
+            blobName: `${type} ${sha}`,
+            fullBlob: compressed,
+            ipfsBlob: '',
+            prevSha,
+        })
+    })
+}
+
+async function getBlobAddr(sha, type) {
+    const repoContract = await getRepo()
+    const result = await runLocal(repoContract, 'getBlobAddr', { nameBlob: `${type} ${sha}` }).catch(e => fatal(e.message))
     return result.decoded.output.value0
 }
 
@@ -359,41 +372,14 @@ async function listBlobs(commitAddr) {
 }
 
 // Blob contract
-async function getBlob(sha, type, commitAddr) {
-    const blobAddr = await getBlobAddr(sha, type, commitAddr).catch(e => fatal(e.message))
+async function getBlob(sha, type) {
+    const blobAddr = await getBlobAddr(sha, type).catch(e => fatal(e.message))
     const blobContract = { ...Blob, address: blobAddr }
-    const result = await runLocal(blobContract, 'getBlob').catch(e => fatal(e.message))
-    let { ipfsBlob, ...blob } = result.decoded.output;
-    if (!!ipfsBlob && !blob.content) {
-        blob.content = loadFromIPFS(blob.ipfsBlob);
-    }
-    return blob
-}
-
-// other
-async function createTree(commit, id, content) {
-    const repoContract = await getRepo(CURRENT_REPO_NAME)
-
-}
-
-async function calcCommitAddress(branch, sha) {
-    /* const repoContract = await getRepo()
-    const rawCode = (await runLocal(repoContract, 'getCommitCode')).decoded.output.value0
-    const builder = [
-        { type: 'Address', address: repoContract.address },
-        { type: 'BitString', value: `x${utf8ToHex(branch)}`},
-        { type: 'BitString', value: `x${utf8ToHex('0.0.1')}` },
-    ]
-    const { boc: salt } = await ES_CLIENT.boc.encode_boc({ builder })
-    const { code: saltedCode } = await ES_CLIENT.boc.set_code_salt({ code: rawCode, salt })
-    const { data } = await ES_CLIENT.abi.encode_initial_data({
-        abi: { type: 'Contract', value: Commit.abi },
-        initial_data: { _nameCommit: sha }
-    })
-    const { tvc } = await ES_CLIENT.boc.encode_tvc({ code: saltedCode, data })
-    const { hash } = await ES_CLIENT.crypto.sha256({ data: tvc })
-    verbose({ hash }) */
-    return null
+    const result = await runLocal(blobContract, 'getBlob')
+        .then(({ decoded }) => decoded.output)
+        .catch(e => fatal(e.message))
+    result.content = await decompress(result.content)
+    return result
 }
 
 function sha1(data, type = 'blob') {
@@ -404,6 +390,19 @@ function sha1(data, type = 'blob') {
     const hash = createHash('sha1')
     hash.update(object)
     return hash.digest('hex')
+}
+
+function compress(data) {
+    return ES_CLIENT.utils.compress_zstd({
+        uncompressed: Buffer.from(data).toString('base64'),
+        level: 3
+    }).then(({ compressed }) => compressed)
+}
+
+function decompress(data) {
+    return ES_CLIENT.utils.decompress_zstd({
+        compressed: data
+    }).then(({ decompressed }) => Buffer.from(decompressed, 'base64').toString())
 }
 
 // global vars wrappers
@@ -426,10 +425,13 @@ module.exports = {
     getCommitAddr,
     getCommitByAddr,
     getCommit,
+    setCommit,
     createBlob,
     getBlobAddr,
     listBlobs,
     getBlob,
+    compress,
+    decompress,
     // global vars
     goshContract,
     currentRepo,
