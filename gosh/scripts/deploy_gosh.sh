@@ -43,8 +43,7 @@ export NETWORK=${1:-localhost}
 echo "[deploy $fn]"
 
 
-DAO_CREATOR_ADDR=$(cat $DAO_CREATOR.addr)
-
+DAO_CREATOR_ADDR=$(everdev contract info ../daocreator.abi.json --signer $fn_keys --network $NETWORK | sed -nr 's/Address:[[:space:]]+(.*)[[:space:]]+\(.*/\1/p')
 CTOR_PARAMS={\"creator\":\"$DAO_CREATOR_ADDR\"}
 ./deploy_contract.sh $fn $CTOR_PARAMS 90000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
