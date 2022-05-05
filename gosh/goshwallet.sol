@@ -32,9 +32,9 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     uint128 constant FEE_DEPLOY_COMMIT = 4 ton;
     
     // mapping to store hashes of inbound messages;
-    mapping(uint256 => uint32) m_messages;
+    /* mapping(uint256 => uint32) m_messages; */
     // Each transaction is limited by gas, so we must limit count of iteration in loop.
-    uint8 constant MAX_CLEANUP_MSGS = 20;
+    /* uint8 constant MAX_CLEANUP_MSGS = 20;
     
     modifier saveMsg() {
         m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
@@ -45,7 +45,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     struct LastMsg {
         uint32 expireAt;
         uint256 msgHash;
-    }
+    } */
 
     string version = "0.1.0";
     address _creator;
@@ -62,7 +62,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     TvmCell m_WalletData;
     TvmCell m_TagCode;
     TvmCell m_TagData;    
-    LastMsg m_lastMsg;
+    //LastMsg m_lastMsg;
     
     TvmCell m_SMVPlatformCode;
     TvmCell m_SMVClientCode;
@@ -394,7 +394,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         return body;
     }
     
-    function gc() private {
+    /* function gc() private {
         uint counter = 0;
         for ((uint256 msgHash, uint32 expireAt) : m_messages) {
             if (counter >= MAX_CLEANUP_MSGS) {
@@ -405,7 +405,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
                 delete m_messages[msgHash];
             }
         }
-    }
+    } */
 
     //
     // Internals

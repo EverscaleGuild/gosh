@@ -38,10 +38,43 @@ address public lockerTip3Wallet;
 
 bool  public  initialized;
 
+
+// mapping to store hashes of inbound messages;
+mapping(uint256 => uint32) m_messages;
+LastMsg m_lastMsg;
+// Each transaction is limited by gas, so we must limit count of iteration in loop.
+uint8 constant MAX_CLEANUP_MSGS = 20;
+
+modifier saveMsg() {
+    m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
+    gc();
+    _;
+}
+
+struct LastMsg {
+    uint32 expireAt;
+    uint256 msgHash;
+}
+
+function gc() private {
+        uint counter = 0;
+        for ((uint256 msgHash, uint32 expireAt) : m_messages) {
+            if (counter >= MAX_CLEANUP_MSGS) {
+                break;
+            }
+            counter++;
+            if (expireAt <= now) {
+                delete m_messages[msgHash];
+            }
+        }
+    }
+
+
+
 modifier check_owner {
-/*   require ( msg.pubkey () != 0, SMVErrors.error_not_external_message );
+  require ( msg.pubkey () != 0, SMVErrors.error_not_external_message );
   require ( tvm.pubkey () == msg.pubkey (), SMVErrors.error_not_my_pubkey );
- */  _ ;
+  _ ;
 }
 
 modifier check_wallet {
@@ -62,7 +95,7 @@ modifier check_token_root {
 constructor(TvmCell lockerCode, uint256 _platformCodeHash, uint16 _platformCodeDepth,
                                 uint256 _clientCodeHash, uint16 _clientCodeDepth,
                                 uint256 _proposalCodeHash, uint16 _proposalCodeDepth,
-                                address _tip3Root) public check_owner
+                                address _tip3Root) public 
 {
     require(address(this).balance >= 2*SMVConstants.TIP3_WALLET_DEPLOY_VALUE +
                                      2*SMVConstants.TIP3_WALLET_INIT_VALUE +
@@ -105,7 +138,7 @@ function onTokenWalletDeployed (address wallet) external check_token_root
 }
 
 
-function proposalIsCompleted(address proposal) external check_owner {
+function proposalIsCompleted(address proposal) external check_owner saveMsg {
     tvm.accept();
 
     ISMVProposal(proposal).isCompleted{
@@ -149,7 +182,7 @@ function onTokenBalanceUpdateWhileLockVoting (uint128 balance) external check_wa
 
 uint128 lockingAmount;
 
-function lockVoting (uint128 amount) external check_owner
+function lockVoting (uint128 amount) external check_owner saveMsg
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
@@ -165,7 +198,7 @@ function lockVoting (uint128 amount) external check_owner
 
 }
 
-function unlockVoting (uint128 amount) external view check_owner
+function unlockVoting (uint128 amount) external view check_owner saveMsg
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
@@ -176,7 +209,7 @@ function unlockVoting (uint128 amount) external view check_owner
                                                    (amount);
 }
 
-function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bool choice, uint128 amount) external view  check_owner
+function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bool choice, uint128 amount) external view  check_owner saveMsg
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
@@ -210,22 +243,22 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
 }
 
 function startProposal (TvmCell platformCode, TvmCell proposalCode, uint256 propId, TvmCell propData,
-                        uint32 startTime, uint32 finishTime) public view check_owner returns (address)
+                        uint32 startTime, uint32 finishTime) internal /* view check_owner saveMsg  returns (address)  */
 {
-    require(initialized, SMVErrors.error_not_initialized);
+    /* require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
                                     SMVConstants.PROPOSAL_INIT_VALUE +
                                     SMVConstants.VOTING_FEE+
                                     8*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low); //check 8
 
     require(tvm.hash(platformCode) == platformCodeHash,SMVErrors.error_not_my_code_hash);
-    require(platformCode.depth() == platformCodeDepth, SMVErrors.error_not_my_code_depth + 2);
+    require(platformCode.depth() == platformCodeDepth, SMVErrors.error_not_my_code_depth);
 
     require(tvm.hash(proposalCode) == proposalCodeHash,SMVErrors.error_not_my_code_hash);
-    require(proposalCode.depth() == proposalCodeDepth, SMVErrors.error_not_my_code_depth + 3);
+    require(proposalCode.depth() == proposalCodeDepth, SMVErrors.error_not_my_code_depth);
     require(now <= startTime, SMVErrors.error_time_too_late);
     require(startTime < finishTime, SMVErrors.error_times);
-    tvm.accept();
+    tvm.accept(); */
 
     TvmBuilder staticBuilder;
     uint8 platformType = 1;
@@ -293,7 +326,7 @@ function clientAddress(
 }
 
 
-function killAccount (address address_to, address tokens_to) external check_owner
+function killAccount (address address_to, address tokens_to) external check_owner saveMsg
 {
     require(!initialized);
     tvm.accept();
@@ -301,7 +334,7 @@ function killAccount (address address_to, address tokens_to) external check_owne
     selfdestruct(address_to);
 }
 
-function withdrawTokens (address address_to, uint128 amount) public view check_owner
+function withdrawTokens (address address_to, uint128 amount) public view check_owner saveMsg
 {
      require(initialized, SMVErrors.error_not_initialized);
      require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
@@ -311,7 +344,7 @@ function withdrawTokens (address address_to, uint128 amount) public view check_o
                                           (amount, address_to, 0, address(this), true, empty) ;
 }
 
-function updateHead() public view  check_owner
+function updateHead() public view  check_owner saveMsg
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+
