@@ -178,24 +178,39 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         address addrC = address.makeAddrStd(0, tvm.hash(s0));
         Commit(addrC).WalletCheckCommit{value: 0.5 ton, bounce: true}(tvm.pubkey(), branchName, branchcommit, addrC);
     }
-    
+
+
     function setCommit(
         string repoName,
         string branchName,
         address branchcommit,
-        string commit) public onlyOwner accept saveMsg{
-        if (isProposalNeeded (repoName, branchName, branchcommit, commit)) {
-            TvmBuilder proposalBuilder;
-            uint256 proposalKind = SETCOMMIT_PROPOSAL_KIND;
-            proposalBuilder.store(proposalKind, repoName, branchName, branchcommit, commit);
-            TvmCell c = proposalBuilder.toCell();
-            uint256 prop_id = tvm.hash(c); 
-            uint32 startTime = now + SETCOMMIT_PROPOSAL_START_AFTER;
-            uint32 finishTime = now + SETCOMMIT_PROPOSAL_START_AFTER + SETCOMMIT_PROPOSAL_DURATION;
-            startProposal (m_SMVPlatformCode, m_SMVProposalCode, prop_id, c, startTime, finishTime);
-        } else {
-            _setCommit(repoName, branchName, branchcommit, commit);
-        }
+        string commit) public onlyOwner {
+        require(!isProposalNeeded (repoName, branchName, branchcommit, commit), SMVErrors.error_proposol_is_needed);
+        tvm.accept();
+        _saveMsg();
+        
+        _setCommit(repoName, branchName, branchcommit, commit);
+        getMoney();
+    }
+    
+    function startProposalForSetCommit(
+        string repoName,
+        string branchName,
+        address branchcommit,
+        string commit) public onlyOwner {
+        require(isProposalNeeded (repoName, branchName, branchcommit, commit), SMVErrors.error_proposol_is_not_needed);
+        tvm.accept();
+        _saveMsg();
+
+        TvmBuilder proposalBuilder;
+        uint256 proposalKind = SETCOMMIT_PROPOSAL_KIND;
+        proposalBuilder.store(proposalKind, repoName, branchName, branchcommit, commit);
+        TvmCell c = proposalBuilder.toCell();
+        uint256 prop_id = tvm.hash(c); 
+        uint32 startTime = now + SETCOMMIT_PROPOSAL_START_AFTER;
+        uint32 finishTime = now + SETCOMMIT_PROPOSAL_START_AFTER + SETCOMMIT_PROPOSAL_DURATION;
+        startProposal (m_SMVPlatformCode, m_SMVProposalCode, prop_id, c, startTime, finishTime);
+       
         getMoney();
     }
         

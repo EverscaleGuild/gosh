@@ -66,6 +66,17 @@
 			]
 		},
 		{
+			"name": "startProposalForSetCommit",
+			"inputs": [
+				{"name":"repoName","type":"string"},
+				{"name":"branchName","type":"string"},
+				{"name":"branchcommit","type":"address"},
+				{"name":"commit","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployBlob",
 			"inputs": [
 				{"name":"repoName","type":"string"},

@@ -35,6 +35,7 @@ uint16 constant error_not_my_external_client = 130;
 uint16 constant error_proposal_is_busy = 131;
 uint16 constant error_i_am_not_head = 132;
 uint16 constant error_proposol_already_performed = 133;
-
+uint16 constant error_proposol_is_needed = 134;
+uint16 constant error_proposol_is_not_needed = 135;
 }
 
