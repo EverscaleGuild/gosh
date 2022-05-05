@@ -27,6 +27,14 @@
 			]
 		},
 		{
+			"name": "destroyObject",
+			"inputs": [
+				{"name":"obj","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "deployRepository",
 			"inputs": [
 				{"name":"nameRepo","type":"string"}
@@ -276,20 +284,6 @@
 			]
 		},
 		{
-			"name": "startProposal",
-			"inputs": [
-				{"name":"platformCode","type":"cell"},
-				{"name":"proposalCode","type":"cell"},
-				{"name":"propId","type":"uint256"},
-				{"name":"propData","type":"cell"},
-				{"name":"startTime","type":"uint32"},
-				{"name":"finishTime","type":"uint32"}
-			],
-			"outputs": [
-				{"name":"value0","type":"address"}
-			]
-		},
-		{
 			"name": "proposalAddress",
 			"inputs": [
 				{"name":"_tip3VotingLocker","type":"address"},
@@ -369,6 +363,16 @@
 			]
 		},
 		{
+			"name": "onBounceTokensTransfer",
+			"inputs": [
+				{"name":"root","type":"address"},
+				{"name":"amount","type":"uint128"},
+				{"name":"wallet_to","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "tip3Root",
 			"inputs": [
 			],
@@ -409,19 +413,19 @@
 			]
 		},
 		{
-			"name": "lastVoteResult",
-			"inputs": [
-			],
-			"outputs": [
-				{"name":"lastVoteResult","type":"optional(bool)"}
-			]
-		},
-		{
 			"name": "_tokenBalance",
 			"inputs": [
 			],
 			"outputs": [
 				{"name":"_tokenBalance","type":"uint128"}
+			]
+		},
+		{
+			"name": "lastVoteResult",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"lastVoteResult","type":"optional(bool)"}
 			]
 		}
 	],
@@ -449,9 +453,11 @@
 		{"name":"lockerCodeDepth","type":"uint16"},
 		{"name":"lockerTip3Wallet","type":"address"},
 		{"name":"initialized","type":"bool"},
+		{"name":"_tokenBalance","type":"uint128"},
+		{"name":"m_messages","type":"map(uint256,uint32)"},
+		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
 		{"name":"lastVoteResult","type":"optional(bool)"},
 		{"name":"lockingAmount","type":"uint128"},
-		{"name":"_tokenBalance","type":"uint128"},
 		{"name":"version","type":"string"},
 		{"name":"_creator","type":"address"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
@@ -467,7 +473,6 @@
 		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_TagCode","type":"cell"},
 		{"name":"m_TagData","type":"cell"},
-		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

@@ -10,18 +10,15 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
+import "./modifiers/modifiers.sol";
 import "blob.sol";
 import "goshwallet.sol";
 import "commit.sol";
 import "repository.sol";
 import "./libraries/GoshLib.sol";
 
-abstract contract ARepository {
-    function deleteCommit(address parent, string nameBranch) external {}
-}
-
 /* Root contract of Commit */
-contract Commit {
+contract Commit is Modifiers {
     string version = "0.1.0";
     uint256 _pubkey;
     address _rootRepo;
@@ -44,7 +41,7 @@ contract Commit {
     mapping(address => int128) _check;
 
     modifier onlyFirst {
-        require(check == false, 600);
+        require(check == false, ERR_SECOND_CHANGE);
         _;
     }
 
@@ -62,7 +59,8 @@ contract Commit {
         TvmCell WalletCode,
         TvmCell WalletData,
         TvmCell CommitCode,
-        TvmCell CommitData) public {
+        TvmCell CommitData) public onlyOwner {
+        require(_nameCommit != "", ERR_NO_DATA);
         tvm.accept();
         _parents = parents;
         _name = nameRepo;
@@ -78,7 +76,7 @@ contract Commit {
         m_WalletData = WalletData;
         m_CommitCode = CommitCode;
         m_CommitData = CommitData;
-        require(checkAccess(value1, msg.sender));
+        require(checkAccess(value1, msg.sender), ERR_SENDER_NO_ALLOWED);
         getMoney(tvm.pubkey());
     }
     
@@ -120,14 +118,12 @@ contract Commit {
         string branchName,
         address branchCommit ,
         address newC) public {
-        require(checkAccess(pubkey, msg.sender), 100);
-        require(address(this) == newC, 101);
+        require(address(this) == newC, ERR_WRONG_COMMIT_ADDR);
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         if (_parents.length == 0) {
-            if (address(this) != branchCommit ){ 
-                require(branchCommit  == address.makeAddrNone(), 200);
-            }
-            require(_check[newC] == 0, 201);
+            require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
+            require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
             Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
         }
         else { 
@@ -145,7 +141,7 @@ contract Commit {
         string nameCommit,
         address newC,
         uint128 value) public {
-        require(_buildCommitAddr(nameCommit) == msg.sender, 100);
+        require(_buildCommitAddr(nameCommit) == msg.sender, ERR_SENDER_NO_ALLOWED);
         _check[newC] += int128(value);
         getMoney(msg.pubkey());
     }
@@ -155,7 +151,7 @@ contract Commit {
         string branchName,
         address branchCommit ,  
         address newC) public {
-        require(_buildCommitAddr(nameCommit) == msg.sender, 100);
+        require(_buildCommitAddr(nameCommit) == msg.sender, ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         if (branchCommit  == address(this)) {
             _check[newC] -= 1;
@@ -165,10 +161,8 @@ contract Commit {
         }
         else {
             if (_parents.length == 0) {
-                if (address(this) != branchCommit ){ 
-                    require(branchCommit  == address.makeAddrNone(), 200);
-                }
-                require(_check[newC] == 0, 201);
+                require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
+                require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
                 Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
             }
             else { 
@@ -184,33 +178,17 @@ contract Commit {
     }
 
     function setBlobs(uint256 pubkey, address[] blobs) public {
-        require(checkAccess(pubkey, msg.sender));
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         _blob = blobs;
         getMoney(tvm.pubkey());
     }    
-/*    
-    function destroy() public onlyOwner {
-        tvm.accept();
-        _num -= 1;
-        if (_num == 0) { this.destroyAll(); }
-        else { ARepository(_rootRepo).deleteCommit{value: 0.1 ton, bounce: true, flag: 1}(address.makeAddrNone(), _nameBranch); }
+    
+    function destroy() public {
+        require(checkAccess(msg.pubkey(), msg.sender), ERR_SENDER_NO_ALLOWED);
+        selfdestruct(msg.sender);
     }
     
-    function destroyAll() public {
-        require(msg.sender == address(this));
-        tvm.accept();
-        if (_blob.length == 0) { 
-            ARepository(_rootRepo).deleteCommit{value: 0.1 ton, bounce: true, flag: 1}(_parent, _nameBranch);
-            selfdestruct(_rootRepo); 
-            return;
-        }
-        Blob(_blob[_blob.length - 1]).destroy{value: 0.1 ton, bounce: true, flag: 1}(_rootRepo);
-        _blob.pop();
-        this.destroyAll();
-    }
-*/
-
     //Setters
     
     //Getters

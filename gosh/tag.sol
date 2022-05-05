@@ -10,12 +10,12 @@ pragma ton-solidity >=0.54.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 
-import "Upgradable.sol";
+import "./modifiers/modifiers.sol";
 import "./libraries/GoshLib.sol";
 import "goshwallet.sol";
 
 /* Root contract of tag */
-contract Tag {
+contract Tag is Modifiers{
     string version = "0.1.0";
     string static _nametag;
     string _nameCommit;
@@ -36,7 +36,8 @@ contract Tag {
         address gosh,
         address goshdao,
         TvmCell WalletCode,
-        TvmCell WalletData) public {
+        TvmCell WalletData) public onlyOwner {
+        require(_nametag != "", ERR_NO_DATA);
         tvm.accept();
         _rootGosh = gosh;
         _goshdao = goshdao;
@@ -46,7 +47,7 @@ contract Tag {
         m_WalletCode = WalletCode;
         m_WalletData = WalletData;
         _pubkey = value0;
-        require(checkAccess(value1, msg.sender));
+        require(checkAccess(value1, msg.sender), ERR_SENDER_NO_ALLOWED);
     }
     
     function _composeWalletStateInit(uint256 pubkey) internal view returns(TvmCell) {
@@ -67,7 +68,7 @@ contract Tag {
     }
     
     function destroy(uint256 pubkey) public {
-        require(checkAccess(pubkey, msg.sender));
+        require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         selfdestruct(msg.sender);
     }
     

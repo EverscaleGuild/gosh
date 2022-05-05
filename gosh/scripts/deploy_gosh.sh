@@ -46,7 +46,7 @@ export NETWORK=${1:-localhost}
 
 echo "[deploy $fn]"
 
-DAO_CREATOR_ADDR=$($TONOS_CLI genaddr ../daocreator.tvc ../daocreator.abi.json --setkey $DAO_CREATOR_KEYS | grep "Raw address:" | cut -d ' ' -f 3)
+DAO_CREATOR_ADDR=$($TONOS_CLI genaddr ../daocreator.tvc --abi ../daocreator.abi.json --setkey $DAO_CREATOR_KEYS | grep "Raw address:" | cut -d ' ' -f 3)
 CTOR_PARAMS={\"creator\":\"$DAO_CREATOR_ADDR\"}
 ./deploy_contract.sh $fn $CTOR_PARAMS 90000000000 || exit 1
 GOSH_ADDR=$(cat $fn.addr)
