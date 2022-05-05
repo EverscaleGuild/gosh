@@ -361,7 +361,7 @@ async function getBlob(sha, type) {
         .catch(e => fatal(e.message))
 
     if (!!ipfsBlob && !blob.content) {
-        blob.content = loadFromIPFS(blob.ipfsBlob);
+        blob.content = await loadFromIPFS(blob.ipfsBlob);
     } else {
         blob.content = await decompress(blob.content)
     }
