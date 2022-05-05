@@ -126,7 +126,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         string nameRepo
     ) public onlyOwner accept saveMsg {
         Gosh(_rootgosh).deployRepository{
-            value: FEE_DEPLOY_REPO, bounce: true, flag: 2
+            value: FEE_DEPLOY_REPO, bounce: true
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
         getMoney();
     }
@@ -176,7 +176,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s0 = _composeCommitStateInit(commit, repo);
         address addrC = address.makeAddrStd(0, tvm.hash(s0));
-        Commit(addrC).WalletCheckCommit{value: 0.5 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName, branchcommit, addrC);
+        Commit(addrC).WalletCheckCommit{value: 0.5 ton, bounce: true}(tvm.pubkey(), branchName, branchcommit, addrC);
     }
     
     function setCommit(
@@ -245,7 +245,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        Commit(addr).setBlobs{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), blobs);
+        Commit(addr).setBlobs{value: 1 ton, bounce: true}(tvm.pubkey(), blobs);
         getMoney();
     }
     
@@ -253,7 +253,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         string repoName,
         string branchName) public onlyOwner accept saveMsg{
         address repo = _buildRepositoryAddr(repoName);
-        Repository(repo).setHEAD{value: 1 ton, bounce: true, flag: 2}(tvm.pubkey(), branchName);
+        Repository(repo).setHEAD{value: 1 ton, bounce: true}(tvm.pubkey(), branchName);
         getMoney();
     }
     
@@ -320,7 +320,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     ) public view onlyOwner accept saveMsg{
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
-            value: 1 ton, bounce: true, flag: 2 
+            value: 1 ton, bounce: true 
         }(tvm.pubkey(), newName, fromName);
     }
 
@@ -330,7 +330,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
     ) public view onlyOwner accept saveMsg{
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deleteBranch{
-            value: 1 ton, bounce: true, flag: 2
+            value: 1 ton, bounce: true
         }(tvm.pubkey(), Name);
     }
     
@@ -358,7 +358,7 @@ contract GoshWallet is Modifiers, SMVAccount , IVotingResultRecipient{
         TvmCell s1 = tvm.buildStateInit({code: deployCode, contr: Tag, varInit: {_nametag: nametag}});
         address tagaddr = address.makeAddrStd(0, tvm.hash(s1));
         Tag(tagaddr).destroy{
-            value: 0.1 ton, bounce: true, flag: 2 
+            value: 0.1 ton, bounce: true 
         }(tvm.pubkey());
     }
 

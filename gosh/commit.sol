@@ -124,14 +124,14 @@ contract Commit is Modifiers {
         if (_parents.length == 0) {
             require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
             require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
-            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, newC);
         }
         else { 
             if (_parents.length != 1) {
-                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
             }
             for (address a : _parents) {
-                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
             }
         }
         getMoney(msg.pubkey());
@@ -156,21 +156,21 @@ contract Commit is Modifiers {
         if (branchCommit  == address(this)) {
             _check[newC] -= 1;
             if (_check[newC] == -1) {
-                Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true, flag: 2}(branchName, newC);
+                Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true }(branchName, newC);
             }
         }
         else {
             if (_parents.length == 0) {
                 require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
                 require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
-                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, newC);
+                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, newC);
             }
             else { 
                 if (_parents.length != 1) {
-                    Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, newC, uint128(_parents.length) - 1);
+                    Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
                 }
                 for (address a : _parents) {
-                    Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true, flag: 2}(_nameCommit, branchName, branchCommit , newC);
+                    Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
                 }
             }
         }

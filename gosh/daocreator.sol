@@ -44,7 +44,7 @@ contract DaoCreator is Modifiers{
         string name, 
         uint256 root_pubkey) public view accept {
         Gosh(_gosh).deployDao{
-            value: FEE_DEPLOY_DAO, bounce: true, flag: 2
+            value: FEE_DEPLOY_DAO, bounce: true
         }(name, root_pubkey);
     }
     
