@@ -24,6 +24,7 @@ const MAX_FILE_SIZE = 15360 // 15Kb
 
 const _pushCommitsQ = {}
 const _pushBlobsQ = {}
+const _resolveBlobAddresses = {}
 const _remoteRefs = {} // remote refs: ref_name => sha1, addr
 const _pushed = {} // pushed refs
 const received = []
@@ -80,6 +81,7 @@ async function pushObject(obj, currentCommit, branch) {
         currentCommit = { sha, address: '' }
         if (!_pushCommitsQ[sha]) {
             _pushCommitsQ[sha] = helper.createCommit(branch, sha, content)
+            _resolveBlobAddresses[currentCommit.sha] = []
         }
         // verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
@@ -92,6 +94,7 @@ async function pushObject(obj, currentCommit, branch) {
         verbose(diffContent) */
         if (!_pushBlobsQ[sha]) {
             _pushBlobsQ[sha] = helper.createBlob(sha, type, currentCommit.sha, prevSha, branch, content)
+            _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
         }
         // const address = await helper.getBlobAddr(sha, type)
         // verbose(`uploading ${type}(${sha}): ${address}`)
@@ -109,7 +112,7 @@ async function pushRef(localRef, remoteRef) {
         if (branchAddr === helper.ZERO_ADDRESS) {
             await helper.createBranch(branch, 'main')
         }
-        const exists = Object.values(_remoteRefs).map(ref => ref.sha)
+        const exists = _remoteRefs[branch] ? [_remoteRefs[branch].sha] : [] // Object.values(_remoteRefs).map(ref => ref.sha)
         const objects = await git.lsObjects(localRef, exists)
         // const objects = output.map(o => o.split(' ')[0])
         // verbose('objects:', objects)
@@ -120,11 +123,19 @@ async function pushRef(localRef, remoteRef) {
         const commitChainDepth = Object.keys(_pushCommitsQ).length
         verbose('commits Q:', commitChainDepth)
         verbose('  blobs Q:', Object.keys(_pushBlobsQ).length)
+        // deploy all commits
         await Promise.all(Object.values(_pushCommitsQ))
             .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+        // deploy all blobs
         await Promise.all(Object.values(_pushBlobsQ))
             .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
-
+        // resolve blob addresses and update commits
+        for (let commitSha of Object.keys(_resolveBlobAddresses)) {
+            await Promise.all(_resolveBlobAddresses[commitSha])
+                .then(addresses => helper.setBlobs(commitSha, addresses))
+                .then(({ transaction_id }) => verbose(`updated blob list: ${transaction_id}`))
+        }
+        // update remote ref
         await helper.setCommit(branch, branchAddr, commit.sha, commitChainDepth)
             .then(result => verbose('setComit:', result))
         // TODO check setCommit and update ref if ok

@@ -318,6 +318,10 @@ async function getBlobAddr(sha, type) {
     return result.decoded.output.value0
 }
 
+async function setBlobs(commit, blobs) {
+    return call(UserWallet, 'setBlob', { repoName: CURRENT_REPO_NAME, commitName: commit, blobs })
+}
+
 async function listBlobs(commitAddr) {
     const commitContract = { ...Commit, address: commitAddr }
     const result = await runLocal(commitContract, 'getBlobs')
@@ -381,6 +385,7 @@ module.exports = {
     setCommit,
     createBlob,
     getBlobAddr,
+    setBlobs,
     listBlobs,
     getBlob,
     compress,
