@@ -3,6 +3,7 @@ const ipfs = require('ipfs-core')
 const Protector = require('libp2p/src/pnet')
 const { setTimeout } = require('timers/promises')
 const { BetterLock } = require('better-lock');
+const { verbose } = require('./utils')
 
 
 const SWARM_KEY = `/key/swarm/psk/1.0.0/
@@ -40,7 +41,7 @@ let networkErrors = 0
 async function pinRemoteAdd(cid) {
     let response
     while (networkErrors < MAX_NETWORK_ERRORS) {
-        console.log(`${networkErrors} POST pin ${cid}`)
+        verbose(`${networkErrors} POST pin ${cid}`)
         response = await fetch(PIN_REMOTE_ENDPOINT, {
             method: "POST",
             headers: {
@@ -48,8 +49,8 @@ async function pinRemoteAdd(cid) {
             },
             body: JSON.stringify({ cid: cid.toString() }),
         })
-        console.log(response.status, cid, PIN_REMOTE_ENDPOINT, await response.json())
-        console.log(ipfs_node.isOnline())
+        verbose(response.status, cid, PIN_REMOTE_ENDPOINT, await response.json())
+        verbose(ipfs_node.isOnline())
         if (response.ok) break
 
         if (++networkErrors > MAX_NETWORK_ERRORS) {
@@ -65,7 +66,7 @@ async function pinRemoteAdd(cid) {
         if (response.ok) {
             pinStatus = await response.json()
             if (pinStatus.status == "pinned") {
-                console.log(`CID ${cid} pinned`)
+                verbose(`CID ${cid} pinned`)
                 return true
             }
         }
@@ -76,12 +77,12 @@ async function pinRemoteAdd(cid) {
         }
 
         // next request
-        console.log(`${networkErrors} SLEEP interval ${cid}`)
+        verbose(`${networkErrors} SLEEP interval ${cid}`)
         await setTimeout(UPDATE_INTERVAL)
-        console.log(`${networkErrors} GET pin ${cid}`)
+        verbose(`${networkErrors} GET pin ${cid}`)
         const url = `${PIN_REMOTE_ENDPOINT}/${cid}`
         response = await fetch(url)
-        console.log(response.status, cid, url, await response.json())
+        verbose(response.status, cid, url, await response.json())
     }
 }
 const getIpfs = (() => {
@@ -118,7 +119,7 @@ const getIpfs = (() => {
 async function saveToIPFS(content) {
     const ipfs = await getIpfs()
     const { cid } = await ipfs.add(content)
-    console.log(`\ncid = ${cid}\n`)
+    verbose(`\ncid = ${cid}\n`)
     await pinRemoteAdd(cid)
     return cid;
 }
@@ -144,9 +145,9 @@ async function loadFromIPFS(cid) {
 
 
 //     // const data = await loadFromIPFS(cid)
-//     // console.log(data.toString())
+//     // verbose(data.toString())
 //     const res = await Promise.all(cids.map((cid) => loadFromIPFS(cid)))
-//     res.forEach((res) => console.log(`==\n${res}\n--`))
+//     res.forEach((res) => verbose(`==\n${res}\n--`))
 //     process.exit(0)
 // }
 

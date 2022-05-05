@@ -22,17 +22,6 @@ let UserWallet = {}
 
 const MAX_ONCHAIN_FILE_SIZE = 16384;
 
-const gitOpCosts = {
-    createRepo: 2.7e9,
-    createBranch: 0.22e9,
-    deleteBranch: 0.11e9,
-}
-
-const verbose = (...data) => console.error(...data)
-const fatal = (...data) => {
-    verbose(...data)
-    process.exit(1)
-}
 
 async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
