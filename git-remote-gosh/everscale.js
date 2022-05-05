@@ -4,6 +4,7 @@ const { createHash } = require('crypto')
 
 const { TonClient } = require('@eversdk/core')
 const { libNode } = require("@eversdk/lib-node")
+const { saveToIPFS, loadFromIPFS } = require('./ipfs')
 TonClient.useBinaryLibrary(libNode)
 
 const { verbose, fatal } = require('./utils')
@@ -18,6 +19,9 @@ let CURRENT_REPO_NAME
 let CURRENT_REPO
 let Gosh, Repository, Commit, Blob, Dao, Tag
 let UserWallet = {}
+
+const MAX_ONCHAIN_FILE_SIZE = 16384;
+
 
 async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
@@ -299,17 +303,41 @@ function setCommit(branch, branchCommit, commit, depth) {
 }
 
 function createBlob(sha, type, commitSha, prevSha, branch, content) {
-    return compress(content).then(compressed => {
-        return call(UserWallet, 'deployBlob', {
-            repoName: CURRENT_REPO_NAME,
-            commit: commitSha,
-            branch,
-            blobName: `${type} ${sha}`,
-            fullBlob: compressed,
-            ipfsBlob: '',
-            prevSha,
+    const _sizeof = (str) => {
+        // Creating new Blob object and passing string into it
+        // inside square brackets and then
+        // by using size property storin the size
+        // inside the size variable
+        let size = new Blob([str]).size;
+        return size;
+    };
+
+    if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
+        // TODO: wrap and push to queue
+        return compress(content).then(async (compressed) => {
+            const ipfsCID = await saveToIPFS(content);
+            return call(UserWallet, 'deployBlob', {
+                repoName: CURRENT_REPO_NAME,
+                commit: commitSha,
+                blobName: `${type} ${sha}`,
+                fullBlob: compressed,
+                ipfsBlob: ipfsCID,
+                prevSha: ''
+            })
         })
-    })
+    } else {
+        return compress(content).then(compressed => {
+            return call(UserWallet, 'deployBlob', {
+                repoName: CURRENT_REPO_NAME,
+                commit: commitSha,
+                branch,
+                blobName: `${type} ${sha}`,
+                fullBlob: compressed,
+                ipfsBlob: '',
+                prevSha,
+            })
+        })
+    }
 }
 
 async function getBlobAddr(sha, type) {
@@ -332,11 +360,16 @@ async function listBlobs(commitAddr) {
 async function getBlob(sha, type) {
     const blobAddr = await getBlobAddr(sha, type).catch(e => fatal(e.message))
     const blobContract = { ...Blob, address: blobAddr }
-    const result = await runLocal(blobContract, 'getBlob')
+    const { ipfsBlob, ...blob } = await runLocal(blobContract, 'getBlob')
         .then(({ decoded }) => decoded.output)
         .catch(e => fatal(e.message))
-    result.content = await decompress(result.content)
-    return result
+
+    if (!!ipfsBlob && !blob.content) {
+        blob.content = await loadFromIPFS(blob.ipfsBlob);
+    } else {
+        blob.content = await decompress(blob.content)
+    }
+    return blob
 }
 
 function sha1(data, type = 'blob') {

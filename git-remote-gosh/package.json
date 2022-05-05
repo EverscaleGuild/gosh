@@ -21,6 +21,10 @@
   "homepage": "https://github.com/tonlabs/git-remote-gosh#readme",
   "dependencies": {
     "@eversdk/core": "^1.32.0",
-    "@eversdk/lib-node": "^1.32.0"
+    "@eversdk/lib-node": "^1.32.0",
+    "better-lock": "^2.0.1-beta",
+    "ipfs-core": "^0.14.2",
+    "ipfs-utils": "^9.0.6",
+    "libp2p": "^0.36.2"
   }
 }
