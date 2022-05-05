@@ -314,7 +314,7 @@ function createBlob(sha, type, commitSha, prevSha, branch, content) {
 
     if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
         // TODO: wrap and push to queue
-        return compress(content).then(compressed => {
+        return compress(content).then(async (compressed) => {
             const ipfsCID = await saveToIPFS(content);
             return call(UserWallet, 'deployBlob', {
                 repoName: CURRENT_REPO_NAME,
@@ -356,11 +356,16 @@ async function listBlobs(commitAddr) {
 async function getBlob(sha, type) {
     const blobAddr = await getBlobAddr(sha, type).catch(e => fatal(e.message))
     const blobContract = { ...Blob, address: blobAddr }
-    const result = await runLocal(blobContract, 'getBlob')
+    const { ipfsBlob, ...blob } = await runLocal(blobContract, 'getBlob')
         .then(({ decoded }) => decoded.output)
         .catch(e => fatal(e.message))
-    result.content = await decompress(result.content)
-    return result
+
+    if (!!ipfsBlob && !blob.content) {
+        blob.content = loadFromIPFS(blob.ipfsBlob);
+    } else {
+        blob.content = await decompress(blob.content)
+    }
+    return blob
 }
 
 function sha1(data, type = 'blob') {
