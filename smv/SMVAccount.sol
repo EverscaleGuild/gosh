@@ -16,10 +16,11 @@ import "External/tip3/interfaces/ITokenRoot.sol";
 import "External/tip3/interfaces/ITokenWallet.sol";
 import "External/tip3/interfaces/IAcceptTokensTransferCallback.sol";
 import "External/tip3/interfaces/IAcceptTokensMintCallback.sol";
+import "External/tip3/interfaces/IBounceTokensTransferCallback.sol";
 
 import "SMVTokenLocker.sol";
 
-contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback, IAcceptTokensMintCallback {
+contract SMVAccount is ISMVAccount , IAcceptTokensTransferCallback, IAcceptTokensMintCallback, IBounceTokensTransferCallback {
 
 address /* static */ public tip3Root;
 uint256 /* static */ nonce;
@@ -37,6 +38,7 @@ uint16  lockerCodeDepth;
 address public lockerTip3Wallet;
 
 bool  public  initialized;
+uint128 public _tokenBalance;
 
 
 // mapping to store hashes of inbound messages;
@@ -46,9 +48,16 @@ LastMsg m_lastMsg;
 uint8 constant MAX_CLEANUP_MSGS = 20;
 
 modifier saveMsg() {
+    /* m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
+    gc(); */
+    _saveMsg();
+    _;
+}
+
+
+function _saveMsg() inline internal {
     m_messages[m_lastMsg.msgHash] = m_lastMsg.expireAt;
     gc();
-    _;
 }
 
 struct LastMsg {
@@ -138,8 +147,9 @@ function onTokenWalletDeployed (address wallet) external check_token_root
 }
 
 
-function proposalIsCompleted(address proposal) external check_owner saveMsg {
+function proposalIsCompleted(address proposal) external check_owner /* saveMsg */ {
     tvm.accept();
+    _saveMsg();
 
     ISMVProposal(proposal).isCompleted{
       value: SMVConstants.VOTING_COMPLETION_FEE + SMVConstants.EPSILON_FEE
@@ -178,38 +188,44 @@ function onTokenBalanceUpdateWhileLockVoting (uint128 balance) external check_wa
                                           (lockingAmount, tip3VotingLocker, 0, address(this), true, empty) ;
         _tokenBalance = balance - lockingAmount;
     }
+    else 
+      _tokenBalance = balance;
+
+    lockingAmount = 0;
 }
 
 uint128 lockingAmount;
 
-function lockVoting (uint128 amount) external check_owner saveMsg
+function lockVoting (uint128 amount) external check_owner /* saveMsg */
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
-                                    4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+                                    4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low); 
+    require(lockingAmount == 0);                                                               
     tvm.accept();
+
+    _saveMsg();
 
     ITokenWallet(tip3Wallet).balance {value: SMVConstants.ACTION_FEE, 
                                       flag:1, 
                                       callback: SMVAccount.onTokenBalanceUpdateWhileLockVoting} ();
 
     lockingAmount = amount;
-    
-
 }
 
-function unlockVoting (uint128 amount) external view check_owner saveMsg
+function unlockVoting (uint128 amount) external  check_owner /* saveMsg */
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
                                     4*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
     tvm.accept();
+    _saveMsg();
 
     ISMVTokenLocker(tip3VotingLocker).unlockVoting {value: 3*SMVConstants.ACTION_FEE, flag: 1}
                                                    (amount);
 }
 
-function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bool choice, uint128 amount) external view  check_owner saveMsg
+function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bool choice, uint128 amount) external  check_owner /* saveMsg */
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE +
@@ -224,6 +240,7 @@ function voteFor (TvmCell platformCode, TvmCell clientCode, address proposal, bo
     require(tvm.hash(clientCode) == clientCodeHash,SMVErrors.error_not_my_code_hash);
     require(clientCode.depth() == clientCodeDepth, SMVErrors.error_not_my_code_depth);
     tvm.accept();
+    _saveMsg();
 
     TvmBuilder staticBuilder;
     uint8 platformType = 0;
@@ -326,25 +343,29 @@ function clientAddress(
 }
 
 
-function killAccount (address address_to, address tokens_to) external check_owner saveMsg
+function killAccount (address address_to, address tokens_to) external check_owner /* saveMsg */
 {
     require(!initialized);
     tvm.accept();
+    _saveMsg();
     
     selfdestruct(address_to);
 }
 
-function withdrawTokens (address address_to, uint128 amount) public view check_owner saveMsg
+function withdrawTokens (address address_to, uint128 amount) public check_owner /* saveMsg */
 {
      require(initialized, SMVErrors.error_not_initialized);
      require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
+     tvm.accept();
+
+     _saveMsg();
 
      TvmCell empty;
      ITokenWallet(tip3Wallet).transfer {value: 2*SMVConstants.ACTION_FEE, flag: 1}
                                           (amount, address_to, 0, address(this), true, empty) ;
 }
 
-function updateHead() public view  check_owner saveMsg
+function updateHead() public check_owner /* saveMsg */
 {
     require(initialized, SMVErrors.error_not_initialized);
     require(address(this).balance > SMVConstants.ACCOUNT_MIN_BALANCE+
@@ -352,11 +373,12 @@ function updateHead() public view  check_owner saveMsg
                                     6*SMVConstants.ACTION_FEE, SMVErrors.error_balance_too_low);
 
     tvm.accept();
+    _saveMsg();
 
     ISMVTokenLocker(tip3VotingLocker).updateHead {value: 5*SMVConstants.VOTING_COMPLETION_FEE +                              
                                                          5*SMVConstants.ACTION_FEE, flag: 1} ();
 }
-uint128 public _tokenBalance;
+
 function onAcceptTokensTransfer (address tokenRoot,
                                  uint128 amount,
                                  address sender,
@@ -372,6 +394,11 @@ function onAcceptTokensMint (address tokenRoot,
                              TvmCell payload) external override check_wallet
 {
     _tokenBalance += amount;
+}
+
+function onBounceTokensTransfer(address root, uint128 amount, address wallet_to) external override check_wallet
+{
+    _tokenBalance  += amount;
 }
 
 
