@@ -20,7 +20,6 @@ const helper = require('./everscale')
 const git = require('./git')
 
 const CAPABILITIES_LIST = ['list', 'push', 'fetch', 'option']
-const MAX_FILE_SIZE = 15360 // 15Kb
 
 const _pushCommitsQ = {}
 const _pushBlobsQ = {}
@@ -72,10 +71,6 @@ async function deleteRemoteRef(ref) {
 async function pushObject(obj, currentCommit, branch) {
     const [sha, filename] = obj.split(' ')
     const { type, size, content } = await git.objectData(sha)
-    if (size >= MAX_FILE_SIZE) {
-        // TODO ipfs
-        verbose(`WARNING: file "${filename}" is oversized (${s / 1024}Kb)`)
-    }
     if (type === 'commit') {
         // const address = await helper.getCommitAddr(sha, branch)
         currentCommit = { sha, address: '' }
@@ -93,7 +88,7 @@ async function pushObject(obj, currentCommit, branch) {
             : content
         verbose(diffContent) */
         if (!_pushBlobsQ[sha]) {
-            _pushBlobsQ[sha] = helper.createBlob(sha, type, currentCommit.sha, prevSha, branch, content)
+            _pushBlobsQ[sha] = helper.createBlob(sha, type, size, currentCommit.sha, prevSha, branch, content)
             _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
         }
         // const address = await helper.getBlobAddr(sha, type)

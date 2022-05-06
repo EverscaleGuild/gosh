@@ -20,7 +20,7 @@ let CURRENT_REPO
 let Gosh, Repository, Commit, Blob, Dao, Tag
 let UserWallet = {}
 
-const MAX_ONCHAIN_FILE_SIZE = 16384;
+const MAX_ONCHAIN_FILE_SIZE = 15360;
 
 
 async function init(network, repo, goshAddress, credentials = {}) {
@@ -302,17 +302,8 @@ function setCommit(branch, branchCommit, commit, depth) {
     })
 }
 
-function createBlob(sha, type, commitSha, prevSha, branch, content) {
-    const _sizeof = (str) => {
-        // Creating new Blob object and passing string into it
-        // inside square brackets and then
-        // by using size property storin the size
-        // inside the size variable
-        let size = new Blob([str]).size;
-        return size;
-    };
-
-    if (_sizeof(content) > MAX_ONCHAIN_FILE_SIZE) {
+function createBlob(sha, type, size, commitSha, prevSha, branch, content) {
+    if (size > MAX_ONCHAIN_FILE_SIZE) {
         // TODO: wrap and push to queue
         return compress(content).then(async (compressed) => {
             const ipfsCID = await saveToIPFS(content);
@@ -428,4 +419,5 @@ module.exports = {
     currentRepo,
     userWallet,
     ZERO_ADDRESS,
+    MAX_ONCHAIN_FILE_SIZE,
 }
