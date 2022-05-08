@@ -13,6 +13,7 @@ import "./modifiers/modifiers.sol";
 import "Upgradable.sol";
 
 contract GoshConfig is Modifiers, Upgradable {
+    string constant version = "0.2.0";
 
     struct GlobalConfig {
         address goshAddr;
@@ -21,6 +22,7 @@ contract GoshConfig is Modifiers, Upgradable {
     GlobalConfig _config;
 
     constructor(address goshAddr) public onlyOwner accept {
+        require(tvm.pubkey() != 0, ERR_NEED_PUBKEY);
         _config.goshAddr = goshAddr;
     }
 

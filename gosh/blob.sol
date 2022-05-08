@@ -15,7 +15,7 @@ import "./libraries/GoshLib.sol";
 import "goshwallet.sol";
 /* Root contract of Blob */
 contract Blob is Modifiers {
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     string static _nameBlob;
     string _nameBranch;
     bool check = false;
@@ -23,11 +23,11 @@ contract Blob is Modifiers {
     string _blob;
     uint256 _pubkey;
     string _prevSha;
+    uint8 _flags;
     address _rootGosh;
     address _goshdao;
     address _rootCommit;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     
     constructor(
         uint256 pubkey, 
@@ -36,13 +36,14 @@ contract Blob is Modifiers {
         string blob,
         string ipfs, 
         string prevSha,
+        uint8 flags,
         address rootGosh,
         address goshdao,
         uint256 rootPubkey,
-        TvmCell WalletCode,
-        TvmCell WalletData) public onlyOwner {
+        TvmCell WalletCode) public {
         require(_nameBlob != "", ERR_NO_DATA);
         tvm.accept();
+        _flags = flags;
         _ipfsBlob = ipfs;
         _rootCommit = commit;
         _pubkey = rootPubkey;
@@ -52,7 +53,6 @@ contract Blob is Modifiers {
         _blob = blob;
         _prevSha = prevSha;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
     }    
     
@@ -97,8 +97,8 @@ contract Blob is Modifiers {
         return _rootCommit;
     }
     
-    function getBlob() external view returns(string sha, address commit, string content, string ipfs) {
-        return (_nameBlob, _rootCommit, _blob, _ipfsBlob);
+    function getBlob() external view returns(string sha, address commit, string content, string ipfs, uint8 flags) {
+        return (_nameBlob, _rootCommit, _blob, _ipfsBlob, _flags);
     }
 
     function getVersion() external view returns(string) {

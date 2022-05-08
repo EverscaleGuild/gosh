@@ -8,15 +8,10 @@
 			"inputs": [
 				{"name":"creator","type":"address"},
 				{"name":"commitCode","type":"cell"},
-				{"name":"commitData","type":"cell"},
 				{"name":"blobCode","type":"cell"},
-				{"name":"blobData","type":"cell"},
 				{"name":"repositoryCode","type":"cell"},
-				{"name":"repositoryData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"},
 				{"name":"TagCode","type":"cell"},
-				{"name":"TagData","type":"cell"},
 				{"name":"lockerCode","type":"cell"},
 				{"name":"platformCode","type":"cell"},
 				{"name":"clientCode","type":"cell"},
@@ -85,7 +80,8 @@
 				{"name":"blobName","type":"string"},
 				{"name":"fullBlob","type":"string"},
 				{"name":"ipfsBlob","type":"string"},
-				{"name":"prevSha","type":"string"}
+				{"name":"prevSha","type":"string"},
+				{"name":"flags","type":"uint8"}
 			],
 			"outputs": [
 			]
@@ -469,21 +465,15 @@
 		{"components":[{"name":"expireAt","type":"uint32"},{"name":"msgHash","type":"uint256"}],"name":"m_lastMsg","type":"tuple"},
 		{"name":"lastVoteResult","type":"optional(bool)"},
 		{"name":"lockingAmount","type":"uint128"},
-		{"name":"version","type":"string"},
 		{"name":"_creator","type":"address"},
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
 		{"name":"m_RepositoryCode","type":"cell"},
-		{"name":"m_RepositoryData","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},
-		{"name":"m_CommitData","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},
-		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_TagCode","type":"cell"},
-		{"name":"m_TagData","type":"cell"},
 		{"name":"m_SMVPlatformCode","type":"cell"},
 		{"name":"m_SMVClientCode","type":"cell"},
 		{"name":"m_SMVProposalCode","type":"cell"}

@@ -1,6 +1,8 @@
 pragma ton-solidity >=0.54.0;
 
 library GoshLib {
+    string constant version = "0.2.0";
+    
     function buildWalletCode(
         TvmCell originalCode,
         uint256 pubkey,
@@ -9,6 +11,9 @@ library GoshLib {
         TvmBuilder b;
         b.store(pubkey);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
 
@@ -22,6 +27,9 @@ library GoshLib {
         b.store(gosh);
         b.store(dao);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
 
@@ -33,6 +41,9 @@ library GoshLib {
         TvmBuilder b;
         b.store(repo);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
     
@@ -44,6 +55,9 @@ library GoshLib {
         TvmBuilder b;
         b.store(repo);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
     
@@ -55,6 +69,9 @@ library GoshLib {
         TvmBuilder b;
         b.store(repo);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         return tvm.setCodeSalt(originalCode, b.toCell());
     }
 }

@@ -11,6 +11,8 @@ pragma ton-solidity >=0.58.0;
 import "errors.sol";
 
 abstract contract Modifiers is Errors {    
+    string constant versionModifiers = "0.2.0";
+    
     modifier onlyOwner {
         require(msg.pubkey() == tvm.pubkey(), ERR_NOT_OWNER);
         _;

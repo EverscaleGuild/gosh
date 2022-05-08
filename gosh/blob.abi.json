@@ -12,11 +12,11 @@
 				{"name":"blob","type":"string"},
 				{"name":"ipfs","type":"string"},
 				{"name":"prevSha","type":"string"},
+				{"name":"flags","type":"uint8"},
 				{"name":"rootGosh","type":"address"},
 				{"name":"goshdao","type":"address"},
 				{"name":"rootPubkey","type":"uint256"},
-				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"}
+				{"name":"WalletCode","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -68,7 +68,8 @@
 				{"name":"sha","type":"string"},
 				{"name":"commit","type":"address"},
 				{"name":"content","type":"string"},
-				{"name":"ipfs","type":"string"}
+				{"name":"ipfs","type":"string"},
+				{"name":"flags","type":"uint8"}
 			]
 		},
 		{
@@ -89,7 +90,6 @@
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
-		{"name":"version","type":"string"},
 		{"name":"_nameBlob","type":"string"},
 		{"name":"_nameBranch","type":"string"},
 		{"name":"check","type":"bool"},
@@ -97,10 +97,10 @@
 		{"name":"_blob","type":"string"},
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_prevSha","type":"string"},
+		{"name":"_flags","type":"uint8"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
 		{"name":"_rootCommit","type":"address"},
-		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"}
+		{"name":"m_WalletCode","type":"cell"}
 	]
 }

@@ -42,14 +42,12 @@ export NETWORK=${1:-localhost}
 echo "[deploy $fn]"
 
 WALLET_CODE=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/code:/ s/ code: // p')
-WALLET_DATA=$($TVM_LINKER decode --tvc ../goshwallet.tvc | sed -n '/data:/ s/ data: // p')
 
 DAO_CODE=$($TVM_LINKER decode --tvc ../goshdao.tvc | sed -n '/code:/ s/ code: // p')
-DAO_DATA=$($TVM_LINKER decode --tvc ../goshdao.tvc | sed -n '/data:/ s/ data: // p')
 
 GOSH_ADDR=$(cat $GOSH.addr)
 
-CTOR_PARAMS="{\"gosh\":\"$GOSH_ADDR\",\"WalletCode\":\"$WALLET_CODE\",\"WalletData\":\"$WALLET_DATA\",\"codeDao\":\"$DAO_CODE\",\"dataDao\":\"$DAO_DATA\"}"
+CTOR_PARAMS="{\"gosh\":\"$GOSH_ADDR\",\"WalletCode\":\"$WALLET_CODE\",\"codeDao\":\"$DAO_CODE\"}"
 ./deploy_contract.sh $fn $CTOR_PARAMS 50000000000000 || exit 1
 DAO_CREATOR_ADDR=$(cat $fn.addr)
 

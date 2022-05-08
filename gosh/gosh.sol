@@ -16,20 +16,14 @@ import "goshdao.sol";
 
 /* Root contract of gosh */
 contract Gosh is Modifiers{
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     address _creator;
     TvmCell m_RepositoryCode;
-    TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
-    TvmCell m_CommitData;
     TvmCell m_BlobCode;
-    TvmCell m_BlobData;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     TvmCell m_codeDao;
-    TvmCell m_dataDao;
     TvmCell m_codeTag;
-    TvmCell m_dataTag;
 
     //SMV
     TvmCell m_TokenLockerCode;
@@ -44,6 +38,7 @@ contract Gosh is Modifiers{
     address public _lastGoshDao;
 
     constructor(address creator) public onlyOwner {
+        require(tvm.pubkey() != 0, ERR_NEED_PUBKEY);
         tvm.accept();
         _creator = creator;
     }
@@ -81,7 +76,7 @@ contract Gosh is Modifiers{
         tvm.accept();
         TvmCell s1 = _composeRepoStateInit(name, goshdao);
         new Repository {stateInit: s1, value: 0.4 ton, wid: 0}(
-            rootpubkey, name, goshdao, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag);
+            rootpubkey, name, goshdao, m_CommitCode, m_BlobCode, m_WalletCode, m_codeTag);
     }
     
     function _composeDaoStateInit(string name) internal view returns(TvmCell) {
@@ -89,15 +84,22 @@ contract Gosh is Modifiers{
         b.store(address(this));
         b.store(name);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         TvmCell deployCode = tvm.setCodeSalt(m_codeDao, b.toCell());
-        return tvm.buildStateInit(deployCode, m_dataDao);
+        return tvm.buildStateInit({ 
+            code: deployCode,
+            contr: GoshDao,
+            varInit: {}
+        });
     }
     
     function deployDao(string name, uint256 root_pubkey) public minValue(91 ton) {
         tvm.accept();
         TvmCell s1 = _composeDaoStateInit(name);
         _lastGoshDao = new GoshDao {stateInit: s1, value: 90 ton, wid: 0}(
-            address(this), _creator, root_pubkey, name, m_CommitCode, m_CommitData, m_BlobCode, m_BlobData, m_RepositoryCode, m_RepositoryData, m_WalletCode, m_WalletData, m_codeTag, m_dataTag,
+            address(this), _creator, root_pubkey, name, m_CommitCode, m_BlobCode, m_RepositoryCode, m_WalletCode, m_codeTag,
             m_TokenLockerCode, m_SMVPlatformCode, m_SMVClientCode, m_SMVProposalCode, m_TokenRootCode, m_TokenWalletCode);
     }
 
@@ -110,79 +112,67 @@ contract Gosh is Modifiers{
     TvmCell m_SMVClientCode;
     TvmCell m_SMVProposalCode; */
 
-    function setTokenRoot(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setTokenRoot(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_TokenRootCode = code;
-       /*  m_RepositoryData = data; */
     }
 
-    function setTokenWallet(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setTokenWallet(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_TokenWalletCode = code;
-       /*  m_RepositoryData = data; */
     }
 
-    function setTokenLocker(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setTokenLocker(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_TokenLockerCode = code;
-       /*  m_RepositoryData = data; */
     }
 
-    function setSMVPlatform(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setSMVPlatform(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_SMVPlatformCode = code;
-        /* m_RepositoryData = data; */
     }
 
-    function setSMVClient(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setSMVClient(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_SMVClientCode = code;
-       /*  m_RepositoryData = data; */
     }
 
-    function setSMVProposal(TvmCell code, TvmCell /* data */) public  onlyOwner {
+    function setSMVProposal(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_SMVProposalCode = code;
-        /* m_RepositoryData = data; */
     }
 
     //////////////////////////////////////////////////////////////////////
 
 
-    function setRepository(TvmCell code, TvmCell data) public  onlyOwner {
+    function setRepository(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_RepositoryCode = code;
-        m_RepositoryData = data;
     }
 
-    function setCommit(TvmCell code, TvmCell data) public  onlyOwner {
+    function setCommit(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_CommitCode = code;
-        m_CommitData = data;
     }
 
-    function setBlob(TvmCell code, TvmCell data) public  onlyOwner {
+    function setBlob(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_BlobCode = code;
-        m_BlobData = data;
     }
 
-    function setWallet(TvmCell code, TvmCell data) public  onlyOwner {
+    function setWallet(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_WalletCode = code;
-        m_WalletData = data;
     }
     
-    function setDao(TvmCell code, TvmCell data) public  onlyOwner {
+    function setDao(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_codeDao = code;
-        m_dataDao = data;
     }
     
-    function setTag(TvmCell code, TvmCell data) public  onlyOwner {
+    function setTag(TvmCell code) public  onlyOwner {
         tvm.accept();
         m_codeTag = code;
-        m_dataTag = data;
     }
 
     //Getters

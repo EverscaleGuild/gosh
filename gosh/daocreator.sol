@@ -13,31 +13,27 @@ pragma AbiHeader pubkey;
 import "./modifiers/modifiers.sol";
 import "gosh.sol";
 import "goshwallet.sol";
+import "goshdao.sol";
 import "./libraries/GoshLib.sol";
 
 /* Root contract of gosh */
 contract DaoCreator is Modifiers{
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     address _gosh;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     TvmCell m_codeDao;
-    TvmCell m_dataDao;
 
     uint128 constant FEE_DEPLOY_DAO = 100 ton;
 
     constructor(
         address gosh, 
         TvmCell WalletCode,
-        TvmCell WalletData,
-        TvmCell codeDao,
-        TvmCell dataDao) public onlyOwner {
+        TvmCell codeDao) public onlyOwner {
+        require(tvm.pubkey() != 0, ERR_NEED_PUBKEY);
         tvm.accept();
         _gosh = gosh;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         m_codeDao = codeDao;
-        m_dataDao = dataDao;
     }
 
     function deployDao(
@@ -75,8 +71,15 @@ contract DaoCreator is Modifiers{
         b.store(_gosh);
         b.store(name);
         b.store(version);
+        uint256 hash = tvm.hash(b.toCell());
+        delete b;
+        b.store(hash);
         TvmCell deployCode = tvm.setCodeSalt(m_codeDao, b.toCell());
-        return tvm.buildStateInit(deployCode, m_dataDao);
+        return tvm.buildStateInit({ 
+            code: deployCode,
+            contr: GoshDao,
+            varInit: {}
+        });
     }
     
     function _composeWalletStateInit(uint256 pubkeyroot, uint256 pubkey, address goshdao) internal view returns(TvmCell) {

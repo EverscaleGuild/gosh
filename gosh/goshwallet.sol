@@ -47,21 +47,16 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         uint256 msgHash;
     } */
 
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     address _creator;
     uint256 static _rootRepoPubkey;
     address static _rootgosh;
     address static _goshdao;
     TvmCell m_RepositoryCode;
-    TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
-    TvmCell m_CommitData;
     TvmCell m_BlobCode;
-    TvmCell m_BlobData;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     TvmCell m_TagCode;
-    TvmCell m_TagData;
     //LastMsg m_lastMsg;
 
     TvmCell m_SMVPlatformCode;
@@ -71,15 +66,10 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     constructor(
         address creator,
         TvmCell commitCode,
-        TvmCell commitData,
         TvmCell blobCode,
-        TvmCell blobData,
         TvmCell repositoryCode,
-        TvmCell repositoryData,
         TvmCell WalletCode, 
-        TvmCell WalletData,
         TvmCell TagCode,
-        TvmCell TagData,
          //added for SMV
         TvmCell lockerCode,
         TvmCell platformCode,
@@ -90,17 +80,13 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
                         tvm.hash(clientCode), clientCode.depth(), tvm.hash(proposalCode),
                         proposalCode.depth(), _tip3Root
     ) {
+        require(tvm.pubkey() != 0, ERR_NEED_PUBKEY);
         _creator = creator;
         m_CommitCode = commitCode;
         m_BlobCode = blobCode;
         m_RepositoryCode = repositoryCode;
-        m_CommitData = commitData;
-        m_BlobData = blobData;
-        m_RepositoryData = repositoryData;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         m_TagCode = TagCode;
-        m_TagData = TagData;
         ///////////////////
         m_SMVPlatformCode = platformCode;
         m_SMVClientCode = clientCode;
@@ -124,6 +110,8 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     }
 
     function deployRepository(string nameRepo) public onlyOwner accept saveMsg {
+        address[] emptyArr;
+        _deployCommit(nameRepo, "main", "0000000000000000000000000000000000000000", "", emptyArr);
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -152,7 +140,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 10 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_BlobData, m_WalletCode, m_WalletData, m_CommitCode, m_CommitData);
+            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_WalletCode, m_CommitCode);
         getMoney();
     }
 
@@ -232,9 +220,10 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         string blobName,
         string fullBlob,
         string ipfsBlob,
-        string prevSha
+        string prevSha, 
+        uint8 flags
     ) public onlyOwner accept saveMsg {
-        _deployBlob(repoName, commit, branch, blobName, fullBlob, ipfsBlob, prevSha);
+        _deployBlob(repoName, commit, branch, blobName, fullBlob, ipfsBlob, prevSha, flags);
     }
 
     function _deployBlob(
@@ -244,7 +233,8 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         string blobName,
         string fullBlob,
         string ipfsBlob,
-        string prevSha
+        string prevSha,
+        uint8 flags
     ) internal {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s0 = _composeCommitStateInit(commit, repo);
@@ -253,7 +243,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Blob{
             stateInit: s1, value: 1 ton, wid: 0
-        }(tvm.pubkey(), addrC, branch, fullBlob, ipfsBlob, prevSha, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode, m_WalletData);
+        }(tvm.pubkey(), addrC, branch, fullBlob, ipfsBlob, prevSha, flags, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode);
         getMoney();
     }
 
@@ -384,7 +374,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         TvmCell s1 = tvm.buildStateInit({code: deployCode, contr: Tag, varInit: {_nametag: nametag}});
         new Tag{
             stateInit: s1, value: 5 ton, wid: 0
-        }(_rootRepoPubkey, tvm.pubkey(), nameCommit, commit, content, _rootgosh, _goshdao, m_WalletCode, m_WalletData);
+        }(_rootRepoPubkey, tvm.pubkey(), nameCommit, commit, content, _rootgosh, _goshdao, m_WalletCode);
     }
 
     function deleteTag(string repoName, string nametag) public view onlyOwner accept saveMsg {

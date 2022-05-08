@@ -16,11 +16,8 @@
 				{"name":"parents","type":"address[]"},
 				{"name":"repo","type":"address"},
 				{"name":"BlobCode","type":"cell"},
-				{"name":"BlobData","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"},
-				{"name":"CommitCode","type":"cell"},
-				{"name":"CommitData","type":"cell"}
+				{"name":"CommitCode","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -152,7 +149,6 @@
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_timestamp","type":"uint64"},
 		{"name":"_constructorFlag","type":"bool"},
-		{"name":"version","type":"string"},
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_rootRepo","type":"address"},
 		{"name":"_goshdao","type":"address"},
@@ -163,11 +159,8 @@
 		{"name":"check","type":"bool"},
 		{"name":"_blob","type":"address[]"},
 		{"name":"m_BlobCode","type":"cell"},
-		{"name":"m_BlobData","type":"cell"},
 		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},
-		{"name":"m_CommitData","type":"cell"},
 		{"name":"_parents","type":"address[]"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_num","type":"uint128"},

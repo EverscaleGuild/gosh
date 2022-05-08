@@ -13,8 +13,7 @@
 				{"name":"content","type":"string"},
 				{"name":"gosh","type":"address"},
 				{"name":"goshdao","type":"address"},
-				{"name":"WalletCode","type":"cell"},
-				{"name":"WalletData","type":"cell"}
+				{"name":"WalletCode","type":"cell"}
 			],
 			"outputs": [
 			]
@@ -69,7 +68,6 @@
 		{"name":"_pubkey","type":"uint256"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
-		{"name":"m_WalletCode","type":"cell"},
-		{"name":"m_WalletData","type":"cell"}
+		{"name":"m_WalletCode","type":"cell"}
 	]
 }

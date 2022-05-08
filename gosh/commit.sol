@@ -19,7 +19,7 @@ import "./libraries/GoshLib.sol";
 
 /* Root contract of Commit */
 contract Commit is Modifiers {
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     uint256 _pubkey;
     address _rootRepo;
     address _goshdao;
@@ -30,11 +30,8 @@ contract Commit is Modifiers {
     bool check = false;
     address[] _blob;
     TvmCell m_BlobCode;
-    TvmCell m_BlobData;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     TvmCell m_CommitCode;
-    TvmCell m_CommitData;
     address[] _parents;
     address _rootGosh;
     uint128 _num = 1;
@@ -55,11 +52,8 @@ contract Commit is Modifiers {
         address[] parents,
         address repo,
         TvmCell BlobCode,
-        TvmCell BlobData,
         TvmCell WalletCode,
-        TvmCell WalletData,
-        TvmCell CommitCode,
-        TvmCell CommitData) public onlyOwner {
+        TvmCell CommitCode) public {
         require(_nameCommit != "", ERR_NO_DATA);
         tvm.accept();
         _parents = parents;
@@ -71,11 +65,8 @@ contract Commit is Modifiers {
         _nameBranch = nameBranch;
         _commit = commit;
         m_BlobCode = BlobCode;
-        m_BlobData = BlobData;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         m_CommitCode = CommitCode;
-        m_CommitData = CommitData;
         require(checkAccess(value1, msg.sender), ERR_SENDER_NO_ALLOWED);
         getMoney(tvm.pubkey());
     }
@@ -121,19 +112,7 @@ contract Commit is Modifiers {
         require(address(this) == newC, ERR_WRONG_COMMIT_ADDR);
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
-        if (_parents.length == 0) {
-            require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
-            require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
-            Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, newC);
-        }
-        else { 
-            if (_parents.length != 1) {
-                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
-            }
-            for (address a : _parents) {
-                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
-            }
-        }
+        _checkChain(branchName, branchCommit, newC);
         getMoney(msg.pubkey());
     }
     
@@ -152,7 +131,15 @@ contract Commit is Modifiers {
         address branchCommit ,  
         address newC) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, ERR_SENDER_NO_ALLOWED);
+        require(branchCommit != address.makeAddrNone(), ERR_DONT_PASS_CHECK);
         tvm.accept();
+        _checkChain(branchName, branchCommit, newC);
+        getMoney(msg.pubkey());
+    }
+    
+    function _checkChain(string branchName,
+        address branchCommit ,  
+        address newC) private {
         if (branchCommit  == address(this)) {
             _check[newC] -= 1;
             if (_check[newC] == -1) {
@@ -160,21 +147,15 @@ contract Commit is Modifiers {
             }
         }
         else {
-            if (_parents.length == 0) {
-                require(branchCommit  == address.makeAddrNone(), ERR_DONT_PASS_CHECK);
-                require(_check[newC] == 0, ERR_NOT_LAST_CHECK);
-                Repository(_rootRepo).setFirstCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, newC);
+            require(_parents.length != 0, ERR_DONT_PASS_CHECK);
+            if (_check[newC] != 0) { return; } 
+            if (_parents.length != 1) {
+                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
             }
-            else { 
-                if (_parents.length != 1) {
-                    Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
-                }
-                for (address a : _parents) {
-                    Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
-                }
+            for (address a : _parents) {
+                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
             }
         }
-        getMoney(msg.pubkey());
     }
 
     function setBlobs(uint256 pubkey, address[] blobs) public {

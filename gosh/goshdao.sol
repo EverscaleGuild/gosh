@@ -18,18 +18,13 @@ import "../smv/TokenRootOwner.sol";
 
 /* Root contract of gosh */
 contract GoshDao is Modifiers, TokenRootOwner {
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     address _creator;
-    TvmCell m_WalletCode;
-    TvmCell m_WalletData;    
+    TvmCell m_WalletCode;   
     TvmCell m_RepositoryCode;
-    TvmCell m_RepositoryData;
     TvmCell m_CommitCode;
-    TvmCell m_CommitData;
     TvmCell m_BlobCode;
-    TvmCell m_BlobData;
     TvmCell m_TagCode;
-    TvmCell m_TagData;
     address _rootgosh;
     string _nameDao;
     address[] _wallets;
@@ -51,15 +46,10 @@ contract GoshDao is Modifiers, TokenRootOwner {
         uint256 pubkey, 
         string name, 
         TvmCell CommitCode,
-        TvmCell CommitData,
         TvmCell BlobCode,
-        TvmCell BlobData,
         TvmCell RepositoryCode,
-        TvmCell RepositoryData,
-        TvmCell WalletCode, 
-        TvmCell WalletData,
+        TvmCell WalletCode,
         TvmCell TagCode,
-        TvmCell TagData,
         /////////////////////
         TvmCell TokenLockerCode,
         TvmCell SMVPlatformCode,
@@ -82,15 +72,10 @@ contract GoshDao is Modifiers, TokenRootOwner {
         _rootpubkey = pubkey;
         _nameDao = name;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         m_RepositoryCode = RepositoryCode;
-        m_RepositoryData = RepositoryData;
         m_CommitCode = CommitCode;
-        m_CommitData = CommitData;
         m_BlobCode = BlobCode;
-        m_BlobData = BlobData;
         m_TagCode = TagCode;
-        m_TagData = TagData;
         /////
         m_TokenLockerCode = TokenLockerCode;
         m_SMVPlatformCode = SMVPlatformCode;
@@ -131,11 +116,11 @@ contract GoshDao is Modifiers, TokenRootOwner {
         _wallets.push(_lastAccountAddress);
         new GoshWallet {
             stateInit: s1, value: 60 ton, wid: 0
-        }(_creator, m_CommitCode, m_CommitData, 
-            m_BlobCode, m_BlobData, 
-            m_RepositoryCode, m_RepositoryData,
-            m_WalletCode, m_WalletData,
-            m_TagCode, m_TagData,
+        }(_creator, m_CommitCode, 
+            m_BlobCode, 
+            m_RepositoryCode,
+            m_WalletCode,
+            m_TagCode,
             m_TokenLockerCode, m_SMVPlatformCode,
             m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
         getMoney();

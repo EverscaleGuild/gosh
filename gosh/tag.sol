@@ -25,7 +25,6 @@ contract Tag is Modifiers{
     address _rootGosh;
     address _goshdao;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     
     constructor(
         uint256 value0, 
@@ -35,8 +34,8 @@ contract Tag is Modifiers{
         string content,
         address gosh,
         address goshdao,
-        TvmCell WalletCode,
-        TvmCell WalletData) public onlyOwner {
+        TvmCell WalletCode) public onlyOwner {
+        require(tvm.pubkey() != 0, ERR_NEED_PUBKEY);
         require(_nametag != "", ERR_NO_DATA);
         tvm.accept();
         _rootGosh = gosh;
@@ -45,7 +44,6 @@ contract Tag is Modifiers{
         _commit = commit;
         _content = content;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         _pubkey = value0;
         require(checkAccess(value1, msg.sender), ERR_SENDER_NO_ALLOWED);
     }

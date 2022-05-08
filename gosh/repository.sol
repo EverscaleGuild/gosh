@@ -24,16 +24,12 @@ struct Item {
 }
 
 contract Repository is Modifiers{
-    string version = "0.1.0";
+    string constant version = "0.2.0";
     uint256 _pubkey;
     TvmCell m_CommitCode;
-    TvmCell m_CommitData;
     TvmCell m_BlobCode;
-    TvmCell m_BlobData;
     TvmCell m_WalletCode;
-    TvmCell m_WalletData;
     TvmCell m_codeTag;
-    TvmCell m_dataTag;
     address _rootGosh;
     string static _name;
     address _goshdao;
@@ -45,14 +41,10 @@ contract Repository is Modifiers{
         string name, 
         address goshdao,
         TvmCell CommitCode,
-        TvmCell CommitData,
         TvmCell BlobCode,
-        TvmCell BlobData,
         TvmCell WalletCode,
-        TvmCell WalletData,
-        TvmCell codeTag,
-        TvmCell dataTag
-        ) public onlyOwner {
+        TvmCell codeTag
+        ) public {
         require(_name != "", ERR_NO_DATA);
         tvm.accept();
         _pubkey = value0;
@@ -60,14 +52,11 @@ contract Repository is Modifiers{
         _goshdao = goshdao;
         _name = name;
         m_CommitCode = CommitCode;
-        m_CommitData = CommitData;
         m_BlobCode = BlobCode;
-        m_BlobData = BlobData;
         m_WalletCode = WalletCode;
-        m_WalletData = WalletData;
         m_codeTag = codeTag;
-        m_dataTag = dataTag;
-        _Branches["main"] = Item("main", address.makeAddrNone());
+        TvmCell s1 = _composeCommitStateInit("0000000000000000000000000000000000000000");
+        _Branches["main"] = Item("main", address.makeAddrStd(0, tvm.hash(s1)));
         _head = "main";
     }
 
@@ -111,15 +100,6 @@ contract Repository is Modifiers{
 
     function setCommit(string nameBranch, address commit) public senderIs(_Branches[nameBranch].value) {
         require(_Branches.exists(nameBranch), ERR_BRANCH_NOT_EXIST);
-        tvm.accept();
-        _Branches[nameBranch] = Item(nameBranch, commit);
-    }
-    
-    function setFirstCommit(string nameCommit, string nameBranch, address commit) public {
-        require(_Branches.exists(nameBranch), ERR_BRANCH_NOT_EXIST);
-        require(_Branches[nameBranch].value == address.makeAddrNone(), ERR_NOT_EMPTY_BRANCH);
-        TvmCell s1 = _composeCommitStateInit(nameCommit);
-        require(msg.sender == address.makeAddrStd(0, tvm.hash(s1)), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         _Branches[nameBranch] = Item(nameBranch, commit);
     }
