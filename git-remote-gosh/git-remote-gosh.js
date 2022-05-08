@@ -15,6 +15,7 @@ const {
     send,
     deconstructRemoteUrl,
     emoji_shrug,
+    pushConcurrency,
 } = require('./utils')
 const helper = require('./everscale')
 const git = require('./git')
@@ -70,7 +71,7 @@ async function deleteRemoteRef(ref) {
 
 async function pushObject(obj, currentCommit, branch) {
     const [sha, filename] = obj.split(' ')
-    const { type, size, content } = await git.objectData(sha)
+    const { type, size, content, binary } = await git.objectData3(sha)
     if (type === 'commit') {
         // const address = await helper.getCommitAddr(sha, branch)
         currentCommit = { sha, address: '' }
@@ -88,7 +89,7 @@ async function pushObject(obj, currentCommit, branch) {
             : content
         verbose(diffContent) */
         if (!_pushBlobsQ[sha]) {
-            _pushBlobsQ[sha] = helper.createBlob(sha, type, size, currentCommit.sha, prevSha, branch, content)
+            _pushBlobsQ[sha] = helper.createBlob(sha, type, size, binary, currentCommit.sha, prevSha, branch, content)
             _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
         }
         // const address = await helper.getBlobAddr(sha, type)
@@ -118,21 +119,32 @@ async function pushRef(localRef, remoteRef) {
         const commitChainDepth = Object.keys(_pushCommitsQ).length
         verbose('commits Q:', commitChainDepth)
         verbose('  blobs Q:', Object.keys(_pushBlobsQ).length)
+
         // deploy all commits
-        await Promise.all(Object.values(_pushCommitsQ))
-            .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
-        // deploy all blobs
-        await Promise.all(Object.values(_pushBlobsQ))
-            .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+        // await Promise.all(Object.values(_pushCommitsQ))
+        //     .then(res => verbose(`createCommit:`, res.map(({ transaction_id }) => transaction_id)))
+        await pushConcurrency(Object.values(_pushCommitsQ))
+        .then(res => verbose(`createCommit:`, res.map(({ transaction_id }) => transaction_id)))
+
+            // deploy all blobs
+        // await Promise.all(Object.values(_pushBlobsQ))
+            // .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+        await pushConcurrency(Object.values(_pushBlobsQ))
+            .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
+
         // resolve blob addresses and update commits
+        const setBlobsPromises = []
         for (let commitSha of Object.keys(_resolveBlobAddresses)) {
-            await Promise.all(_resolveBlobAddresses[commitSha])
+            setBlobsPromises.push(Promise.all(_resolveBlobAddresses[commitSha])
                 .then(addresses => helper.setBlobs(commitSha, addresses))
-                .then(({ transaction_id }) => verbose(`updated blob list: ${transaction_id}`))
+                // .then(({ transaction_id }) => verbose(`updated blob list: ${transaction_id}`))
+            )
         }
+        await pushConcurrency(Object.values(setBlobsPromises))
+            .then(res => verbose(`setBlobs:\n`, res.map(({ transaction_id }) => transaction_id)))
         // update remote ref
         await helper.setCommit(branch, branchAddr, commit.sha, commitChainDepth)
-            .then(result => verbose('setComit:', result))
+            .then(result => verbose('setComit:', result.transaction_id))
         // TODO check setCommit and update ref if ok
         _pushed[remoteRef] = commit.sha
         result = `ok ${remoteRef}`
@@ -193,7 +205,7 @@ async function doPush(input) {
 async function doFetch(input) {
     const [, commitSha, ref] = input.split(' ')
     const branch = ref.slice('refs/heads/'.length)
-    
+
     const queue = [{ type: 'commit', sha: commitSha }]
     const notQueued = obj => !queue.find(elem => elem.sha === obj.sha)
     const serializationQueue = []
@@ -223,6 +235,7 @@ async function doFetch(input) {
             verbose(`warning: retrieving ${type}-object not supported yet`)
             continue
         } else {
+            verbose(`${type} ${sha}...`)
             const object = await helper.getBlob(sha, type)
             verbose(`got: ${type} (${sha})`)
             const refList = git.extractRefs(type, object.content)
@@ -259,7 +272,7 @@ async function doFetch(input) {
 
     const [, remoteUrl] = args
     const context = deconstructRemoteUrl(remoteUrl)
-    
+
     const credentials = await userCredentials(context.account)
 
     await helper.init(context.network, context.repo, context.gosh, credentials)

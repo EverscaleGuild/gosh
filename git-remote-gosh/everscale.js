@@ -4,9 +4,10 @@ const { createHash } = require('crypto')
 
 const { TonClient } = require('@eversdk/core')
 const { libNode } = require("@eversdk/lib-node")
-const { saveToIPFS, loadFromIPFS } = require('./ipfs')
+const { saveToIPFS, loadFromIPFS } = require('./ipfs-http')
 TonClient.useBinaryLibrary(libNode)
 
+const { openRepo } = require('./git')
 const { verbose, fatal } = require('./utils')
 const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
@@ -35,12 +36,13 @@ async function init(network, repo, goshAddress, credentials = {}) {
 
     ES_CLIENT = new TonClient(config)
     GOSH_ADDR = goshAddress
-    
+
     const [dao, ...tail] = repo.split('/')
     if (!tail) fatal(`Incorrect repo name: ${repo}. DAO not found`)
     CURRENT_DAO = dao
     CURRENT_REPO_NAME = tail.join('/')
-    
+    await openRepo()
+
     const promises = ['gosh', 'repository', 'commit', 'blob', 'goshdao', 'tag'].map(name => loadContract(name))
     promises.push(loadContract('goshwallet', './abi'))
     ;[
@@ -302,22 +304,25 @@ function setCommit(branch, branchCommit, commit, depth) {
     })
 }
 
-function createBlob(sha, type, size, commitSha, prevSha, branch, content) {
-    if (size > MAX_ONCHAIN_FILE_SIZE) {
-        // TODO: wrap and push to queue
-        return compress(content).then(async (compressed) => {
-            const ipfsCID = await saveToIPFS(content);
+function createBlob(sha, type, size, binary, commitSha, prevSha, branch, content) {
+    // TODO: wrap and push to queue
+    const data = binary ? content.toString('base64') : content
+    /* if (binary) {
+        verbose(`[[[${content.toString('hex').replace(/(.)(.)/g, '$1$2 ')}]]]`)
+    } */
+    return compress(data).then(async (compressed) => {
+        if (compressed.length > MAX_ONCHAIN_FILE_SIZE) {
+            const ipfsCID = await saveToIPFS(compressed);
             return call(UserWallet, 'deployBlob', {
                 repoName: CURRENT_REPO_NAME,
                 commit: commitSha,
+                branch,
                 blobName: `${type} ${sha}`,
-                fullBlob: compressed,
+                fullBlob: '',
                 ipfsBlob: ipfsCID,
-                prevSha: ''
+                prevSha,
             })
-        })
-    } else {
-        return compress(content).then(compressed => {
+        } else {
             return call(UserWallet, 'deployBlob', {
                 repoName: CURRENT_REPO_NAME,
                 commit: commitSha,
@@ -327,8 +332,8 @@ function createBlob(sha, type, size, commitSha, prevSha, branch, content) {
                 ipfsBlob: '',
                 prevSha,
             })
-        })
-    }
+        }
+    })
 }
 
 async function getBlobAddr(sha, type) {
@@ -351,14 +356,19 @@ async function listBlobs(commitAddr) {
 async function getBlob(sha, type) {
     const blobAddr = await getBlobAddr(sha, type).catch(e => fatal(e.message))
     const blobContract = { ...Blob, address: blobAddr }
-    const { ipfsBlob, ...blob } = await runLocal(blobContract, 'getBlob')
+    const { ipfs, ...blob } = await runLocal(blobContract, 'getBlob')
         .then(({ decoded }) => decoded.output)
         .catch(e => fatal(e.message))
-
-    if (!!ipfsBlob && !blob.content) {
-        blob.content = await loadFromIPFS(blob.ipfsBlob);
-    } else {
-        blob.content = await decompress(blob.content)
+    if (ipfs) verbose('cid:', ipfs, '| content:', !blob.content)
+    if (!!ipfs && !blob.content) {
+        verbose('ipfs: blob addr:', blobAddr)
+        blob.content = await loadFromIPFS(ipfs)
+        verbose('ipfs: got blob with size', blob.content.length)
+    }
+    blob.content = await decompress(blob.content)
+    // dirty check if content is base64
+    if (blob.content.slice(0, 5) === 'te6cc') {
+        blob.content = Buffer.from(blob.content, 'base64')
     }
     return blob
 }
@@ -381,9 +391,11 @@ function compress(data) {
 }
 
 function decompress(data) {
-    return ES_CLIENT.utils.decompress_zstd({
-        compressed: data
-    }).then(({ decompressed }) => Buffer.from(decompressed, 'base64').toString())
+    const compressed = Buffer.isBuffer(data) ? data.toString(/* 'base64' */) : data
+
+    return ES_CLIENT.utils.decompress_zstd({ compressed })
+        .then(({ decompressed }) => Buffer.from(decompressed, 'base64').toString())
+        .catch(fatal)
 }
 
 // global vars wrappers

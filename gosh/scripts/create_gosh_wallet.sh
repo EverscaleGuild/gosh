@@ -33,7 +33,7 @@ $TONOS_CLI getkeypair $WALLET_KEYS "$WALLET_SEED_PHRASE" > /dev/null
 DAO_PUBKEY=$(cat $DAO_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 WALLET_PUBKEY=$(cat $WALLET_KEYS | sed -n '/public/ s/.*\([[:xdigit:]]\{64\}\).*/0x\1/p')
 
-ONE_K_EVERS=1000000000000
+ONE_K_EVERS=100000000000000
 
 CALLED="deployWallet {\"pubkey\":\"$WALLET_PUBKEY\"}"
 $TONOS_CLI -u $NETWORK call $DAO_ADDR $CALLED --abi $DAO_ABI --sign $DAO_KEYS > /dev/null || exit 1

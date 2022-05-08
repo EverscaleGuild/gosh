@@ -23,8 +23,12 @@
     "@eversdk/core": "^1.32.0",
     "@eversdk/lib-node": "^1.32.0",
     "better-lock": "^2.0.1-beta",
+    "bottleneck": "^2.19.5",
+    "form-data": "^4.0.0",
     "ipfs-core": "^0.14.2",
     "ipfs-utils": "^9.0.6",
-    "libp2p": "^0.36.2"
+    "libp2p": "^0.36.2",
+    "node-fetch": "^2.6.7",
+    "nodegit": "^0.28.0-alpha.15"
   }
 }

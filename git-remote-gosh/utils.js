@@ -2,6 +2,8 @@ const { Buffer } = require('buffer')
 const { spawn } = require('child_process')
 const zlib = require('zlib')
 
+const Bottleneck = require('bottleneck')
+
 const bufLF = Buffer.from([0x0a])
 
 let _verbosity = false
@@ -101,7 +103,7 @@ function execCmd(cmd, raw = false, options = {}) {
             subprocess.stdin.end()
         }
         const output = []
-        
+
         subprocess.stdout.on('data', (data) => {
             output.push(data)
         })
@@ -130,13 +132,16 @@ function execCmd(cmd, raw = false, options = {}) {
     })
 }
 
-/* const execCmd = (cmd, raw = false, options = {}) => {
-    // verbose(`debug: shell$ ${cmd}`)
-    // if (options.input) verbose(`\twith piped: ${options.input}`)
-
-    const out = exec(cmd, options).toString('utf-8').trimEnd()
-    return raw ? out : out.split('\n')
-} */
+const pushConcurrency = (queue, concurrency = 1) => {
+    const limiter = new Bottleneck({
+        reservoir: 10,
+        reservoirRefreshAmount: 10,
+        reservoirRefreshInterval: 10000,
+        maxConcurrent: concurrency
+    })
+    const tasks = queue.map(entry => limiter.schedule(() => entry))
+    return Promise.all(tasks)
+}
 
 const deflate = (data) => {
     const input = Buffer.from(data, 'utf8')
@@ -176,6 +181,7 @@ module.exports = {
     send,
     deconstructRemoteUrl,
     execCmd,
+    pushConcurrency,
     deflate,
     inflate,
 }
