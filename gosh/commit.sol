@@ -68,14 +68,14 @@ contract Commit is Modifiers {
         m_WalletCode = WalletCode;
         m_CommitCode = CommitCode;
         require(checkAccess(value1, msg.sender), ERR_SENDER_NO_ALLOWED);
-        getMoney(tvm.pubkey());
+        getMoney(_pubkey);
     }
     
     function getMoney(uint256 pubkey) private {
         TvmCell s1 = _composeWalletStateInit(pubkey);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        if (address(this).balance > 8 ton) { return; }
-        GoshWallet(addr).sendMoney{value : 0.2 ton}(_rootRepo, _commit);
+        if (address(this).balance > 80 ton) { return; }
+        GoshWallet(addr).sendMoney{value : 0.2 ton}(_rootRepo, _nameCommit);
     }
     
     function _composeBlobStateInit(string nameBlob) internal view returns(TvmCell) {
@@ -112,20 +112,22 @@ contract Commit is Modifiers {
         require(address(this) == newC, ERR_WRONG_COMMIT_ADDR);
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
-        _checkChain(branchName, branchCommit, newC);
-        getMoney(msg.pubkey());
+        _checkChain(pubkey, branchName, branchCommit, newC);
+        getMoney(pubkey);
     }
     
     function addCheck(
+        uint256 pubkey,
         string nameCommit,
         address newC,
         uint128 value) public {
         require(_buildCommitAddr(nameCommit) == msg.sender, ERR_SENDER_NO_ALLOWED);
         _check[newC] += int128(value);
-        getMoney(msg.pubkey());
+        getMoney(pubkey);
     }
     
     function CommitCheckCommit(
+        uint256 pubkey,
         string nameCommit,
         string branchName,
         address branchCommit ,  
@@ -133,28 +135,29 @@ contract Commit is Modifiers {
         require(_buildCommitAddr(nameCommit) == msg.sender, ERR_SENDER_NO_ALLOWED);
         require(branchCommit != address.makeAddrNone(), ERR_DONT_PASS_CHECK);
         tvm.accept();
-        _checkChain(branchName, branchCommit, newC);
-        getMoney(msg.pubkey());
+        _checkChain(pubkey, branchName, branchCommit, newC);
+        getMoney(pubkey);
     }
     
-    function _checkChain(string branchName,
+    function _checkChain(uint256 pubkey,
+        string branchName,
         address branchCommit ,  
         address newC) private {
         if (branchCommit  == address(this)) {
-            _check[newC] -= 1;
-            if (_check[newC] == -1) {
+//            _check[newC] -= 1;
+//            if (_check[newC] == -1) {
                 Repository(_rootRepo).setCommit{value: 0.3 ton, bounce: true }(branchName, newC);
-            }
+//            }
         }
         else {
             require(_parents.length != 0, ERR_DONT_PASS_CHECK);
-            if (_check[newC] != 0) { return; } 
-            if (_parents.length != 1) {
-                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(_nameCommit, newC, uint128(_parents.length) - 1);
-            }
-            for (address a : _parents) {
-                Commit(a).CommitCheckCommit{value: 0.3 ton, bounce: true }(_nameCommit, branchName, branchCommit , newC);
-            }
+//            if (_check[newC] != 0) { return; } 
+//            if (_parents.length != 1) {
+//                Commit(branchCommit ).addCheck{value: 0.3 ton, bounce: true }(pubkey, _nameCommit, newC, uint128(_parents.length) - 1);
+//            }
+//            for (address a : _parents) {
+                Commit(_parents[0]).CommitCheckCommit{value: 0.3 ton, bounce: true }(pubkey, _nameCommit, branchName, branchCommit , newC);
+//            }
         }
     }
 
@@ -162,7 +165,7 @@ contract Commit is Modifiers {
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
         _blob = blobs;
-        getMoney(tvm.pubkey());
+        getMoney(pubkey);
     }    
     
     function destroy() public {

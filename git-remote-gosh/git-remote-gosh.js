@@ -121,14 +121,10 @@ async function pushRef(localRef, remoteRef) {
         verbose('  blobs Q:', Object.keys(_pushBlobsQ).length)
 
         // deploy all commits
-        // await Promise.all(Object.values(_pushCommitsQ))
-        //     .then(res => verbose(`createCommit:`, res.map(({ transaction_id }) => transaction_id)))
         await pushConcurrency(Object.values(_pushCommitsQ))
         .then(res => verbose(`createCommit:`, res.map(({ transaction_id }) => transaction_id)))
 
-            // deploy all blobs
-        // await Promise.all(Object.values(_pushBlobsQ))
-            // .then(res => verbose(res.map(({ transaction_id }) => transaction_id)))
+        // deploy all blobs
         await pushConcurrency(Object.values(_pushBlobsQ))
             .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
 
@@ -142,8 +138,9 @@ async function pushRef(localRef, remoteRef) {
         }
         await pushConcurrency(Object.values(setBlobsPromises))
             .then(res => verbose(`setBlobs:\n`, res.map(({ transaction_id }) => transaction_id)))
+
         // update remote ref
-        await helper.setCommit(branch, branchAddr, commit.sha, commitChainDepth)
+        await helper.setCommit(branch, branchAddr, commit.sha)
             .then(result => verbose('setComit:', result.transaction_id))
         // TODO check setCommit and update ref if ok
         _pushed[remoteRef] = commit.sha
@@ -216,7 +213,7 @@ async function doFetch(input) {
         const { type, sha, commit } = queue.shift()
         if (received.includes(sha)) continue
         if (serializationQueue.includes(sha)) continue
-        // if (await git.isExistsObject(sha)) {
+        // if (await git.isExistsObject(sha)) { // TODO refactor
         //     verbose(`already downloaded: ${sha}`)
         // } else {
         if (type === 'commit') {

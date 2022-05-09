@@ -136,7 +136,7 @@ const pushConcurrency = (queue, concurrency = 1) => {
     const limiter = new Bottleneck({
         reservoir: 10,
         reservoirRefreshAmount: 10,
-        reservoirRefreshInterval: 10000,
+        reservoirRefreshInterval: 20000,
         maxConcurrent: concurrency
     })
     const tasks = queue.map(entry => limiter.schedule(() => entry))

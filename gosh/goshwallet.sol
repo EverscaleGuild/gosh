@@ -52,6 +52,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     uint256 static _rootRepoPubkey;
     address static _rootgosh;
     address static _goshdao;
+    bool _flag = false;
     TvmCell m_RepositoryCode;
     TvmCell m_CommitCode;
     TvmCell m_BlobCode;
@@ -105,7 +106,9 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     }
 
     function getMoney() private {
-        if (address(this).balance > 10000 ton) { return; }
+        if (_flag == true) { return; }
+        _flag = true;
+        if (address(this).balance > 20000 ton) { return; }
         DaoCreator(_creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
     }
 
@@ -139,7 +142,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
-        new Commit {stateInit: s1, value: 10 ton, wid: 0}(
+        new Commit {stateInit: s1, value: 20 ton, wid: 0}(
             _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_WalletCode, m_CommitCode);
         getMoney();
     }
@@ -299,7 +302,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         address addr = address.makeAddrStd(0, tvm.hash(s0));
         require(addr == msg.sender, ERR_SENDER_NO_ALLOWED);
         tvm.accept();
-        addr.transfer(10 ton);
+        addr.transfer(100 ton);
         getMoney();
     }
 
@@ -430,6 +433,13 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         }
     } */
 
+    /* fallback/receive */
+    receive() external {
+        if (msg.sender == _creator) {
+            _flag = false;
+        }
+    }
+    
     //
     // Internals
     //
