@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM node:16-slim as nodejs
+FROM --platform=${BUILDPLATFORM} node:16-slim as nodejs
 
 FROM nodejs
 ARG content_signature_local_dir
@@ -34,6 +34,7 @@ ENV DOCKER_BUILDKIT=1
 ENV DOCKER_CLI_EXPERIMENTAL=enabled
 ENV NODE_ENV=production
 
+ARG TARGETOS TARGETARCH
 WORKDIR /command/tools/content-signature
 RUN npm i
 

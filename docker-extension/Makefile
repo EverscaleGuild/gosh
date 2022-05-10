@@ -1,6 +1,6 @@
-IMAGE?=awnion/docker-extension
+IMAGE?=teamgosh/docker-extension
 #IMAGE?=teamgosh-docker-extension
-TAG?=test
+TAG?=1.0.0-alpha.8
 LOCAL_TEMP_DIR=./.tmp
 PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
 
@@ -52,6 +52,7 @@ publish: ## Publish the extension
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)/content-signature" \
 	  --build-arg git_remote_gosh_local_dir="$(LOCAL_TEMP_DIR)/git-remote-gosh" \
 	  --build-arg gosh_abi_local_dir="$(LOCAL_TEMP_DIR)/gosh" \
+	  --push \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
 
