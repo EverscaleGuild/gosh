@@ -1,7 +1,8 @@
-IMAGE?=teamgosh/docker-extension
+IMAGE?=awnion/docker-extension
 #IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.7
-LOCAL_TEMP_DIR=./.tmp/
+TAG?=test
+LOCAL_TEMP_DIR=./.tmp
+PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
 
 .DEFAULT_GOAL := debug
 
@@ -44,13 +45,13 @@ publish: ## Publish the extension
 	-mkdir $(LOCAL_TEMP_DIR)/gosh
 	-cp -r ../gosh/*.abi.json $(LOCAL_TEMP_DIR)/gosh/
 	docker buildx build \
-	  --platform linux/amd64,linux/arm64 \
+	  --no-cache \
+	  --platform $(PLATFORM) \
 	  --tag=$(IMAGE):$(TAG) \
 	  --tag=$(IMAGE):latest \
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)/content-signature" \
 	  --build-arg git_remote_gosh_local_dir="$(LOCAL_TEMP_DIR)/git-remote-gosh" \
 	  --build-arg gosh_abi_local_dir="$(LOCAL_TEMP_DIR)/gosh" \
-	  --push \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
 
