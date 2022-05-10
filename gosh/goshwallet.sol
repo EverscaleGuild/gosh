@@ -115,7 +115,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     function deployRepository(string nameRepo) public onlyOwner accept saveMsg {
         require(checkName(nameRepo), ERR_WRONG_NAME);
         address[] emptyArr;
-        _deployCommit(nameRepo, "main", "0000000000000000000000000000000000000000", "", emptyArr, 0);
+        _deployCommit(nameRepo, "main", "0000000000000000000000000000000000000000", "", emptyArr);
         Gosh(_rootgosh).deployRepository{
             value: FEE_DEPLOY_REPO, bounce: true
         }(tvm.pubkey(), _rootRepoPubkey, nameRepo, _goshdao);
@@ -127,11 +127,10 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         string branchName,
         string commitName,
         string fullCommit,
-        address[] parents,
-        uint128 numBlobs
+        address[] parents
     ) public onlyOwner accept saveMsg {
         require(parents.length <= 7, ERR_TOO_MANY_PARENTS);
-        _deployCommit(repoName, branchName, commitName, fullCommit, parents, numBlobs);
+        _deployCommit(repoName, branchName, commitName, fullCommit, parents);
     }
 
     function _deployCommit(
@@ -139,15 +138,13 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         string branchName,
         string commitName,
         string fullCommit,
-        address[] parents,
-        uint128 numBlobs
+        address[] parents
     ) internal {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 20 ton, wid: 0}(
-            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo,
-        numBlobs, m_BlobCode, m_WalletCode, m_CommitCode);
+            _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_WalletCode, m_CommitCode);
         getMoney();
     }
 

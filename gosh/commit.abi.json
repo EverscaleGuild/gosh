@@ -15,7 +15,6 @@
 				{"name":"commit","type":"string"},
 				{"name":"parents","type":"address[]"},
 				{"name":"repo","type":"address"},
-				{"name":"numblobs","type":"uint128"},
 				{"name":"BlobCode","type":"cell"},
 				{"name":"WalletCode","type":"cell"},
 				{"name":"CommitCode","type":"cell"}
@@ -167,7 +166,6 @@
 		{"name":"_parents","type":"address[]"},
 		{"name":"_rootGosh","type":"address"},
 		{"name":"_num","type":"uint128"},
-		{"name":"_numblobs","type":"uint128"},
 		{"name":"_check","type":"map(address,int128)"}
 	]
 }

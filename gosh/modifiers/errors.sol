@@ -32,5 +32,4 @@ abstract contract Errors {
     uint constant ERR_WRONG_COMMIT_ADDR = 220;
     uint constant ERR_NEED_PUBKEY = 221;
     uint constant ERR_WRONG_NAME = 222;
-    uint constant ERR_WRONG_NUMBER_BLOBS = 223;
 }

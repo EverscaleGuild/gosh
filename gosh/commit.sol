@@ -35,7 +35,6 @@ contract Commit is Modifiers {
     address[] _parents;
     address _rootGosh;
     uint128 _num = 1;
-    uint128 _numblobs;
     mapping(address => int128) _check;
 
     modifier onlyFirst {
@@ -52,13 +51,11 @@ contract Commit is Modifiers {
         string commit, 
         address[] parents,
         address repo,
-        uint128  numblobs,
         TvmCell BlobCode,
         TvmCell WalletCode,
         TvmCell CommitCode) public {
         require(_nameCommit != "", ERR_NO_DATA);
         tvm.accept();
-        _numblobs = numblobs;
         _parents = parents;
         _name = nameRepo;
         _rootGosh = rootGosh;
@@ -146,7 +143,6 @@ contract Commit is Modifiers {
         string branchName,
         address branchCommit ,  
         address newC) private {
-        require(_numblobs == _blob.length, ERR_WRONG_NUMBER_BLOBS);
         if (branchCommit  == address(this)) {
 //            _check[newC] -= 1;
 //            if (_check[newC] == -1) {
