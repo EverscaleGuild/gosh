@@ -49,6 +49,7 @@ abstract contract Modifiers is Errors {
             if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) { return false; }
             if ((uint8(bStr[i]) >= 46) && (uint8(bStr[i]) <= 47)) { return false; }
             if (uint8(bStr[i]) == 44){ return false; }
+            if (uint8(bStr[i]) == 32){ return false; }
         }
         return true;
     }
