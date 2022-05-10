@@ -44,7 +44,8 @@
 				{"name":"branchName","type":"string"},
 				{"name":"commitName","type":"string"},
 				{"name":"fullCommit","type":"string"},
-				{"name":"parents","type":"address[]"}
+				{"name":"parents","type":"address[]"},
+				{"name":"numBlobs","type":"uint128"}
 			],
 			"outputs": [
 			]
