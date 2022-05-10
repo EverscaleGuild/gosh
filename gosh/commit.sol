@@ -164,7 +164,9 @@ contract Commit is Modifiers {
     function setBlobs(uint256 pubkey, address[] blobs) public {
         require(checkAccess(pubkey, msg.sender), ERR_SENDER_NO_ALLOWED);
         tvm.accept();
-        _blob = blobs;
+        for (address a : blobs) {
+            _blob.push(a);
+        }
         getMoney(pubkey);
     }    
     

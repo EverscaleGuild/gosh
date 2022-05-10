@@ -39,6 +39,7 @@ contract DaoCreator is Modifiers{
     function deployDao(
         string name, 
         uint256 root_pubkey) public view accept {
+        require(checkName(name), ERR_WRONG_NAME);
         Gosh(_gosh).deployDao{
             value: FEE_DEPLOY_DAO, bounce: true
         }(name, root_pubkey);

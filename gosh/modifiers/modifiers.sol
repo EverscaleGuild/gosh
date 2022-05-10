@@ -42,4 +42,14 @@ abstract contract Modifiers is Errors {
         require(address(this).balance > val + 1 ton, ERR_LOW_BALANCE);
         _;
     }
+    
+    function checkName(string name) internal view returns(bool) {
+        bytes memory bStr = bytes(name);
+        for (uint i = 0; i < bStr.length; i++) {
+            if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) { return false; }
+            if ((uint8(bStr[i]) >= 46) && (uint8(bStr[i]) <= 47)) { return false; }
+            if (uint8(bStr[i]) == 44){ return false; }
+        }
+        return true;
+    }
 }

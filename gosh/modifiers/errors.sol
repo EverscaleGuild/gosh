@@ -31,4 +31,5 @@ abstract contract Errors {
     uint constant ERR_DONT_PASS_CHECK = 219;
     uint constant ERR_WRONG_COMMIT_ADDR = 220;
     uint constant ERR_NEED_PUBKEY = 221;
+    uint constant ERR_WRONG_NAME = 222;
 }

@@ -113,6 +113,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     }
 
     function deployRepository(string nameRepo) public onlyOwner accept saveMsg {
+        require(checkName(nameRepo), ERR_WRONG_NAME);
         address[] emptyArr;
         _deployCommit(nameRepo, "main", "0000000000000000000000000000000000000000", "", emptyArr);
         Gosh(_rootgosh).deployRepository{
@@ -338,6 +339,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         string newName,
         string fromName
     ) public view onlyOwner accept saveMsg {
+        require(checkName(newName), ERR_WRONG_NAME);
         address repo = _buildRepositoryAddr(repoName);
         Repository(repo).deployBranch{
             value: 1 ton, bounce: true
