@@ -171,11 +171,11 @@ const writeObject = async (type, content, options = {}) => {
     )
     if (sha && computedSha != sha) {
         verbose('bad content size:', content.length)
-        /* if (Buffer.isBuffer(content)) {
+        if (Buffer.isBuffer(content)) {
             verbose(`[[[${content.toString('hex').replace(/(.)(.)/g, '$1$2 ')}]]]`)
         } else {
             verbose(`[[[${content}]]]`)
-        } */
+        }
         fatal(`hash mismatched: (${computedSha}, ${sha}})`)
     }
     return computedSha

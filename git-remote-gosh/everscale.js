@@ -12,6 +12,7 @@ const { verbose, fatal } = require('./utils')
 const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
 const ZERO_ADDRESS = '0:0000000000000000000000000000000000000000000000000000000000000000'
+const ZERO_COMMIT = '0000000000000000000000000000000000000000'
 const FEE_SET_COMMIT = 3e8
 
 let ES_CLIENT
@@ -27,8 +28,8 @@ const MAX_ONCHAIN_FILE_SIZE = 15360;
 async function init(network, repo, goshAddress, credentials = {}) {
     const config = {
         network: {
-            endpoints: [network || 'main.ton.dev'],
-            // queries_protocol: 'WS',
+            endpoints: [network || 'network.gosh.sh'],
+            queries_protocol: 'WS',
         },
         defaultWorkchain: 0,
         log_verbose: false,
@@ -231,7 +232,7 @@ async function branchList(repo = CURRENT_REPO_NAME) {
 
     const promises = list.map(async ({ value: commitAddr }) => getCommitByAddr(commitAddr))
     return Promise.all(promises).then((result) => {
-        return result.map((v, i) => ({
+        return result.filter(v => v.sha !== ZERO_COMMIT).map((v, i) => ({
             repo: v.repo,
             branch: v.branch,
             sha: v.sha,
@@ -258,6 +259,7 @@ async function createCommit(branch, sha, content) {
             promises.push(getCommitAddr(value, branch))
         }
     }
+    if (promises.length === 0) promises.push(getCommitAddr(ZERO_COMMIT, branch))
     const parents = await Promise.all(promises)
     return call(UserWallet, 'deployCommit', {
         repoName: CURRENT_REPO_NAME,
@@ -293,14 +295,12 @@ async function getCommit(sha, branch = 'main') {
     return { type: 'commit', address: commitAddr, ...(await getCommitByAddr(commitAddr)) }
 }
 
-function setCommit(branch, branchCommit, commit, depth) {
-    const value = FEE_SET_COMMIT + FEE_SET_COMMIT * depth
+async function setCommit(branch, branchCommit, commit) {
     return call(UserWallet, 'setCommit', {
         repoName: CURRENT_REPO_NAME,
         branchName: branch,
-        branchcommit: branchCommit === ZERO_ADDRESS ? '' : branchCommit,
+        branchcommit: branchCommit === ZERO_ADDRESS ? await getCommitAddr(ZERO_COMMIT, branch) : branchCommit,
         commit,
-        value,
     })
 }
 
@@ -321,6 +321,7 @@ function createBlob(sha, type, size, binary, commitSha, prevSha, branch, content
                 fullBlob: '',
                 ipfsBlob: ipfsCID,
                 prevSha,
+                flags: 0,
             })
         } else {
             return call(UserWallet, 'deployBlob', {
@@ -331,6 +332,7 @@ function createBlob(sha, type, size, binary, commitSha, prevSha, branch, content
                 fullBlob: compressed,
                 ipfsBlob: '',
                 prevSha,
+                flags: 0,
             })
         }
     })

@@ -469,6 +469,7 @@
 		{"name":"_rootRepoPubkey","type":"uint256"},
 		{"name":"_rootgosh","type":"address"},
 		{"name":"_goshdao","type":"address"},
+		{"name":"_flag","type":"bool"},
 		{"name":"m_RepositoryCode","type":"cell"},
 		{"name":"m_CommitCode","type":"cell"},
 		{"name":"m_BlobCode","type":"cell"},

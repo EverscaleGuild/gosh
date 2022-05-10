@@ -36,6 +36,7 @@
 		{
 			"name": "addCheck",
 			"inputs": [
+				{"name":"pubkey","type":"uint256"},
 				{"name":"nameCommit","type":"string"},
 				{"name":"newC","type":"address"},
 				{"name":"value","type":"uint128"}
@@ -46,6 +47,7 @@
 		{
 			"name": "CommitCheckCommit",
 			"inputs": [
+				{"name":"pubkey","type":"uint256"},
 				{"name":"nameCommit","type":"string"},
 				{"name":"branchName","type":"string"},
 				{"name":"branchCommit","type":"address"},
