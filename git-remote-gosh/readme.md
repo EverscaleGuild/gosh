@@ -72,3 +72,11 @@ To clone repositories you should add
 ```sh
 git clone gosh::net.ton.dev://my-wallet@0:a6af961f2973bb00fe1d3d6cfee2f2f9c89897719c2887b31ef5ac4fd060638f/my-user-name/my-repo
 ```
+
+### Ever SDK protocol
+
+By default, the SDK uses the WebSocket protocol. If for some reason this does not suit you (for example, you are using Alpine Linux), then set the environment variable `GOSH_PROTO` to `http`
+
+```sh
+export GOSH_PROTO=http
+```

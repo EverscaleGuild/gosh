@@ -26,13 +26,22 @@ const MAX_ONCHAIN_FILE_SIZE = 15360;
 
 
 async function init(network, repo, goshAddress, credentials = {}) {
+    const isHttp = process.env.GOSH_PROTO && process.env.GOSH_PROTO.toLowerCase().startsWith('http')
+    console.error('PROTO:', isHttp ? 'HTTP' : 'WS')
     const config = {
         network: {
             endpoints: [network || 'network.gosh.sh'],
-            queries_protocol: 'WS',
+            queries_protocol: isHttp ? 'HTTP' : 'WS',
+            message_retries_count: 10,
+            message_processing_timeout: 220000000,
+            wait_for_timeout: 220000000,
+            query_timeout: 220000000,
         },
         defaultWorkchain: 0,
         log_verbose: false,
+        abi: {
+            message_expiration_timeout: 220000000
+        }
     }
 
     ES_CLIENT = new TonClient(config)
@@ -179,6 +188,7 @@ async function getRepoAddress(repoName) {
     if (CURRENT_REPO && CURRENT_REPO.address) return CURRENT_REPO.address
     // const dao = await getAddrDao()
     const result = await runLocal(Gosh, 'getAddrRepository', { name: repoName, dao: CURRENT_DAO }).catch(err => fatal(err))
+    verbose('REPO:', result.decoded.output.value0)
     return result.decoded.output.value0
 }
 
