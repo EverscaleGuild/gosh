@@ -76,26 +76,32 @@ async function pushObject(obj, currentCommit, branch) {
         // const address = await helper.getCommitAddr(sha, branch)
         currentCommit = { sha, address: '' }
         if (!_pushCommitsQ[sha]) {
-            _pushCommitsQ[sha] = helper.createCommit(branch, sha, content)
-            _resolveBlobAddresses[currentCommit.sha] = []
+            const isExists = await helper.checkExistence(sha, 'commit')
+            if (isExists) {
+                verbose(`exists: commit (sha: ${sha}). skipped`)
+            } else {
+                _pushCommitsQ[sha] = helper.createCommit(branch, sha, content)
+                    .catch(err => verbose('ERROR:', err.message))
+                _resolveBlobAddresses[currentCommit.sha] = []
+                verbose(`queued commit (${sha})`) //: ${address}`)
+            }
         }
         // verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
-        const prevSha = type === 'blob' && filename
-            ? await git.blobPrevSha(filename, currentCommit.sha)
-            : ''
-        /* const diffContent = prevSha
-            ? await git.diff(prevSha, sha)
-            : content
-        verbose(diffContent) */
         if (!_pushBlobsQ[sha]) {
-            _pushBlobsQ[sha] = helper.createBlob(sha, type, size, binary, currentCommit.sha, prevSha, branch, content)
-            _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
+            const isExists = await helper.checkExistence(sha, type)
+            if (isExists) {
+                verbose(`exists: ${type} (sha: ${sha}). skipped`)
+            } else {
+                _pushBlobsQ[sha] = helper.createBlob(sha, type, size, binary, currentCommit.sha, filename, branch, content)
+                    .catch(err => verbose('--ERROR:', err.message))
+                _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
+                verbose(`queued ${type} (${sha})`) //: ${address}`)
+            }
         }
         // const address = await helper.getBlobAddr(sha, type)
         // verbose(`uploading ${type}(${sha}): ${address}`)
     }
-    verbose(`queued ${type}(${sha})`) //: ${address}`)
     // verbose(`writing: ${sha} (${type})`)
     return currentCommit
 }
@@ -126,13 +132,14 @@ async function pushRef(localRef, remoteRef) {
 
         // deploy all blobs
         await pushConcurrency(Object.values(_pushBlobsQ))
-            .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
+        .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
 
         // resolve blob addresses and update commits
         const setBlobsPromises = []
         for (let commitSha of Object.keys(_resolveBlobAddresses)) {
-            setBlobsPromises.push(Promise.all(_resolveBlobAddresses[commitSha])
-                .then(addresses => helper.setBlobs(commitSha, addresses))
+            setBlobsPromises.push(
+                Promise.all(_resolveBlobAddresses[commitSha])
+                    .then(addresses => helper.setBlobs(commitSha, addresses))
                 // .then(({ transaction_id }) => verbose(`updated blob list: ${transaction_id}`))
             )
         }

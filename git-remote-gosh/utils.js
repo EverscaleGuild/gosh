@@ -132,11 +132,11 @@ function execCmd(cmd, raw = false, options = {}) {
     })
 }
 
-const pushConcurrency = (queue, concurrency = 1) => {
+const pushConcurrency = (queue, concurrency = 5) => {
     const limiter = new Bottleneck({
-        reservoir: 10,
-        reservoirRefreshAmount: 10,
-        reservoirRefreshInterval: 20000,
+        reservoir: 20,
+        reservoirRefreshAmount: 20,
+        reservoirRefreshInterval: 10000,
         maxConcurrent: concurrency
     })
     const tasks = queue.map(entry => limiter.schedule(() => entry))

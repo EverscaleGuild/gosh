@@ -7,7 +7,7 @@ const { libNode } = require("@eversdk/lib-node")
 const { saveToIPFS, loadFromIPFS } = require('./ipfs-http')
 TonClient.useBinaryLibrary(libNode)
 
-const { openRepo } = require('./git')
+const { openRepo, blobPrevSha } = require('./git')
 const { verbose, fatal } = require('./utils')
 const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
@@ -21,6 +21,8 @@ let CURRENT_REPO_NAME
 let CURRENT_REPO
 let Gosh, Repository, Commit, Blob, Dao, Tag
 let UserWallet = {}
+let messageSeqNum = 0
+let runLocalCounter = 0
 
 const MAX_ONCHAIN_FILE_SIZE = 15360;
 
@@ -120,6 +122,7 @@ function call(contract, function_name, input = {}, keys, wait = false) {
             keys: keys || contract.keys,
         }
     }
+    const header = { time: ++messageSeqNum }
     const params = {
         send_events: false,
         message_encode_params: {
@@ -131,6 +134,7 @@ function call(contract, function_name, input = {}, keys, wait = false) {
             call_set: {
                 function_name,
                 input,
+                header,
             },
             signer,
         },
@@ -148,6 +152,45 @@ function call(contract, function_name, input = {}, keys, wait = false) {
             verbose(`ERROR! Contract: ${contract.address}`)
             fatal(err)
         })
+}
+
+async function getContractStatus(address) {
+    const query = {
+        collection: 'accounts',
+        filter: { id: { eq: address } },
+        result: 'acc_type balance',
+    }
+    const { result } = await ES_CLIENT.net.query_collection(query)
+
+    return result.length
+        ? { status: result[0].acc_type, balance: +result[0].balance }
+        : {}
+}
+
+async function checkExistence(sha, type) {
+    try {
+        verbose(`checkExistence(${sha}, ${type})`)
+        let contract
+        let result = false
+        if (type === 'commit') {
+            const address = await getCommitAddr(sha)
+            contract = { ...Commit, address }
+            const { status } = await getContractStatus(address)
+            return status === 1
+        } else if (type === 'tree' || type === 'blob') {
+            const address = await getBlobAddr(sha, type)
+            contract = { ...Blob, address }
+            const { status } = await getContractStatus(address)
+            return status === 1
+        } else if (type === 'tag') {
+            contract = Tag
+        } else {
+            verbose(`Unsupported type: ${type} (sha: ${sha})`)
+        }
+    } catch (err) {
+        verbose('ERROR:', err.message)
+        fatal('Oops!')
+    }
 }
 
 function createRunBody(contract, function_name, params) {
@@ -266,10 +309,10 @@ async function createCommit(branch, sha, content) {
     for (const line of content.split('\n')) {
         const [key, value] = line.split(' ', 2)
         if (key === 'parent') {
-            promises.push(getCommitAddr(value, branch))
+            promises.push(getCommitAddr(value))
         }
     }
-    if (promises.length === 0) promises.push(getCommitAddr(ZERO_COMMIT, branch))
+    if (promises.length === 0) promises.push(getCommitAddr(ZERO_COMMIT))
     const parents = await Promise.all(promises)
     return call(UserWallet, 'deployCommit', {
         repoName: CURRENT_REPO_NAME,
@@ -280,9 +323,9 @@ async function createCommit(branch, sha, content) {
     })
 }
 
-async function getCommitAddr(sha, branch) {
+async function getCommitAddr(sha) {
     const repoContract = await getRepo(CURRENT_REPO_NAME)
-    const result = await runLocal(repoContract, 'getCommitAddr', { nameBranch: branch, nameCommit: sha }).catch(err => fatal(err))
+    const result = await runLocal(repoContract, 'getCommitAddr', { nameCommit: sha }).catch(err => fatal(err))
     return result.decoded.output.value0
 }
 
@@ -300,8 +343,8 @@ async function getCommitByAddr(commitAddr) {
     }
 }
 
-async function getCommit(sha, branch = 'main') {
-    const commitAddr = await getCommitAddr(sha, branch)
+async function getCommit(sha) {
+    const commitAddr = await getCommitAddr(sha)
     return { type: 'commit', address: commitAddr, ...(await getCommitByAddr(commitAddr)) }
 }
 
@@ -309,12 +352,19 @@ async function setCommit(branch, branchCommit, commit) {
     return call(UserWallet, 'setCommit', {
         repoName: CURRENT_REPO_NAME,
         branchName: branch,
-        branchcommit: branchCommit === ZERO_ADDRESS ? await getCommitAddr(ZERO_COMMIT, branch) : branchCommit,
+        branchcommit: branchCommit === ZERO_ADDRESS ? await getCommitAddr(ZERO_COMMIT) : branchCommit,
         commit,
     })
 }
 
-function createBlob(sha, type, size, binary, commitSha, prevSha, branch, content) {
+async function createBlob(sha, type, size, binary, commitSha, filename, branch, content) {
+    const prevSha = type === 'blob' && filename
+        ? await blobPrevSha(filename, commitSha)
+        : ''
+    /* const diffContent = prevSha
+        ? await git.diff(prevSha, sha)
+        : content
+    verbose(diffContent) */
     // TODO: wrap and push to queue
     const data = binary ? content.toString('base64') : content
     /* if (binary) {
@@ -417,6 +467,7 @@ const userWallet = () => UserWallet
 
 module.exports = {
     init,
+    checkExistence,
     sha1,
     createRepo,
     getRepoAddress,
