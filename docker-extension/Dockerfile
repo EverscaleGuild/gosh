@@ -7,7 +7,7 @@ ARG git_remote_gosh_local_dir
 ARG gosh_abi_local_dir
 
 LABEL org.opencontainers.image.title="Gosh" \
-    org.opencontainers.image.description="Build your decentralized and secure software supply chain with Docker and Git On-chain Source Hodler" \
+    org.opencontainers.image.description="Build your decentralized and secure software supply chain with Docker and Git Open Source Hodler" \
     org.opencontainers.image.vendor="EverX" \
     com.docker.desktop.extension.api.version=">=0.2.1" \
     com.docker.desktop.extension.icon="http://icons.gosh.run/Gosh%20icon%20-%20black.svg" \
