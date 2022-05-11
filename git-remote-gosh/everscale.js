@@ -24,8 +24,10 @@ let UserWallet = {}
 let messageSeqNum = 0
 let runLocalCounter = 0
 
-const MAX_ONCHAIN_FILE_SIZE = 15360;
-
+const MAX_ONCHAIN_FILE_SIZE = 15360
+const BLOB_FLAG_BINARY = 1
+const BLOB_FLAG_COMPRESSED = 2
+const BLOB_FLAG_IPFS = 4
 
 async function init(network, repo, goshAddress, credentials = {}) {
     const isHttp = process.env.GOSH_PROTO && process.env.GOSH_PROTO.toLowerCase().startsWith('http')
@@ -169,9 +171,7 @@ async function getContractStatus(address) {
 
 async function checkExistence(sha, type) {
     try {
-        verbose(`checkExistence(${sha}, ${type})`)
         let contract
-        let result = false
         if (type === 'commit') {
             const address = await getCommitAddr(sha)
             contract = { ...Commit, address }
@@ -231,7 +231,6 @@ async function getRepoAddress(repoName) {
     if (CURRENT_REPO && CURRENT_REPO.address) return CURRENT_REPO.address
     // const dao = await getAddrDao()
     const result = await runLocal(Gosh, 'getAddrRepository', { name: repoName, dao: CURRENT_DAO }).catch(err => fatal(err))
-    verbose('REPO:', result.decoded.output.value0)
     return result.decoded.output.value0
 }
 
@@ -357,22 +356,22 @@ async function setCommit(branch, branchCommit, commit) {
     })
 }
 
-async function createBlob(sha, type, size, binary, commitSha, filename, branch, content) {
+async function createBlob(sha, type, binary, commitSha, filename, branch, content) {
+    let flags = 0
     const prevSha = type === 'blob' && filename
         ? await blobPrevSha(filename, commitSha)
         : ''
-    /* const diffContent = prevSha
-        ? await git.diff(prevSha, sha)
-        : content
-    verbose(diffContent) */
-    // TODO: wrap and push to queue
-    const data = binary ? content.toString('base64') : content
+    // const diffContent = prevSha ? await git.diff(prevSha, sha) : content
+    if (binary) flags |= BLOB_FLAG_BINARY
     /* if (binary) {
         verbose(`[[[${content.toString('hex').replace(/(.)(.)/g, '$1$2 ')}]]]`)
     } */
-    return compress(data).then(async (compressed) => {
+    // TODO: wrap and push to queue
+    return compress(content).then(async (compressed) => {
+        flags |= BLOB_FLAG_COMPRESSED
         if (compressed.length > MAX_ONCHAIN_FILE_SIZE) {
-            const ipfsCID = await saveToIPFS(compressed);
+            flags |= BLOB_FLAG_IPFS
+            const ipfsCID = await saveToIPFS(compressed)
             return call(UserWallet, 'deployBlob', {
                 repoName: CURRENT_REPO_NAME,
                 commit: commitSha,
@@ -381,7 +380,7 @@ async function createBlob(sha, type, size, binary, commitSha, filename, branch, 
                 fullBlob: '',
                 ipfsBlob: ipfsCID,
                 prevSha,
-                flags: 0,
+                flags,
             })
         } else {
             return call(UserWallet, 'deployBlob', {
@@ -392,7 +391,7 @@ async function createBlob(sha, type, size, binary, commitSha, filename, branch, 
                 fullBlob: compressed,
                 ipfsBlob: '',
                 prevSha,
-                flags: 0,
+                flags,
             })
         }
     })
@@ -421,17 +420,17 @@ async function getBlob(sha, type) {
     const { ipfs, ...blob } = await runLocal(blobContract, 'getBlob')
         .then(({ decoded }) => decoded.output)
         .catch(e => fatal(e.message))
-    if (ipfs) verbose('cid:', ipfs, '| content:', !blob.content)
+
+    if (ipfs) verbose('ipfs:', ipfs, '| content:', !blob.content)
     if (!!ipfs && !blob.content) {
-        verbose('ipfs: blob addr:', blobAddr)
-        blob.content = await loadFromIPFS(ipfs)
+        verbose(`ipfs: blob (${sha}) addr: ${blobAddr}`)
+        blob.content = (await loadFromIPFS(ipfs)).toString()
         verbose('ipfs: got blob with size', blob.content.length)
     }
+
     blob.content = await decompress(blob.content)
-    // dirty check if content is base64
-    if (blob.content.slice(0, 5) === 'te6cc') {
-        blob.content = Buffer.from(blob.content, 'base64')
-    }
+        .then(content => blob.flags & BLOB_FLAG_BINARY ? content : content.toString())
+    blob.address = blobAddr
     return blob
 }
 
@@ -446,18 +445,21 @@ function sha1(data, type = 'blob') {
 }
 
 function compress(data) {
+    const buf = Buffer.isBuffer(data) ? data : Buffer.from(data)
+
     return ES_CLIENT.utils.compress_zstd({
-        uncompressed: Buffer.from(data).toString('base64'),
+        uncompressed: buf.toString('base64'),
         level: 3
     }).then(({ compressed }) => compressed)
 }
 
 function decompress(data) {
-    const compressed = Buffer.isBuffer(data) ? data.toString(/* 'base64' */) : data
-
-    return ES_CLIENT.utils.decompress_zstd({ compressed })
-        .then(({ decompressed }) => Buffer.from(decompressed, 'base64').toString())
-        .catch(fatal)
+    return ES_CLIENT.utils.decompress_zstd({ compressed: data })
+        .then(({ decompressed }) => Buffer.from(decompressed, 'base64'))
+        .catch(err => {
+            verbose(err)
+            fatal(err.message)
+        })
 }
 
 // global vars wrappers

@@ -104,9 +104,7 @@ const revparse = (ref) => {
 
 const blobPrevSha = (name, commit) =>
     execCmd(`git log --follow -p --oneline -n 1 ${commit} -- ${name} | awk -F"[ .]" '/^index.*/{print ($2==0000000)? \"\" : $2}'`)
-        .then(({ 0: sha }) => {
-            return sha ? revparse(sha) : ''
-        })
+        .then(({ 0: sha }) => sha ? revparse(sha) : '')
 
 const diff = (aSha, bSha) => execCmd(`git diff --no-color ${aSha} ${bSha} | sed 1,1d`, true)
 
@@ -162,7 +160,6 @@ const writeObject = async (type, content, options = {}) => {
             ])
         })
         input = Buffer.concat(entries)
-        // verbose('tree length:', input.length)
     }
     const [computedSha,] = await execCmd(
         `git hash-object --stdin -t ${type} ${!dryRun ? '-w': ''}`,
@@ -171,6 +168,7 @@ const writeObject = async (type, content, options = {}) => {
     )
     if (sha && computedSha != sha) {
         verbose('bad content size:', content.length)
+        if (options.contractAddress) verbose(`contract address: ${options.contractAddress}`)
         if (Buffer.isBuffer(content)) {
             verbose(`[[[${content.toString('hex').replace(/(.)(.)/g, '$1$2 ')}]]]`)
         } else {

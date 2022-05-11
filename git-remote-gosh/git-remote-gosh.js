@@ -81,10 +81,9 @@ async function pushObject(obj, currentCommit, branch) {
                 verbose(`exists: commit (sha: ${sha}). skipped`)
             } else {
                 _pushCommitsQ[sha] = helper.createCommit(branch, sha, content)
-                    .catch(err => verbose('ERROR:', err.message))
-                _resolveBlobAddresses[currentCommit.sha] = []
                 verbose(`queued commit (${sha})`) //: ${address}`)
             }
+            _resolveBlobAddresses[currentCommit.sha] = []
         }
         // verbose(`uploading ${type}(${sha}): ${address}`)
     } else {
@@ -93,8 +92,7 @@ async function pushObject(obj, currentCommit, branch) {
             if (isExists) {
                 verbose(`exists: ${type} (sha: ${sha}). skipped`)
             } else {
-                _pushBlobsQ[sha] = helper.createBlob(sha, type, size, binary, currentCommit.sha, filename, branch, content)
-                    .catch(err => verbose('--ERROR:', err.message))
+                _pushBlobsQ[sha] = helper.createBlob(sha, type, binary, currentCommit.sha, filename, branch, content)
                 _resolveBlobAddresses[currentCommit.sha].push(helper.getBlobAddr(sha, type))
                 verbose(`queued ${type} (${sha})`) //: ${address}`)
             }
@@ -132,8 +130,7 @@ async function pushRef(localRef, remoteRef) {
 
         // deploy all blobs
         await pushConcurrency(Object.values(_pushBlobsQ))
-        .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
-
+            .then(res => verbose(`createBlob:`, res.map(({ transaction_id }) => transaction_id)))
         // resolve blob addresses and update commits
         const setBlobsPromises = []
         for (let commitSha of Object.keys(_resolveBlobAddresses)) {
@@ -153,7 +150,7 @@ async function pushRef(localRef, remoteRef) {
         _pushed[remoteRef] = commit.sha
         result = `ok ${remoteRef}`
     } catch (err) {
-        verbose('debug: Error!', err.message)
+        verbose('Push error!', err.message)
         result = `error ${remoteRef} ${emoji_shrug}`
     }
     return result
@@ -225,7 +222,7 @@ async function doFetch(input) {
         // } else {
         if (type === 'commit') {
             const object = await helper.getCommit(sha, branch)
-            verbose(`got: commit (${sha})`)
+            verbose(`got: commit (${sha}) at ${object.address}`)
             commits[object.sha] = object
             const refList = git.extractRefs(type, object.content)
                 .map(o => ({ ...o, commit: sha }))
@@ -247,7 +244,7 @@ async function doFetch(input) {
                 .filter(notQueued)
             queue.push(...refList)
             if (!serializationQueue.includes(sha)) {
-                promises.push(git.writeObject(type, object.content, { sha }))
+                promises.push(git.writeObject(type, object.content, { sha, contractAddress: object.address }))
                 serializationQueue.push(sha)
             }
         }
