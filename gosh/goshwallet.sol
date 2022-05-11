@@ -109,7 +109,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         if (_flag == true) { return; }
         if (address(this).balance > 20000 ton) { return; }
         _flag = true;
-        DaoCreator(_creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 10000 ton);
+        DaoCreator(_creator).sendMoney{value : 0.2 ton}(_rootRepoPubkey, tvm.pubkey(), _goshdao, 21000 ton);
     }
 
     function deployRepository(string nameRepo) public onlyOwner accept saveMsg {
