@@ -7,12 +7,11 @@ const { libNode } = require("@eversdk/lib-node")
 const { saveToIPFS, loadFromIPFS } = require('./ipfs-http')
 TonClient.useBinaryLibrary(libNode)
 
-const { openRepo, blobPrevSha } = require('./git')
+const { openRepo, blobPrevSha, ZERO_COMMIT } = require('./git')
 const { verbose, fatal } = require('./utils')
 const pathGoshArtifacts = '../gosh'
 const signerNone = { type: 'None' }
 const ZERO_ADDRESS = '0:0000000000000000000000000000000000000000000000000000000000000000'
-const ZERO_COMMIT = '0000000000000000000000000000000000000000'
 const FEE_SET_COMMIT = 3e8
 
 let ES_CLIENT

@@ -215,7 +215,7 @@ async function doFetch(input) {
     const promises = []
     while (queue.length) {
         const { type, sha, commit } = queue.shift()
-        if (received.includes(sha)) continue
+        if (received.includes(sha) || sha === git.ZERO_COMMIT) continue
         if (serializationQueue.includes(sha)) continue
         // if (await git.isExistsObject(sha)) { // TODO refactor
         //     verbose(`already downloaded: ${sha}`)

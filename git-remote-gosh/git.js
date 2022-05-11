@@ -2,6 +2,7 @@ const { assert } = require('console')
 const Git = require('nodegit')
 const { verbose, execCmd, fatal } = require('./utils')
 
+const ZERO_COMMIT = '0000000000000000000000000000000000000000'
 const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904' // $ echo -n '' | git hash-object --stdin -t tree
 const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391' // $ echo -n '' | git hash-object --stdin -t blob
 const FILEMODE = {
@@ -128,7 +129,7 @@ const extractRefs = (type, content) => {
             const list = []
             for (const line of content.split('\n')) {
                 const [key, value] = line.split(' ', 2)
-                if (key === 'parent') {
+                if (key === 'parent' && value !== ZERO_COMMIT) {
                     list.push({ type: 'commit', sha: value })
                 } else if (key === 'tree') {
                     list.push({ type: 'tree', sha: value })
@@ -195,6 +196,7 @@ const createBlob = (content) => execCmd()
 
 module.exports = {
     openRepo,
+    ZERO_COMMIT,
     EMPTY_TREE_SHA,
     EMPTY_BLOB_SHA,
     headBranch,
