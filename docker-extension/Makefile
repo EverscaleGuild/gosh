@@ -1,14 +1,15 @@
 IMAGE?=teamgosh/docker-extension
 #IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.7
-LOCAL_TEMP_DIR=./.tmp/
+TAG?=1.0.1
+LOCAL_TEMP_DIR=./.tmp
+PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
 
 .DEFAULT_GOAL := debug
 
 rm: ## Remove previous extension installations
 	docker extension rm teamgosh-docker-extension || true
 	docker extension rm teamgosh/docker-extension || true
-	
+
 
 build: ## Build service image to be deployed as a desktop extension
 	-rm -rf $(LOCAL_TEMP_DIR)
@@ -44,7 +45,8 @@ publish: ## Publish the extension
 	-mkdir $(LOCAL_TEMP_DIR)/gosh
 	-cp -r ../gosh/*.abi.json $(LOCAL_TEMP_DIR)/gosh/
 	docker buildx build \
-	  --platform linux/amd64,linux/arm64 \
+	  --no-cache \
+	  --platform $(PLATFORM) \
 	  --tag=$(IMAGE):$(TAG) \
 	  --tag=$(IMAGE):latest \
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)/content-signature" \
