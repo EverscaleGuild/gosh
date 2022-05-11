@@ -225,7 +225,7 @@ contract Gosh is Modifiers{
         return m_codeTag;
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }

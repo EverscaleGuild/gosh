@@ -34,6 +34,14 @@
 			]
 		},
 		{
+			"name": "deleteWallet",
+			"inputs": [
+				{"name":"pubkey","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "getAddrWallet",
 			"inputs": [
 				{"name":"pubkey","type":"uint256"}

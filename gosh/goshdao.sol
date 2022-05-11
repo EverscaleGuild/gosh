@@ -92,7 +92,7 @@ contract GoshDao is Modifiers, TokenRootOwner {
         _rootTokenRoot = _deployRoot (address.makeAddrStd(0,0), 0, 0, false, false, true, address.makeAddrStd(0,0), now);
     }
     
-    function getMoney() private {
+    function getMoney() private view {
         if (address(this).balance > 10000 ton) { return; }
         tvm.accept();
         DaoCreator(_creator).sendMoneyDao{value : 0.2 ton}(_nameDao, 10000 ton);
@@ -123,6 +123,14 @@ contract GoshDao is Modifiers, TokenRootOwner {
             m_TagCode,
             m_TokenLockerCode, m_SMVPlatformCode,
             m_SMVClientCode, m_SMVProposalCode, _rootTokenRoot);
+        getMoney();
+    }
+    
+    function deleteWallet(uint256 pubkey) public onlyOwnerPubkey(_rootpubkey) {
+        tvm.accept();
+        TvmCell s1 = _composeWalletStateInit(pubkey);
+        _lastAccountAddress = address.makeAddrStd(0, tvm.hash(s1));
+        GoshWallet(_lastAccountAddress).destroy{value : 0.2 ton}();
         getMoney();
     }
 
@@ -159,7 +167,7 @@ contract GoshDao is Modifiers, TokenRootOwner {
         return _rootpubkey;
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }

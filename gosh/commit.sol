@@ -71,7 +71,7 @@ contract Commit is Modifiers {
         getMoney(_pubkey);
     }
     
-    function getMoney(uint256 pubkey) private {
+    function getMoney(uint256 pubkey) private view{
         TvmCell s1 = _composeWalletStateInit(pubkey);
         address addr = address.makeAddrStd(0, tvm.hash(s1));
         if (address(this).balance > 80 ton) { return; }
@@ -142,7 +142,7 @@ contract Commit is Modifiers {
     function _checkChain(uint256 pubkey,
         string branchName,
         address branchCommit ,  
-        address newC) private {
+        address newC) private view {
         if (branchCommit  == address(this)) {
 //            _check[newC] -= 1;
 //            if (_check[newC] == -1) {
@@ -226,7 +226,7 @@ contract Commit is Modifiers {
         return address.makeAddrStd(0, tvm.hash(s1));
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }

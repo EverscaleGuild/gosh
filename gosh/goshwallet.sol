@@ -94,8 +94,12 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         m_SMVProposalCode = proposalCode;
         getMoney();
     }
+    
+    function destroy() public senderIs(_goshdao) {
+        selfdestruct(_goshdao);
+    }
 
-    function destroyObject(address obj) public onlyOwner accept {
+    function destroyObject(address obj) public onlyOwner accept pure {
         Object(obj).destroy{value : 0.2 ton}();
     }
 
@@ -142,7 +146,6 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
     ) internal {
         address repo = _buildRepositoryAddr(repoName);
         TvmCell s1 = _composeCommitStateInit(commitName, repo);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Commit {stateInit: s1, value: 20 ton, wid: 0}(
             _goshdao, _rootgosh, _rootRepoPubkey, tvm.pubkey(), repoName, branchName, fullCommit, parents, repo, m_BlobCode, m_WalletCode, m_CommitCode);
         getMoney();
@@ -159,6 +162,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         address branchcommit,
         string commit
     ) internal pure returns(bool) {
+       repoName; branchcommit; commit;
        return ((branchName == "main") || (branchName == "master"));
     }
 
@@ -244,7 +248,6 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         TvmCell s0 = _composeCommitStateInit(commit, repo);
         address addrC = address.makeAddrStd(0, tvm.hash(s0));
         TvmCell s1 = _composeBlobStateInit(blobName, repo);
-        address addr = address.makeAddrStd(0, tvm.hash(s1));
         new Blob{
             stateInit: s1, value: 1 ton, wid: 0
         }(tvm.pubkey(), addrC, branch, fullBlob, ipfsBlob, prevSha, flags, _rootgosh, _goshdao, _rootRepoPubkey, m_WalletCode);
@@ -470,7 +473,7 @@ contract GoshWallet is Modifiers, SMVAccount, IVotingResultRecipient {
         return address(tvm.hash(state));
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }

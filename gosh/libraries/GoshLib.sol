@@ -1,7 +1,7 @@
 pragma ton-solidity >=0.54.0;
 
 library GoshLib {
-    string constant version = "0.2.0";
+    string constant versionLib = "0.2.0";
     
     function buildWalletCode(
         TvmCell originalCode,

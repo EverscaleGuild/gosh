@@ -43,7 +43,7 @@ abstract contract Modifiers is Errors {
         _;
     }
     
-    function checkName(string name) internal view returns(bool) {
+    function checkName(string name) internal pure returns(bool) {
         bytes memory bStr = bytes(name);
         for (uint i = 0; i < bStr.length; i++) {
             if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) { return false; }

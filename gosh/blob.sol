@@ -101,7 +101,7 @@ contract Blob is Modifiers {
         return (_nameBlob, _rootCommit, _blob, _ipfsBlob, _flags);
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }

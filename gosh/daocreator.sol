@@ -103,7 +103,7 @@ contract DaoCreator is Modifiers{
         return _gosh;
     }
 
-    function getVersion() external view returns(string) {
+    function getVersion() external pure returns(string) {
         return version;
     }
 }
