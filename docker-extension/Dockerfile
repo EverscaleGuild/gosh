@@ -5,13 +5,14 @@ FROM base
 ARG content_signature_local_dir
 ARG git_remote_gosh_local_dir
 ARG gosh_abi_local_dir
+ARG detailed_description
 
 LABEL org.opencontainers.image.title="Gosh" \
     org.opencontainers.image.description="Build your decentralized and secure software supply chain with Docker and Git Open Source Hodler" \
     org.opencontainers.image.vendor="EverX" \
     com.docker.desktop.extension.api.version=">=0.2.1" \
     com.docker.desktop.extension.icon="http://icons.gosh.run/Gosh%20icon%20-%20black.svg" \
-    com.docker.extension.detailed-description="<p><strong>GOSH</strong> is a blockchain built around securing the software supply chain and capturing the immense value in open source projects. This is achieved through record-setting blockchain tech, distributed programming, and a decentralized architecture - integrated into the same familiar git, meaning there is no change to the workflow.</p><p><strong>GOSH Docker Extension</strong> implements GOSH repository management and image verification as the newest feature of Docker - a Docker Extension. </p><p>You will be able to create your GOSH account and Decentralized  Autonomous Organization (DAO), set up and manage repositories through a graphical interface directly in Docker Desktop. Repositories stored in GOSH can then be interacted with like any regular remote repository, with a few small configurations to git, making decentralized code management easily available to anyone.</p><p>Images built directly from code stored in GOSH can be verified as GOSH-sourced in the Docker Extension, ensuring security of the software supply chain. You will always know what code specifically is running in your containers, and that none of it was tampered with during build.</p>" \
+    com.docker.extension.detailed-description=${detailed_description} \
     com.docker.extension.publisher-url="https://www.gosh.sh"
 
 RUN <<EOF
