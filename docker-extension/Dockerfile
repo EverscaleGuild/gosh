@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
-FROM --platform=${BUILDPLATFORM} node:16-slim as nodejs
+FROM --platform=${BUILDPLATFORM} node:16-slim as base
 
-FROM nodejs
+FROM base
 ARG content_signature_local_dir
 ARG git_remote_gosh_local_dir
 ARG gosh_abi_local_dir
@@ -20,14 +20,14 @@ RUN <<EOF
     apt-get install -qy git docker bash ca-certificates
 EOF
 
-COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --link --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
-COPY metadata.json /
-COPY ./vm/docker-compose.yaml /
-COPY ./vm/commands/ /command/
-COPY $content_signature_local_dir /command/tools/content-signature
-COPY $git_remote_gosh_local_dir /command/tools/git-remote-gosh
-COPY $gosh_abi_local_dir /command/tools/gosh
+COPY --link metadata.json /
+COPY --link ./vm/docker-compose.yaml /
+COPY --link ./vm/commands/ /command/
+COPY --link $content_signature_local_dir /command/tools/content-signature
+COPY --link $git_remote_gosh_local_dir /command/tools/git-remote-gosh
+COPY --link $gosh_abi_local_dir /command/tools/gosh
 
 ENV GOSH_PROTO=http
 ENV DOCKER_BUILDKIT=1
@@ -43,8 +43,8 @@ RUN rm -rf node_modules && rm package-lock.json && npm i
 
 RUN ln -s /command/tools/git-remote-gosh/git-remote-gosh.js  /usr/local/bin/git-remote-gosh
 
-COPY icon.svg /
+COPY --link icon.svg /
 
-COPY index.html /ui/index.html
+COPY --link index.html /ui/index.html
 
 CMD [ "sleep", "infinity" ]

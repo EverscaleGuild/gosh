@@ -1,6 +1,6 @@
 IMAGE?=teamgosh/docker-extension
 #IMAGE?=teamgosh-docker-extension
-TAG?=1.0.0-alpha.8
+TAG?=1.0.1
 LOCAL_TEMP_DIR=./.tmp
 PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
 
@@ -9,7 +9,7 @@ PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
 rm: ## Remove previous extension installations
 	docker extension rm teamgosh-docker-extension || true
 	docker extension rm teamgosh/docker-extension || true
-	
+
 
 build: ## Build service image to be deployed as a desktop extension
 	-rm -rf $(LOCAL_TEMP_DIR)
