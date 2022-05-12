@@ -1,8 +1,10 @@
 IMAGE?=teamgosh/docker-extension
 #IMAGE?=teamgosh-docker-extension
-TAG?=1.0.1
+TAG?=1.0.2
 LOCAL_TEMP_DIR=./.tmp
-PLATFORM            ?= linux/amd64,linux/arm/v7,linux/arm64
+
+PLATFORM             ?= linux/amd64,linux/arm/v7,linux/arm64
+DETAILED_DESCRIPTION ?= $(shell cat description.html)
 
 .DEFAULT_GOAL := debug
 
@@ -52,6 +54,7 @@ publish: ## Publish the extension
 	  --build-arg content_signature_local_dir="$(LOCAL_TEMP_DIR)/content-signature" \
 	  --build-arg git_remote_gosh_local_dir="$(LOCAL_TEMP_DIR)/git-remote-gosh" \
 	  --build-arg gosh_abi_local_dir="$(LOCAL_TEMP_DIR)/gosh" \
+	  --build-arg detailed_description="$(DETAILED_DESCRIPTION)" \
 	  --push \
 	  .
 	-rm -rf $(LOCAL_TEMP_DIR)
